@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Allevio — дневник гистамина и цикла</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
+
+    <!-- ЮРИДИЧЕСКИЙ ЭКРАН (БЛОКИРОВКА ПРИ ПЕРВОМ ВХОДЕ) -->
+    <div id="legal-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="text-center text-3xl mb-2">⚖️</div>
+            <h2 class="text-base font-bold text-center text-slate-800 mb-3">Пользовательское соглашение</h2>
+            <div class="overflow-y-auto text-xs text-slate-500 space-y-2.5 pr-1 mb-4 flex-1 border-b border-t border-slate-100 py-3 leading-relaxed">
+                <p><strong>1. Не является медицинским сервисом.</strong> Данное приложение («Allevio») представляет собой исключительно бытовой электронный дневник для личного самонаблюдения за рационом питания и общим самочувствием.</p>
+                <p><strong>2. Отказ от постановки диагнозов.</strong> Сервис, его алгоритмы, справочные материалы и автоматические расчеты совпадений не являются медицинскими рекомендациями, методами диагностики, профилактики или лечения каких-либо заболеваний (включая аллергию или непереносимости).</p>
+                <p><strong>3. Необходимость консультации специалиста.</strong> Любые выводы калькулятора совпадений носят сугубо ознакомительный характер. При любых изменениях в самочувствии, подозрении на заболевания или перед изменением диеты вы обязаны обратиться к квалифицированному врачу.</p>
+                <p><strong>4. Ограничение ответственности.</strong> Разработчик платформы не несет ответственности за любые прямые или косвенные последствия, возникшие в результате использования данного дневника или интерпретации его данных пользователем.</p>
+            </div>
+            <div class="space-y-4">
+                <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                    <input type="checkbox" id="legal-checkbox" onchange="toggleLegalButton()" class="w-5 h-5 mt-0.5 accent-emerald-600 rounded shrink-0">
+                    <span class="text-[11px] text-slate-600 leading-tight">
+                        Я подтверждаю, что ознакомлен(а) с дисклеймером, и согласен(а), что платформа <strong>не является медицинской</strong>.
+                    </span>
+                </label>
+                <button id="legal-submit-btn" onclick="acceptLegal()" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed">
+                    Войти в приложение
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС ПРИЛОЖЕНИЯ (заблокирован до согласия) -->
+    <div id="app-body" class="opacity-30 pointer-events-none">
+        <header class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 shadow-md sticky top-0 z-40">
+            <h1 class="text-xl font-bold text-center">Allevio</h1>
+            <p class="text-[10px] text-center text-emerald-100 uppercase tracking-wider mt-0.5">дневник питания и биоритмов</p>
+        </header>
+
+        <main class="max-w-md mx-auto p-4 space-y-4">
+            <!-- ВКЛАДКА 1: ДНЕВНИК -->
+            <div id="diary-tab" class="tab-content active space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">🌸 Женский календарь</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">День цикла</label>
+                            <input type="number" id="cycle-day" min="1" max="40" value="1" oninput="updateCyclePhaseDisplay()" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Фаза</label>
+                            <div id="phase-badge" class="p-2 rounded-xl text-xs font-bold text-center bg-emerald-50 text-emerald-700 border border-emerald-100 mt-0.5">Начало цикла</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">📝 Новая запись</h2>
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label>
+                            <input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label>
+                            <input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Продукты (выберите хотя бы один):</label>
+                        <div id="products-checkboxes" class="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-2 border border-slate-100 rounded-xl bg-slate-50 text-xs"></div>
+                    </div>
+                    <div class="space-y-2 border-t border-slate-100 pt-3">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Оценка симптомов (0–5):</label>
+                        <div id="symptoms-sliders-container"></div>
+                    </div>
+                    <button onclick="saveLog()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">Сохранить запись</button>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Последние записи</h3>
+                        <button onclick="clearAllLogs()" class="text-[10px] text-red-500 hover:text-red-700 underline">Очистить всё</button>
+                    </div>
+                    <div id="history-container" class="space-y-2 text-xs text-slate-500"></div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 2: СПРАВОЧНИК ПРОДУКТОВ -->
+            <div id="directory-tab" class="tab-content space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">📚 Справочник</h2>
+                    <input type="text" id="search-prod" oninput="renderDirectory()" placeholder="Поиск продукта..." class="w-full p-2.5 mb-3 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-emerald-500">
+                    <div id="directory-list" class="space-y-1.5 max-h-96 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 3: АНАЛИТИКА -->
+            <div id="analytics-tab" class="tab-content space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">📅 Прогноз по циклу</h2>
+                    <div id="cycle-forecast" class="p-3 rounded-xl text-xs"></div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">🔍 Анализ совпадений (48ч)</h2>
+                    <button onclick="runAdvancedAnalytics()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md">Найти скрытые триггеры</button>
+                    <div id="analytics-results" class="mt-4 space-y-2"><p class="text-xs text-slate-400 text-center py-4">Нажмите кнопку для расчёта.</p></div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl flex justify-around p-2 z-40">
+            <button data-tab="diary" class="tab-button flex flex-col items-center p-1.5 text-emerald-600 font-bold text-[10px] gap-1 w-1/3"><span class="text-lg">📝</span><span>Дневник</span></button>
+            <button data-tab="directory" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-1 w-1/3"><span class="text-lg">📚</span><span>Продукты</span></button>
+            <button data-tab="analytics" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-1 w-1/3"><span class="text-lg">📊</span><span>Анализ</span></button>
+        </nav>
+
+        <!-- Футер с реквизитами (можно добавить свои) -->
+        <footer class="text-center text-[10px] text-slate-400 py-4 border-t border-slate-100 mt-4 max-w-md mx-auto">
+            <p>© 2026 Allevio — дневник самонаблюдения</p>
+            <p>Разработчик: Кристина Гарафиева, самозанятая</p>
+            <p>ИНН: 123456789012 (замените на свой)</p>
+            <p>По вопросам: ваш.email@example.com</p>
+            <p>Данные хранятся локально на вашем устройстве.</p>
+        </footer>
+    </div>
+
+    <script>
+        // ---------- БАЗА ДАННЫХ ПРОДУКТОВ ----------
+        const productsDB = [
+            { name: "Авокадо", level: 1 },
+            { name: "Баклажаны", level: 2 },
+            { name: "Бананы / Сливы", level: 1 },
+            { name: "Брокколи / Цветная капуста", level: 0 },
+            { name: "Выдержанный сыр (Пармезан)", level: 2 },
+            { name: "Грибы шампиньоны", level: 1 },
+            { name: "Зелень (укроп, петрушка)", level: 0 },
+            { name: "Йогурт без добавок", level: 1 },
+            { name: "Картофель", level: 0 },
+            { name: "Квашеная капуста", level: 2 },
+            { name: "Кефир / Сметана", level: 2 },
+            { name: "Клубника / Цитрусовые", level: 2 },
+            { name: "Консервированная рыба", level: 2 },
+            { name: "Красное вино / Пиво", level: 2 },
+            { name: "Куриное яйцо", level: 1 },
+            { name: "Огурцы / Кабачки", level: 0 },
+            { name: "Орехи грецкие", level: 1 },
+            { name: "Рис / Гречка / Овсянка", level: 0 },
+            { name: "Свежая курица / Индейка", level: 0 },
+            { name: "Свежая рыба", level: 0 },
+            { name: "Сливочное / Оливковое масло", level: 0 },
+            { name: "Сосиски / Копчености", level: 2 },
+            { name: "Творог свежий", level: 0 },
+            { name: "Томаты", level: 2 },
+            { name: "Уксус / Майонез", level: 2 },
+            { name: "Шоколад / Какао", level: 2 },
+            { name: "Шпинат", level: 2 },
+            { name: "Яблоки / Груши", level: 0 }
+        ].sort((a,b) => a.name.localeCompare(b.name));
+
+        const symptomsList = [
+            { id: "headache", name: "🧠 Тяжесть в голове" },
+            { id: "rash", name: "🔴 Покраснение кожи" },
+            { id: "fatigue", name: "🔋 Упадок сил" },
+            { id: "heart", name: "💓 Учащенный пульс" },
+            { id: "edema", name: "💧 Отёки" },
+            { id: "nose", name: "👃 Заложенность носа" },
+            { id: "bloating", name: "💨 Вздутие живота" }
+        ];
+
+        let userLogs = JSON.parse(localStorage.getItem('allevio_logs')) || [];
+
+        // Юридический экран
+        window.toggleLegalButton = function() {
+            const chk = document.getElementById('legal-checkbox');
+            const btn = document.getElementById('legal-submit-btn');
+            if (chk.checked) {
+                btn.disabled = false;
+                btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed";
+            }
+        };
+
+        window.acceptLegal = function() {
+            localStorage.setItem('allevio_legal_accepted', 'true');
+            document.getElementById('legal-modal').style.display = 'none';
+            const app = document.getElementById('app-body');
+            app.classList.remove('opacity-30', 'pointer-events-none');
+            renderDiaryForms();
+            renderHistory();
+            renderDirectory();
+            updateCyclePhaseDisplay();
+        };
+
+        function getCyclePhase(day) {
+            if (day >= 1 && day <= 5) return { name: "Начало цикла", risk: "Средняя чувствительность", color: "bg-red-50 text-red-700 border-red-200" };
+            if (day >= 6 && day <= 11) return { name: "Фаза высокой энергии", risk: "Комфортный баланс", color: "bg-green-50 text-green-700 border-green-200" };
+            if (day >= 12 && day <= 15) return { name: "Овуляция", risk: "Повышенная восприимчивость", color: "bg-amber-50 text-amber-700 border-amber-200" };
+            if (day >= 16 && day <= 23) return { name: "Стабильный период", risk: "Комфортный баланс", color: "bg-green-50 text-green-700 border-green-200" };
+            return { name: "Премменструальная фаза", risk: "Максимальная чувствительность", color: "bg-rose-100 text-rose-800 border-rose-300" };
+        }
+
+        window.updateCyclePhaseDisplay = function() {
+            const day = parseInt(document.getElementById('cycle-day').value) || 1;
+            const phase = getCyclePhase(day);
+            const badge = document.getElementById('phase-badge');
+            badge.innerText = phase.name;
+            badge.className = `p-2 rounded-xl text-xs font-bold text-center border mt-0.5 ${phase.color}`;
+            renderCycleForecast();
+        };
+
+        window.renderDiaryForms = function() {
+            const containerProducts = document.getElementById('products-checkboxes');
+            containerProducts.innerHTML = productsDB.map(p => `
+                <label class="flex items-center gap-1.5 p-1.5 bg-white rounded-xl border border-slate-100 cursor-pointer select-none">
+                    <input type="checkbox" value="${p.name}" class="product-checkbox accent-emerald-600 rounded">
+                    <span class="truncate text-xs">${p.name}</span>
+                </label>
+            `).join('');
+
+            const containerSymptoms = document.getElementById('symptoms-sliders-container');
+            containerSymptoms.innerHTML = symptomsList.map(s => `
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <div class="flex justify-between items-center text-xs font-medium mb-1">
+                        <span>${s.name}</span>
+                        <span id="val-${s.id}" class="font-bold text-slate-400">0</span>
+                    </div>
+                    <input type="range" min="0" max="5" value="0" data-symptom="${s.id}" oninput="document.getElementById('val-${s.id}').innerText = this.value;" class="w-full accent-emerald-600 h-1 bg-slate-200 rounded-lg cursor-pointer">
+                </div>
+            `).join('');
+        };
+
+        window.saveLog = function() {
+            const date = document.getElementById('log-date').value;
+            const time = document.getElementById('log-time').value;
+            const cycleDay = parseInt(document.getElementById('cycle-day').value) || 1;
+            if (!date) { alert('Укажите дату'); return; }
+            const checkedProducts = Array.from(document.querySelectorAll('#products-checkboxes input:checked')).map(el => el.value);
+            if (checkedProducts.length === 0) { alert('Выберите хотя бы один продукт'); return; }
+            const symptoms = {};
+            document.querySelectorAll('input[data-symptom]').forEach(el => {
+                symptoms[el.getAttribute('data-symptom')] = parseInt(el.value);
+            });
+            userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
+            userLogs.push({ date, time, cycleDay, products: checkedProducts, symptoms });
+            localStorage.setItem('allevio_logs', JSON.stringify(userLogs));
+            document.querySelectorAll('#products-checkboxes input:checked').forEach(el => el.checked = false);
+            document.querySelectorAll('input[data-symptom]').forEach(el => { el.value = 0; const id = el.getAttribute('data-symptom'); document.getElementById(`val-${id}`).innerText = '0'; });
+            renderHistory();
+            alert('Запись сохранена');
+        };
+
+        window.renderHistory = function() {
+            const container = document.getElementById('history-container');
+            if (userLogs.length === 0) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет записей</div>'; return; }
+            const sorted = [...userLogs].sort((a,b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+            container.innerHTML = sorted.slice(0,5).map((log, idx) => {
+                const symps = Object.entries(log.symptoms).filter(([k,v]) => v > 0).map(([k,v]) => `${symptomsList.find(s=>s.id===k)?.name.split(' ')[0] || k} (${v}/5)`);
+                return `
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1 relative group">
+                        <div class="flex justify-between items-center">
+                            <div class="font-bold text-[10px] text-slate-400">📅 ${log.date} | ⏰ ${log.time}</div>
+                            <button onclick="deleteLog('${log.date}', '${log.time}')" class="text-red-500 text-[11px] opacity-70 hover:opacity-100">🗑️</button>
+                        </div>
+                        <div class="text-slate-700 text-xs">🍎 Рацион: ${log.products.length ? log.products.join(', ') : '—'}</div>
+                        <div class="text-amber-600 text-xs">⚡ Реакции: ${symps.length ? symps.join(', ') : 'нет'}</div>
+                        <div class="text-teal-600 text-[10px]">🌸 ${log.cycleDay} день цикла</div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.deleteLog = function(date, time) {
+            userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
+            localStorage.setItem('allevio_logs', JSON.stringify(userLogs));
+            renderHistory();
+        };
+
+        window.clearAllLogs = function() {
+            if (confirm('Удалить все записи без возможности восстановления?')) {
+                userLogs = [];
+                localStorage.setItem('allevio_logs', JSON.stringify(userLogs));
+                renderHistory();
+            }
+        };
+
+        window.renderDirectory = function() {
+            const search = document.getElementById('search-prod')?.value.toLowerCase() || '';
+            const container = document.getElementById('directory-list');
+            const badges = [
+                { txt: '🟢 Мягкий рацион', bg: 'bg-green-50 text-green-700 border-green-200' },
+                { txt: '🟡 Умеренно', bg: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+                { txt: '🔴 Высокая нагрузка', bg: 'bg-red-50 text-red-700 border-red-200' }
+            ];
+            const filtered = productsDB.filter(p => p.name.toLowerCase().includes(search));
+            container.innerHTML = filtered.map(p => `
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                    <span class="font-semibold">${p.name}</span>
+                    <span class="px-2 py-0.5 border rounded-full text-[10px] font-bold ${badges[p.level].bg}">${badges[p.level].txt}</span>
+                </div>
+            `).join('');
+        };
+
+        window.renderCycleForecast = function() {
+            const day = parseInt(document.getElementById('cycle-day').value) || 1;
+            const phase = getCyclePhase(day);
+            const container = document.getElementById('cycle-forecast');
+            let advice = "", colorClass = "";
+            if (phase.name.includes("Овуляция") || phase.name.includes("Премменструальная")) {
+                advice = "⚠️ В этой фазе чувствительность повышена. Отдавайте предпочтение продуктам из «зелёной» группы.";
+                colorClass = "bg-amber-50 border-amber-200 text-amber-900";
+            } else {
+                advice = "✅ Организм стабилен. Можно постепенно вводить новые продукты, следя за реакцией.";
+                colorClass = "bg-green-50 border-green-200 text-green-900";
+            }
+            container.className = `p-3 rounded-xl text-xs ${colorClass}`;
+            container.innerHTML = `<strong>${phase.name}</strong><br><span class="opacity-75">Чувствительность: ${phase.risk}</span><p class="mt-2 font-medium">${advice}</p>`;
+        };
+
+        window.runAdvancedAnalytics = function() {
+            const container = document.getElementById('analytics-results');
+            if (userLogs.length < 2) {
+                container.innerHTML = '<div class="p-3 bg-amber-50 text-amber-800 rounded-xl text-xs text-center">📌 Добавьте хотя бы 2–3 дня записей для анализа.</div>';
+                return;
+            }
+            const productTriggerScore = {};
+            userLogs.forEach(targetLog => {
+                const maxSymptom = Math.max(...Object.values(targetLog.symptoms));
+                if (maxSymptom >= 2) {
+                    const targetDate = new Date(targetLog.date);
+                    userLogs.forEach(historyLog => {
+                        const historyDate = new Date(historyLog.date);
+                        const diffDays = (targetDate - historyDate) / (1000 * 60 * 60 * 24);
+                        if (diffDays >= 0 && diffDays <= 2) {
+                            historyLog.products.forEach(prod => {
+                                if (!productTriggerScore[prod]) productTriggerScore[prod] = { weight: 0, count: 0 };
+                                productTriggerScore[prod].weight += maxSymptom;
+                                productTriggerScore[prod].count++;
+                            });
+                        }
+                    });
+                }
+            });
+            const suspects = [];
+            for (let name in productTriggerScore) {
+                let score = Math.min(10, Math.round((productTriggerScore[name].weight / (userLogs.length * 2)) * 10));
+                if (score > 0) suspects.push({ name, score });
+            }
+            suspects.sort((a,b) => b.score - a.score);
+            if (suspects.length === 0) {
+                container.innerHTML = '<div class="text-xs text-green-600 text-center py-2">✅ Явных пищевых триггеров за 48 часов не обнаружено.</div>';
+                return;
+            }
+            container.innerHTML = `
+                <div class="text-[11px] font-bold text-teal-900 mb-2">🔎 Потенциальные триггеры (совпадения с симптомами в течение 48ч):</div>
+                <div class="space-y-1.5">
+                    ${suspects.slice(0,5).map(s => `
+                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
+                            <span class="text-xs font-medium">${s.name}</span>
+                            <span class="text-xs font-bold text-amber-600">индекс ${s.score}/10</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2">*Анализ показывает частоту сочетаний, а не гарантированную причину.</p>
+            `;
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const activeTab = document.getElementById(`${tabId}-tab`);
+            if (activeTab) activeTab.classList.add('active');
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('text-emerald-600');
+                btn.classList.add('text-slate-400');
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.remove('text-slate-400');
+                    btn.classList.add('text-emerald-600');
+                }
+            });
+            if (tabId === 'analytics') renderCycleForecast();
+        }
+
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = btn.getAttribute('data-tab');
+                if (tab) switchTab(tab);
+            });
+        });
+
+        (function init() {
+            const hasAccepted = localStorage.getItem('allevio_legal_accepted');
+            if (hasAccepted === 'true') {
+                document.getElementById('legal-modal').style.display = 'none';
+                document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
+                renderDiaryForms();
+                renderHistory();
+                renderDirectory();
+                updateCyclePhaseDisplay();
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('log-date').value = today;
+                const now = new Date();
+                document.getElementById('log-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            }
+        })();
+    </script>
+</body>
+</html>
