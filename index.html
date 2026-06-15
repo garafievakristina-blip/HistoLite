@@ -78,7 +78,7 @@
                     <div class="mb-4"><label class="text-xs font-bold">Выберите продукты из списка:</label><div id="products-checkboxes" class="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-2 border rounded-xl bg-slate-50 text-xs"></div></div>
                     <div class="mb-4"><label class="text-xs font-bold">Или введите свои продукты (через запятую):</label><input type="text" id="custom-products" placeholder="кинза, тофу, батат" class="w-full p-2 border rounded-xl text-sm bg-slate-50"></div>
                     
-                    <!-- НОВОЕ ПОЛЕ ДЛЯ ЛЕКАРСТВ -->
+                    <!-- ПОЛЕ ДЛЯ ЛЕКАРСТВ -->
                     <div class="mb-4"><label class="text-xs font-bold">💊 Принятые лекарства (через запятую):</label><input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border rounded-xl text-sm bg-slate-50"></div>
                     
                     <div class="space-y-2 border-t pt-3"><label class="text-xs font-bold">Оценка симптомов (0–5):</label><div id="symptoms-sliders-container"></div></div>
@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <!-- СПРАВОЧНИК (без изменений) -->
+            <!-- СПРАВОЧНИК -->
             <div id="directory-tab" class="tab-content space-y-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm">
                     <h2 class="text-base font-bold mb-1">📚 Справочник продуктов</h2>
@@ -121,7 +121,7 @@
     </div>
 
     <script>
-        // ----- БАЗА ПРОДУКТОВ (50+) -----
+        // ----- БАЗА ПРОДУКТОВ -----
         const productsDB = [
             { name: "Авокадо", level: 1 }, { name: "Баклажаны", level: 2 }, { name: "Брокколи / Цв. капуста", level: 0 },
             { name: "Зелень (укроп, петрушка)", level: 0 }, { name: "Картофель", level: 0 }, { name: "Квашеная капуста", level: 2 },
@@ -156,15 +156,19 @@
         if (!savedCycleDay) savedCycleDay = 1;
         else savedCycleDay = parseInt(savedCycleDay);
 
+        // ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ФАЗЫ ==========
         function getCyclePhaseName(day) {
-            if (day <= 5) return "Начало цикла";
-            if (day <= 11) return "Фолликулярная";
-            if (day <= 15) return "Овуляция";
-            if (day <= 23) return "Лютеиновая";
-            return "ПМС";
+            day = parseInt(day);
+            if (isNaN(day)) return "Ошибка";
+            if (day >= 1 && day <= 5) return "Начало цикла";
+            if (day >= 6 && day <= 11) return "Фолликулярная";
+            if (day >= 12 && day <= 15) return "Овуляция";
+            if (day >= 16 && day <= 23) return "Лютеиновая";
+            if (day >= 24 && day <= 40) return "ПМС";
+            return "Вне диапазона";
         }
 
-        // ---- ОБЩИЕ ФУНКЦИИ (рендер, сохранение, история) ----
+        // ---- ОБЩИЕ ФУНКЦИИ ----
         window.toggleLegalButton = function() {
             const chk = document.getElementById('legal-checkbox');
             const btn = document.getElementById('legal-submit-btn');
@@ -206,7 +210,6 @@
             const customRaw = document.getElementById('custom-products').value;
             let custom = customRaw.trim() ? customRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
             let allProducts = [...new Set([...checked, ...custom])];
-            // Лекарства
             const medsRaw = document.getElementById('medications').value;
             let medications = medsRaw.trim() ? medsRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
             if (allProducts.length === 0 && medications.length === 0) { alert('Выберите/введите продукты или лекарства'); return; }
@@ -240,7 +243,6 @@
             const filtered = productsDB.filter(p=>p.name.toLowerCase().includes(search));
             container.innerHTML = filtered.map(p=>`<div class="flex justify-between p-2 bg-slate-50 rounded-xl"><span>${p.name}</span><span class="text-[10px]">${badges[p.level]}</span></div>`).join('');
         };
-        // АНАЛИТИКА 48ч — ТЕПЕРЬ УЧИТЫВАЕТ И ЛЕКАРСТВА
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
             if (userLogs.length<2) { container.innerHTML = '<div class="text-amber-800 text-xs">Добавьте записи за 2+ дня</div>'; return; }
@@ -252,13 +254,11 @@
                     userLogs.forEach(historyLog => {
                         const diffDays = (targetDate - new Date(historyLog.date))/(1000*3600*24);
                         if (diffDays>=0 && diffDays<=2) {
-                            // Продукты
                             historyLog.products.forEach(item => {
                                 if(!triggerScore[item]) triggerScore[item]={weight:0,count:0};
                                 triggerScore[item].weight+=maxSymptom;
                                 triggerScore[item].count++;
                             });
-                            // Лекарства
                             if(historyLog.medications && historyLog.medications.length) {
                                 historyLog.medications.forEach(med => {
                                     if(!triggerScore[med]) triggerScore[med]={weight:0,count:0};
@@ -272,9 +272,8 @@
             });
             const suspects = Object.entries(triggerScore).map(([name,data])=>({name, score:Math.min(10,Math.round((data.weight/(userLogs.length*2))*10))})).filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
             if(!suspects.length) { container.innerHTML = '<div class="text-green-600">✅ Явных триггеров (включая лекарства) не найдено</div>'; return; }
-            container.innerHTML = `<div class="font-bold text-teal-900">🔎 Потенциальные триггеры/помощники (48ч):</div>${suspects.slice(0,5).map(s=>`<div>${s.name} — индекс ${s.score}/10</div>`).join('')}<p class="text-[10px] mt-2">*частота совпадений, не гарантирует причину. Для лекарств высокий индекс может означать связь с симптомами.</p>`;
+            container.innerHTML = `<div class="font-bold text-teal-900">🔎 Потенциальные триггеры/помощники (48ч):</div>${suspects.slice(0,5).map(s=>`<div>${s.name} — индекс ${s.score}/10</div>`).join('')}<p class="text-[10px] mt-2">*частота совпадений, не гарантирует причину.</p>`;
         };
-        // Аналитика по фазам цикла (без изменений, но можно потом расширить учётом лекарств)
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center p-4">Нет данных</div>'; return; }
