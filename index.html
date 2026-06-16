@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<script src="https://unpkg.com/html5-qrcode"></script>
     <title>ГистЛайт — дневник гистамина и цикла</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -114,6 +115,20 @@
                         <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
                         <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                     </div>
+                   <!-- Кнопка сканирования -->
+<div class="mb-4">
+    <button onclick="scanBarcode()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">
+        📷 Сканировать штрих-код
+    </button>
+</div>
+
+<!-- Контейнер для сканера (скрыт по умолчанию) -->
+<div id="scanner-container" style="display: none; margin-bottom: 15px;">
+    <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
+    <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">
+        ❌ Закрыть сканер
+    </button>
+</div>
                     <div class="space-y-2 border-t border-slate-100 pt-3">
                         <label class="block text-xs font-bold text-slate-600 mb-1">Оценка симптомов (0–5):</label>
                         <div id="symptoms-sliders-container"></div>
@@ -434,6 +449,116 @@
                 cycleInput.addEventListener('change',()=>{localStorage.setItem('histolite_cycle_day', cycleInput.value);});
             }
         })();
+        // ----- СКАНИРОВАНИЕ ШТРИХ-КОДОВ -----
+let html5QrCode = null;
+
+// Запуск сканера
+function scanBarcode() {
+    const scannerContainer = document.getElementById('scanner-container');
+    if (!scannerContainer) return;
+    
+    scannerContainer.style.display = 'block';
+    
+    if (html5QrCode) {
+        return;
+    }
+    
+    try {
+        html5QrCode = new Html5Qrcode("qr-reader");
+        
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        };
+        
+        html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            onScanError
+        );
+    } catch (err) {
+        console.error('Ошибка запуска сканера:', err);
+        alert('Не удалось запустить камеру. Проверьте разрешения.');
+    }
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    stopScanner();
+    findProductByBarcode(decodedText);
+}
+
+function onScanError(err) {
+    // Игнорируем ошибки
+}
+
+function stopScanner() {
+    if (html5QrCode) {
+        try {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                html5QrCode = null;
+                document.getElementById('scanner-container').style.display = 'none';
+            }).catch(err => {
+                console.error('Ошибка остановки сканера:', err);
+            });
+        } catch (err) {
+            console.error('Ошибка:', err);
+        }
+    } else {
+        document.getElementById('scanner-container').style.display = 'none';
+    }
+}
+
+function findProductByBarcode(barcode) {
+    const btn = document.querySelector('button[onclick="scanBarcode()"]');
+    const originalText = btn ? btn.innerText : '📷 Сканировать штрих-код';
+    if (btn) {
+        btn.innerText = '⏳ Ищем продукт...';
+        btn.disabled = true;
+    }
+
+    fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`)
+        .then(response => response.json())
+        .then(data => {
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+
+            if (data.status === 1 && data.product) {
+                const product = data.product;
+                let productName = product.product_name_ru || product.product_name || 'Неизвестный продукт';
+                
+                const customInput = document.getElementById('custom-products');
+                if (customInput) {
+                    if (customInput.value.trim()) {
+                        customInput.value += ', ' + productName;
+                    } else {
+                        customInput.value = productName;
+                    }
+                }
+                
+                alert(`✅ Найден продукт: ${productName}\nШтрих-код: ${barcode}`);
+                
+                if (product.ingredients_text_ru || product.ingredients_text) {
+                    const ingredients = product.ingredients_text_ru || product.ingredients_text;
+                    console.log('Состав:', ingredients);
+                }
+            } else {
+                alert(`❌ Продукт с кодом ${barcode} не найден в базе. Вы можете ввести название вручную.`);
+            }
+        })
+        .catch(error => {
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+            console.error('Ошибка при запросе к Open Food Facts:', error);
+            alert('❌ Ошибка соединения с базой продуктов. Попробуйте позже.');
+        });
+}
     </script>
 </body>
 </html>
