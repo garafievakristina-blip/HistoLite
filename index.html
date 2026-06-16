@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<script src="https://unpkg.com/html5-qrcode"></script>
     <title>ГистЛайт — дневник гистамина и цикла</title>
+    <!-- Библиотека для сканера штрих-кодов -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,7 +20,7 @@
         }
     </script>
     <style>
-        /* Стили для вкладок */
+        /* Общие стили */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         ::-webkit-scrollbar { width: 4px; }
@@ -30,7 +32,7 @@
         .load-bar { height: 20px; border-radius: 8px; background-color: #e2e8f0; flex: 1; overflow: hidden; }
         .load-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.3s; }
 
-        /* НОВЫЙ CSS — защита от случайного сдвига ползунков при скролле */
+        /* Защита от случайного сдвига слайдеров при скролле */
         input[type="range"] {
             touch-action: pan-y !important;
             -webkit-user-select: none;
@@ -42,16 +44,16 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
 
-    <!-- ЮРИДИЧЕСКИЙ ЭКРАН (исправлен) -->
+    <!-- ЮРИДИЧЕСКИЙ ЭКРАН -->
     <div id="legal-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
             <div class="text-center text-3xl mb-2">⚖️</div>
             <h2 class="text-base font-bold text-center text-slate-800 mb-3">Пользовательское соглашение</h2>
             <div class="overflow-y-auto text-xs text-slate-500 space-y-2.5 pr-1 mb-4 flex-1 border-b border-t border-slate-100 py-3 leading-relaxed">
                 <p><strong>1. Не является медицинским сервисом.</strong> Данное приложение («ГистЛайт») представляет собой исключительно бытовой электронный дневник для личного самонаблюдения за рационом питания, приёмом лекарств и общим самочувствием.</p>
-                <p><strong>2. Отказ от постановки диагнозов.</strong> Сервис, его алгоритмы, справочные материалы и автоматические расчеты совпадений не являются медицинскими рекомендациями, методами диагностики, профилактики или лечения каких-либо заболеваний (включая аллергию или непереносимости).</p>
-                <p><strong>3. Необходимость консультации специалиста.</strong> Любые выводы калькулятора совпадений носят сугубо ознакомительный характер. При любых изменениях в самочувствии, подозрении на заболевания или перед изменением диеты вы обязаны обратиться к квалифицированному врачу.</p>
-                <p><strong>4. Ограничение ответственности.</strong> Разработчик платформы не несет ответственности за любые прямые или косвенные последствия, возникшие в результате использования данного дневника или интерпретации его данных пользователем.</p>
+                <p><strong>2. Отказ от постановки диагнозов.</strong> Сервис не является медицинской рекомендацией.</p>
+                <p><strong>3. Необходимость консультации специалиста.</strong> Любые выводы носят ознакомительный характер. При изменениях самочувствия обратитесь к врачу.</p>
+                <p><strong>4. Ограничение ответственности.</strong> Разработчик не несет ответственности за последствия использования дневника.</p>
             </div>
             <div class="space-y-4">
                 <label class="flex items-start gap-2.5 cursor-pointer select-none">
@@ -67,7 +69,7 @@
         </div>
     </div>
 
-    <!-- ОСНОВНОЙ ИНТЕРФЕЙС (заблокирован до согласия) -->
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
     <div id="app-body" class="opacity-30 pointer-events-none">
         <header class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 shadow-md sticky top-0 z-40">
             <h1 class="text-xl font-bold text-center">ГистЛайт</h1>
@@ -115,20 +117,20 @@
                         <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
                         <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                     </div>
-                   <!-- Кнопка сканирования -->
-<div class="mb-4">
-    <button onclick="scanBarcode()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">
-        📷 Сканировать штрих-код
-    </button>
-</div>
 
-<!-- Контейнер для сканера (скрыт по умолчанию) -->
-<div id="scanner-container" style="display: none; margin-bottom: 15px;">
-    <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
-    <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">
-        ❌ Закрыть сканер
-    </button>
-</div>
+                    <!-- Кнопка сканирования и контейнер -->
+                    <div class="mb-4">
+                        <button onclick="scanBarcode()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">
+                            📷 Сканировать штрих-код
+                        </button>
+                    </div>
+                    <div id="scanner-container" style="display: none; margin-bottom: 15px;">
+                        <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
+                        <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">
+                            ❌ Закрыть сканер
+                        </button>
+                    </div>
+
                     <div class="space-y-2 border-t border-slate-100 pt-3">
                         <label class="block text-xs font-bold text-slate-600 mb-1">Оценка симптомов (0–5):</label>
                         <div id="symptoms-sliders-container"></div>
@@ -183,7 +185,6 @@
             <button data-tab="analytics" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-1 w-1/3"><span class="text-lg">📊</span><span>Анализ</span></button>
         </nav>
 
-        <!-- Футер с реквизитами (фамилия убрана) -->
         <footer class="text-center text-[10px] text-slate-400 py-4 border-t border-slate-100 mt-4 max-w-md mx-auto">
             <p>© 2026 ГистЛайт — дневник самонаблюдения</p>
             <p>Разработчик: самозанятая | ИНН: 123456789012</p>
@@ -224,12 +225,11 @@
         ];
 
         let userLogs = JSON.parse(localStorage.getItem('histolite_logs')) || [];
-
-        // День цикла сохраняем
         let savedCycleDay = localStorage.getItem('histolite_cycle_day');
         if (!savedCycleDay) savedCycleDay = 1;
         else savedCycleDay = parseInt(savedCycleDay);
 
+        // Функции для цикла
         function getCyclePhaseName(day) {
             day = parseInt(day);
             if (isNaN(day)) return "Ошибка";
@@ -241,13 +241,13 @@
             return "Вне диапазона";
         }
 
-        // ---- ЮРИДИЧЕСКИЙ ЭКРАН ----
+        // ---- ЮРИДИЧЕСКИЙ ЭКРАН (ИСПРАВЛЕН) ----
         window.toggleLegalButton = function() {
             const chk = document.getElementById('legal-checkbox');
             const btn = document.getElementById('legal-submit-btn');
             if (chk.checked) {
                 btn.disabled = false;
-                btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md";
+                btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md shadow-emerald-100";
             } else {
                 btn.disabled = true;
                 btn.className = "w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed";
@@ -276,6 +276,7 @@
             badge.className = `p-2 rounded-xl text-xs font-bold text-center border ${color}`;
         }
 
+        // ---- ОТРИСОВКА ФОРМ ----
         window.renderDiaryForms = function() {
             const container = document.getElementById('products-checkboxes');
             container.innerHTML = productsDB.map(p => `<label class="flex items-center gap-1.5 p-1.5 bg-white rounded-xl border border-slate-100 cursor-pointer select-none"><input type="checkbox" value="${p.name}" class="product-checkbox accent-emerald-600 rounded"><span class="truncate text-xs">${p.name}</span></label>`).join('');
@@ -283,6 +284,7 @@
             sympCont.innerHTML = symptomsList.map(s => `<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><div class="flex justify-between items-center text-xs font-medium mb-1"><span>${s.name}</span><span id="val-${s.id}" class="font-bold text-slate-400">0</span></div><input type="range" min="0" max="5" value="0" data-symptom="${s.id}" oninput="document.getElementById('val-${s.id}').innerText=this.value;" class="w-full accent-emerald-600 h-1 bg-slate-200 rounded-lg cursor-pointer"></div>`).join('');
         };
 
+        // ---- СОХРАНЕНИЕ ЗАПИСИ ----
         window.saveLog = function() {
             const date = document.getElementById('log-date').value;
             const time = document.getElementById('log-time').value;
@@ -307,6 +309,7 @@
             renderHistory(); alert('Запись сохранена');
         };
 
+        // ---- ИСТОРИЯ ----
         window.renderHistory = function() {
             const container = document.getElementById('history-container');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет записей</div>'; return; }
@@ -320,6 +323,8 @@
 
         window.deleteLog = function(date,time) { userLogs = userLogs.filter(l=>!(l.date===date && l.time===time)); localStorage.setItem('histolite_logs',JSON.stringify(userLogs)); renderHistory(); };
         window.clearAllLogs = function() { if(confirm('Удалить все записи?')){ userLogs=[]; localStorage.setItem('histolite_logs','[]'); renderHistory(); } };
+
+        // ---- СПРАВОЧНИК ----
         window.renderDirectory = function() {
             const search = document.getElementById('search-prod')?.value.toLowerCase()||'';
             const container = document.getElementById('directory-list');
@@ -327,6 +332,8 @@
             const filtered = productsDB.filter(p=>p.name.toLowerCase().includes(search));
             container.innerHTML = filtered.map(p=>`<div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs"><span class="font-semibold">${p.name}</span><span class="px-2 py-0.5 border rounded-full text-[10px] font-bold ${badges[p.level]=='🟢 Мягкий'?'bg-green-50 text-green-700 border-green-200':badges[p.level]=='🟡 Умеренно'?'bg-yellow-50 text-yellow-700 border-yellow-200':'bg-red-50 text-red-700 border-red-200'}">${badges[p.level]}</span></div>`).join('');
         };
+
+        // ---- АНАЛИТИКА СОВПАДЕНИЙ ----
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
             if (userLogs.length<2) { container.innerHTML = '<div class="p-3 bg-amber-50 text-amber-800 text-xs rounded-xl border border-amber-200 text-center">📌 Добавьте записи за 2+ дня</div>'; return; }
@@ -358,6 +365,8 @@
             if(!suspects.length) { container.innerHTML = '<div class="text-xs text-green-600 text-center py-2">✅ Явных триггеров (включая лекарства) не найдено</div>'; return; }
             container.innerHTML = `<div class="text-[11px] font-bold text-teal-900 mb-2">🔎 Потенциальные триггеры/помощники (48ч):</div><div class="space-y-1.5">${suspects.slice(0,5).map(s=>`<div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100"><span class="text-xs font-medium">${s.name}</span><span class="text-xs font-bold text-amber-600">индекс ${s.score}/10</span></div>`).join('')}</div><p class="text-[10px] text-slate-400 mt-2">*Анализ показывает частоту совпадений, а не гарантированную причину.</p>`;
         };
+
+        // ---- АНАЛИТИКА ПО ЦИКЛУ ----
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет данных</div>'; return; }
@@ -383,6 +392,7 @@
             }
             container.innerHTML = html;
         }
+
         function renderCycleLoadCalendar() {
             const container = document.getElementById('cycle-load-calendar');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет данных</div>'; return; }
@@ -408,6 +418,8 @@
             }
             container.innerHTML = html;
         }
+
+        // ---- ЭКСПОРТ CSV ----
         window.exportToCSV = function() {
             if(!userLogs.length) { alert('Нет записей'); return; }
             let rows = [['Дата','Время','День цикла','Фаза','Продукты','Лекарства','Симптомы (0-5)']];
@@ -425,6 +437,8 @@
             link.click();
             URL.revokeObjectURL(link.href);
         };
+
+        // ---- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ----
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
             document.getElementById(`${tabId}-tab`).classList.add('active');
@@ -432,206 +446,143 @@
             if(tabId === 'analytics') { renderCycleSymptomAnalysis(); renderCycleLoadCalendar(); }
         }
         document.querySelectorAll('.tab-button').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.getAttribute('data-tab'))));
+
+        // ---- СКАНЕР ШТРИХ-КОДОВ И ГИСТАМИНОВЫЙ СТАТУС ----
+        let html5QrCode = null;
+
+        function scanBarcode() {
+            const scannerContainer = document.getElementById('scanner-container');
+            if (!scannerContainer) return;
+            scannerContainer.style.display = 'block';
+            if (html5QrCode) return;
+            try {
+                html5QrCode = new Html5Qrcode("qr-reader");
+                const config = { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
+                html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanError);
+            } catch (err) {
+                console.error('Ошибка запуска сканера:', err);
+                alert('Не удалось запустить камеру. Проверьте разрешения.');
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            stopScanner();
+            findProductByBarcode(decodedText);
+        }
+
+        function onScanError(err) { /* игнорируем */ }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                try {
+                    html5QrCode.stop().then(() => {
+                        html5QrCode.clear();
+                        html5QrCode = null;
+                        document.getElementById('scanner-container').style.display = 'none';
+                    }).catch(err => console.error('Ошибка остановки сканера:', err));
+                } catch (err) { console.error('Ошибка:', err); }
+            } else {
+                document.getElementById('scanner-container').style.display = 'none';
+            }
+        }
+
+        // ---- Поиск продукта по штрих-коду с гистаминовым статусом ----
+        function findProductByBarcode(barcode) {
+            const btn = document.querySelector('button[onclick="scanBarcode()"]');
+            const originalText = btn ? btn.innerText : '📷 Сканировать штрих-код';
+            if (btn) {
+                btn.innerText = '⏳ Ищем продукт...';
+                btn.disabled = true;
+            }
+
+            const timeout = setTimeout(() => {
+                if (btn) {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+                alert('⏱️ Поиск продукта занял слишком много времени. Проверьте соединение или попробуйте позже.');
+            }, 10000);
+
+            fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`)
+                .then(response => response.json())
+                .then(data => {
+                    clearTimeout(timeout);
+                    if (btn) {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
+
+                    if (data.status === 1 && data.product) {
+                        const product = data.product;
+                        let productName = product.product_name_ru || product.product_name || 'Неизвестный продукт';
+                        
+                        const status = getHistamineStatus(product);
+                        showProductStatus(productName, status);
+
+                        const customInput = document.getElementById('custom-products');
+                        if (customInput) {
+                            if (customInput.value.trim()) {
+                                customInput.value += ', ' + productName;
+                            } else {
+                                customInput.value = productName;
+                            }
+                        }
+
+                        if (product.ingredients_text_ru || product.ingredients_text) {
+                            console.log('Состав:', product.ingredients_text_ru || product.ingredients_text);
+                        }
+                    } else {
+                        alert(`❌ Продукт с кодом ${barcode} не найден в базе. Вы можете ввести название вручную.`);
+                    }
+                })
+                .catch(error => {
+                    clearTimeout(timeout);
+                    if (btn) {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
+                    console.error('Ошибка при запросе к Open Food Facts:', error);
+                    alert('❌ Ошибка соединения с базой продуктов. Попробуйте позже.');
+                });
+        }
+
+        function getHistamineStatus(product) {
+            const tags = product.tags || [];
+            const lowHistamineTag = tags.find(tag => tag === 'en:Low histamine');
+            const highHistamineTag = tags.find(tag => tag === 'en:High histamine');
+
+            if (lowHistamineTag) {
+                return { level: 'low', label: '🟢 Низкий гистамин', description: 'Продукт с низким содержанием гистамина. Обычно безопасен.' };
+            } else if (highHistamineTag) {
+                return { level: 'high', label: '🔴 Высокий гистамин', description: 'Продукт с высоким содержанием гистамина. Рекомендуется избегать.' };
+            } else {
+                return { level: 'unknown', label: '🟡 Статус не определён', description: 'Проверьте состав продукта вручную или используйте справочник.' };
+            }
+        }
+
+        function showProductStatus(productName, status) {
+            const message = `📦 Продукт: ${productName}\n\n${status.label}\n${status.description}`;
+            alert(message);
+        }
+
+        // ---- ИНИЦИАЛИЗАЦИЯ ----
         (function init() {
             const accepted = localStorage.getItem('histolite_legal_accepted');
-            if(accepted === 'true') {
+            if (accepted === 'true') {
                 document.getElementById('legal-modal').style.display = 'none';
-                document.getElementById('app-body').classList.remove('opacity-30','pointer-events-none');
+                document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
                 renderDiaryForms(); renderHistory(); renderDirectory(); updateCyclePhaseDisplay();
                 const cycleInput = document.getElementById('cycle-day');
                 cycleInput.value = savedCycleDay;
-                cycleInput.addEventListener('change',()=>{localStorage.setItem('histolite_cycle_day', cycleInput.value); updateCyclePhaseDisplay();});
+                cycleInput.addEventListener('change', function() { localStorage.setItem('histolite_cycle_day', cycleInput.value); updateCyclePhaseDisplay(); });
             } else {
                 document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('log-time').value = new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+                document.getElementById('log-time').value = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
                 const cycleInput = document.getElementById('cycle-day');
                 cycleInput.value = savedCycleDay;
-                cycleInput.addEventListener('change',()=>{localStorage.setItem('histolite_cycle_day', cycleInput.value);});
+                cycleInput.addEventListener('change', function() { localStorage.setItem('histolite_cycle_day', cycleInput.value); });
             }
         })();
-        // ----- СКАНИРОВАНИЕ ШТРИХ-КОДОВ -----
-let html5QrCode = null;
-
-// Запуск сканера
-function scanBarcode() {
-    const scannerContainer = document.getElementById('scanner-container');
-    if (!scannerContainer) return;
-    
-    scannerContainer.style.display = 'block';
-    
-    if (html5QrCode) {
-        return;
-    }
-    
-    try {
-        html5QrCode = new Html5Qrcode("qr-reader");
-        
-        const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0
-        };
-        
-        html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            onScanSuccess,
-            onScanError
-        );
-    } catch (err) {
-        console.error('Ошибка запуска сканера:', err);
-        alert('Не удалось запустить камеру. Проверьте разрешения.');
-    }
-}
-
-function onScanSuccess(decodedText, decodedResult) {
-    stopScanner();
-    findProductByBarcode(decodedText);
-}
-
-function onScanError(err) {
-    // Игнорируем ошибки
-}
-
-function stopScanner() {
-    if (html5QrCode) {
-        try {
-            html5QrCode.stop().then(() => {
-                html5QrCode.clear();
-                html5QrCode = null;
-                document.getElementById('scanner-container').style.display = 'none';
-            }).catch(err => {
-                console.error('Ошибка остановки сканера:', err);
-            });
-        } catch (err) {
-            console.error('Ошибка:', err);
-        }
-    } else {
-        document.getElementById('scanner-container').style.display = 'none';
-    }
-}
-
-function findProductByBarcode(barcode) {
-    const btn = document.querySelector('button[onclick="scanBarcode()"]');
-    const originalText = btn ? btn.innerText : '📷 Сканировать штрих-код';
-    if (btn) {
-        btn.innerText = '⏳ Ищем продукт...';
-        btn.disabled = true;
-    }
-
-    // Таймаут на 10 секунд
-    const timeout = setTimeout(() => {
-        if (btn) {
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
-        alert('⏱️ Поиск продукта занял слишком много времени. Проверьте соединение или попробуйте позже.');
-    }, 10000);
-
-    fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`)
-        .then(response => response.json())
-        .then(data => {
-            clearTimeout(timeout);
-            if (btn) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-
-            if (data.status === 1 && data.product) {
-                const product = data.product;
-                let productName = product.product_name_ru || product.product_name || 'Неизвестный продукт';
-                
-                // ---- НОВАЯ ЛОГИКА: Определяем гистаминовый статус ----
-                const status = getHistamineStatus(product);
-                showProductStatus(productName, status);
-
-                const customInput = document.getElementById('custom-products');
-                if (customInput) {
-                    if (customInput.value.trim()) {
-                        customInput.value += ', ' + productName;
-                    } else {
-                        customInput.value = productName;
-                    }
-                }
-
-                if (product.ingredients_text_ru || product.ingredients_text) {
-                    console.log('Состав:', product.ingredients_text_ru || product.ingredients_text);
-                }
-            } else {
-                alert(`❌ Продукт с кодом ${barcode} не найден в базе. Вы можете ввести название вручную.`);
-            }
-        })
-        .catch(error => {
-            clearTimeout(timeout);
-            if (btn) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-            console.error('Ошибка при запросе к Open Food Facts:', error);
-            alert('❌ Ошибка соединения с базой продуктов. Попробуйте позже.');
-        });
-}
-        // ---- НОВАЯ ФУНКЦИЯ: Определение статуса гистамина ----
-function getHistamineStatus(product) {
-    const tags = product.tags || [];
-    const lowHistamineTag = tags.find(tag => tag === 'en:Low histamine');
-    const highHistamineTag = tags.find(tag => tag === 'en:High histamine');
-
-    if (lowHistamineTag) {
-        return { level: 'low', label: '🟢 Низкий гистамин', description: 'Продукт с низким содержанием гистамина. Обычно безопасен.' };
-    } else if (highHistamineTag) {
-        return { level: 'high', label: '🔴 Высокий гистамин', description: 'Продукт с высоким содержанием гистамина. Рекомендуется избегать.' };
-    } else {
-        return { level: 'unknown', label: '🟡 Статус не определён', description: 'Проверьте состав продукта вручную или используйте справочник.' };
-    }
-}
-
-// ---- НОВАЯ ФУНКЦИЯ: Отображение статуса ----
-function showProductStatus(productName, status) {
-    const message = `📦 Продукт: ${productName}\n\n${status.label}\n${status.description}`;
-    alert(message);
-}
-
-    fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`)
-        .then(response => response.json())
-        .then(data => {
-            if (btn) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-
-            if (data.status === 1 && data.product) {
-                const product = data.product;
-                let productName = product.product_name_ru || product.product_name || 'Неизвестный продукт';
-                
-                const customInput = document.getElementById('custom-products');
-                if (customInput) {
-                    if (customInput.value.trim()) {
-                        customInput.value += ', ' + productName;
-                    } else {
-                        customInput.value = productName;
-                    }
-                }
-                
-                alert(`✅ Найден продукт: ${productName}\nШтрих-код: ${barcode}`);
-                
-                if (product.ingredients_text_ru || product.ingredients_text) {
-                    const ingredients = product.ingredients_text_ru || product.ingredients_text;
-                    console.log('Состав:', ingredients);
-                }
-            } else {
-                alert(`❌ Продукт с кодом ${barcode} не найден в базе. Вы можете ввести название вручную.`);
-            }
-        })
-        .catch(error => {
-            if (btn) {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-            console.error('Ошибка при запросе к Open Food Facts:', error);
-            alert('❌ Ошибка соединения с базой продуктов. Попробуйте позже.');
-        });
-}
     </script>
 </body>
 </html>
