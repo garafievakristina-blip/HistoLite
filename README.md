@@ -1,1 +1,1 @@
-# Allevio-
+HistoLite — дневник гистамина
