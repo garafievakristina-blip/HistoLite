@@ -33,7 +33,7 @@
         .load-bar { height: 20px; border-radius: 8px; background-color: #e2e8f0; flex: 1; overflow: hidden; }
         .load-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.3s; }
 
-        /* Защита от случайного сдвига слайдеров при скролле */
+        /* Защита от случайного сдвига слайдеров при скролле (уже не нужно, но оставлю) */
         input[type="range"] {
             touch-action: pan-y !important;
             -webkit-user-select: none;
@@ -132,11 +132,11 @@
                         </button>
                     </div>
 
-                   <div class="space-y-2 border-t border-slate-100 pt-3">
-    <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
-    <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-    <p class="text-[10px] text-slate-400 mt-1">Можете описать словами, чтобы запомнить связь с продуктами.</p>
-</div> 
+                    <div class="space-y-2 border-t border-slate-100 pt-3">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
+                        <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                        <p class="text-[10px] text-slate-400 mt-1">Можете описать словами, чтобы запомнить связь с продуктами.</p>
+                    </div> 
                     <button onclick="saveLog()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">Сохранить запись</button>
                 </div>
 
@@ -197,60 +197,59 @@
 
     <script>
         // ---------- БАЗА ПРОДУКТОВ ----------
-        // ----- БАЗА ПРОДУКТОВ (для чекбоксов) -----
-const productsDB = [
-    { name: "Авокадо", level: 1 },
-    { name: "Баклажаны", level: 2 },
-    { name: "Брокколи / Цв. капуста", level: 0 },
-    { name: "Зелень (укроп, петрушка)", level: 0 },
-    { name: "Картофель", level: 0 },
-    { name: "Квашеная капуста", level: 2 },
-    { name: "Лук", level: 1 },
-    { name: "Морковь", level: 0 },
-    { name: "Огурцы / Кабачки", level: 0 },
-    { name: "Свёкла", level: 0 },
-    { name: "Томаты", level: 2 },
-    { name: "Чеснок", level: 1 },
-    { name: "Шпинат", level: 2 },
-    { name: "Абрикос", level: 1 },
-    { name: "Бананы / Сливы", level: 1 },
-    { name: "Вишня", level: 2 },
-    { name: "Голубика", level: 1 },
-    { name: "Клубника", level: 2 },
-    { name: "Манго", level: 1 },
-    { name: "Малина", level: 2 },
-    { name: "Персик", level: 1 },
-    { name: "Черешня", level: 1 },
-    { name: "Черника", level: 1 },
-    { name: "Яблоки / Груши", level: 0 },
-    { name: "Батат", level: 0 },
-    { name: "Гречка", level: 0 },
-    { name: "Киноа", level: 0 },
-    { name: "Овсяные хлопья", level: 0 },
-    { name: "Рис", level: 0 },
-    { name: "Хлеб (пшеничный/ржаной)", level: 1 },
-    { name: "Пармезан", level: 2 },
-    { name: "Йогурт без добавок", level: 1 },
-    { name: "Кефир / Сметана", level: 2 },
-    { name: "Куриное яйцо", level: 1 },
-    { name: "Творог свежий", level: 0 },
-    { name: "Баранина", level: 1 },
-    { name: "Говядина", level: 1 },
-    { name: "Консервированная рыба", level: 2 },
-    { name: "Курица / Индейка", level: 0 },
-    { name: "Свежая рыба", level: 0 },
-    { name: "Свинина", level: 1 },
-    { name: "Сосиски / Копчености", level: 2 },
-    { name: "Грибы шампиньоны", level: 1 },
-    { name: "Красное вино / Пиво", level: 2 },
-    { name: "Орехи грецкие", level: 1 },
-    { name: "Сливочное / Оливковое масло", level: 0 },
-    { name: "Уксус / Майонез", level: 2 },
-    { name: "Шоколад / Какао", level: 2 }
-].sort((a,b) => a.name.localeCompare(b.name));
-    // ----- МОЯ ТАБЛИЦА ГИСТАМИНОВЫХ ПРОДУКТОВ (РАСШИРЕННАЯ) -----
-// level: 'низкий' - низкий гистамин, 'средний' - средний, 'высокий' - высокий
-const myHistamineDB = [
+        const productsDB = [
+            { name: "Авокадо", level: 1 },
+            { name: "Баклажаны", level: 2 },
+            { name: "Брокколи / Цв. капуста", level: 0 },
+            { name: "Зелень (укроп, петрушка)", level: 0 },
+            { name: "Картофель", level: 0 },
+            { name: "Квашеная капуста", level: 2 },
+            { name: "Лук", level: 1 },
+            { name: "Морковь", level: 0 },
+            { name: "Огурцы / Кабачки", level: 0 },
+            { name: "Свёкла", level: 0 },
+            { name: "Томаты", level: 2 },
+            { name: "Чеснок", level: 1 },
+            { name: "Шпинат", level: 2 },
+            { name: "Абрикос", level: 1 },
+            { name: "Бананы / Сливы", level: 1 },
+            { name: "Вишня", level: 2 },
+            { name: "Голубика", level: 1 },
+            { name: "Клубника", level: 2 },
+            { name: "Манго", level: 1 },
+            { name: "Малина", level: 2 },
+            { name: "Персик", level: 1 },
+            { name: "Черешня", level: 1 },
+            { name: "Черника", level: 1 },
+            { name: "Яблоки / Груши", level: 0 },
+            { name: "Батат", level: 0 },
+            { name: "Гречка", level: 0 },
+            { name: "Киноа", level: 0 },
+            { name: "Овсяные хлопья", level: 0 },
+            { name: "Рис", level: 0 },
+            { name: "Хлеб (пшеничный/ржаной)", level: 1 },
+            { name: "Пармезан", level: 2 },
+            { name: "Йогурт без добавок", level: 1 },
+            { name: "Кефир / Сметана", level: 2 },
+            { name: "Куриное яйцо", level: 1 },
+            { name: "Творог свежий", level: 0 },
+            { name: "Баранина", level: 1 },
+            { name: "Говядина", level: 1 },
+            { name: "Консервированная рыба", level: 2 },
+            { name: "Курица / Индейка", level: 0 },
+            { name: "Свежая рыба", level: 0 },
+            { name: "Свинина", level: 1 },
+            { name: "Сосиски / Копчености", level: 2 },
+            { name: "Грибы шампиньоны", level: 1 },
+            { name: "Красное вино / Пиво", level: 2 },
+            { name: "Орехи грецкие", level: 1 },
+            { name: "Сливочное / Оливковое масло", level: 0 },
+            { name: "Уксус / Майонез", level: 2 },
+            { name: "Шоколад / Какао", level: 2 }
+        ].sort((a,b) => a.name.localeCompare(b.name));
+
+        // ----- МОЯ ТАБЛИЦА ГИСТАМИНОВЫХ ПРОДУКТОВ -----
+        const myHistamineDB = const myHistamineDB = [
     // ========== ОВОЩИ ==========
     { name: "кабачок", level: "низкий" },
     { name: "цуккини", level: "низкий" },
@@ -666,22 +665,24 @@ const myHistamineDB = [
     { name: "плов", level: "средний" },
     { name: "лапша", level: "средний" },
 ];
-// ----- СПИСОК СИМПТОМОВ -----
-const symptomsList = [
-    { id: "brain_fog", name: "🌫️ Туман в голове" },
-    { id: "headache", name: "🤕 Головная боль" },
-    { id: "belching", name: "💨 Отрыжка" },
-    { id: "chest_pressure", name: "🔥 Распирание в пищеводе" },
-    { id: "itching", name: "🐜 Зуд" },
-    { id: "ear_congestion", name: "👂 Заложенность уха" },
-    { id: "rash", name: "🔴 Покраснение кожи" },
-    { id: "fatigue", name: "🔋 Упадок сил" },
-    { id: "heart", name: "💓 Учащенный пульс" },
-    { id: "edema", name: "💧 Отёки" },
-    { id: "diarrhea", name: "🚽 Диарея" },
-    { id: "gut_pain", name: "💢 Боль в кишечнике" },
-    { id: "bloating", name: "💨 Вздутие живота" }
-];
+
+        // ----- СПИСОК СИМПТОМОВ (используется только для отображения в аналитике) -----
+        const symptomsList = [
+            { id: "brain_fog", name: "🌫️ Туман в голове" },
+            { id: "headache", name: "🤕 Головная боль" },
+            { id: "belching", name: "💨 Отрыжка" },
+            { id: "chest_pressure", name: "🔥 Распирание в пищеводе" },
+            { id: "itching", name: "🐜 Зуд" },
+            { id: "ear_congestion", name: "👂 Заложенность уха" },
+            { id: "rash", name: "🔴 Покраснение кожи" },
+            { id: "fatigue", name: "🔋 Упадок сил" },
+            { id: "heart", name: "💓 Учащенный пульс" },
+            { id: "edema", name: "💧 Отёки" },
+            { id: "diarrhea", name: "🚽 Диарея" },
+            { id: "gut_pain", name: "💢 Боль в кишечнике" },
+            { id: "bloating", name: "💨 Вздутие живота" }
+        ];
+
         let userLogs = JSON.parse(localStorage.getItem('histolite_logs')) || [];
         let savedCycleDay = localStorage.getItem('histolite_cycle_day');
         if (!savedCycleDay) savedCycleDay = 1;
@@ -699,7 +700,7 @@ const symptomsList = [
             return "Вне диапазона";
         }
 
-        // ---- ЮРИДИЧЕСКИЙ ЭКРАН (ИСПРАВЛЕН) ----
+        // ---- ЮРИДИЧЕСКИЙ ЭКРАН ----
         window.toggleLegalButton = function() {
             const chk = document.getElementById('legal-checkbox');
             const btn = document.getElementById('legal-submit-btn');
@@ -734,9 +735,8 @@ const symptomsList = [
             badge.className = `p-2 rounded-xl text-xs font-bold text-center border ${color}`;
         }
 
-        // ---- ОТРИСОВКА ФОРМ ----
-                window.renderDiaryForms = function() {
-            // Отрисовка продуктов (чекбоксы)
+        // ---- ОТРИСОВКА ФОРМ (только продукты) ----
+        window.renderDiaryForms = function() {
             const container = document.getElementById('products-checkboxes');
             if (container) {
                 container.innerHTML = productsDB.map(p => `
@@ -747,8 +747,9 @@ const symptomsList = [
                 `).join('');
             }
         };
+
         // ---- СОХРАНЕНИЕ ЗАПИСИ ----
-               window.saveLog = function() {
+        window.saveLog = function() {
             const date = document.getElementById('log-date').value;
             const time = document.getElementById('log-time').value;
             const cycleDay = parseInt(document.getElementById('cycle-day').value) || 1;
@@ -765,7 +766,7 @@ const symptomsList = [
             // Удаляем старую запись с такой же датой и временем (если есть)
             userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
 
-            // Добавляем новую запись
+            // Добавляем новую запись (без symptoms, только symptomsText)
             userLogs.push({ date, time, cycleDay, products: allProducts, medications, symptomsText });
 
             // Сохраняем в localStorage
@@ -783,7 +784,7 @@ const symptomsList = [
         };
 
         // ---- ИСТОРИЯ ----
-                window.renderHistory = function() {
+        window.renderHistory = function() {
             const container = document.getElementById('history-container');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет записей</div>'; return; }
             const sorted = [...userLogs].sort((a,b)=>new Date(b.date+'T'+b.time)-new Date(a.date+'T'+a.time));
@@ -806,27 +807,28 @@ const symptomsList = [
             container.innerHTML = filtered.map(p=>`<div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs"><span class="font-semibold">${p.name}</span><span class="px-2 py-0.5 border rounded-full text-[10px] font-bold ${badges[p.level]=='🟢 Мягкий'?'bg-green-50 text-green-700 border-green-200':badges[p.level]=='🟡 Умеренно'?'bg-yellow-50 text-yellow-700 border-yellow-200':'bg-red-50 text-red-700 border-red-200'}">${badges[p.level]}</span></div>`).join('');
         };
 
-        // ---- АНАЛИТИКА СОВПАДЕНИЙ ----
+        // ---- АНАЛИТИКА СОВПАДЕНИЙ (48ч) - АДАПТИРОВАНА ДЛЯ ТЕКСТОВЫХ СИМПТОМОВ ----
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
             if (userLogs.length<2) { container.innerHTML = '<div class="p-3 bg-amber-50 text-amber-800 text-xs rounded-xl border border-amber-200 text-center">📌 Добавьте записи за 2+ дня</div>'; return; }
             const triggerScore = {};
             userLogs.forEach(targetLog => {
-                const maxSymptom = Math.max(...Object.values(targetLog.symptoms));
-                if (maxSymptom>=2) {
+                // Если есть текст симптомов, считаем, что симптом был (1), иначе 0
+                const maxSymptom = targetLog.symptomsText && targetLog.symptomsText.trim() !== '' ? 1 : 0;
+                if (maxSymptom >= 1) {
                     const targetDate = new Date(targetLog.date);
                     userLogs.forEach(historyLog => {
                         const diffDays = (targetDate - new Date(historyLog.date))/(1000*3600*24);
                         if (diffDays>=0 && diffDays<=2) {
                             historyLog.products.forEach(item => {
                                 if(!triggerScore[item]) triggerScore[item]={weight:0,count:0};
-                                triggerScore[item].weight+=maxSymptom;
+                                triggerScore[item].weight += maxSymptom;
                                 triggerScore[item].count++;
                             });
                             if(historyLog.medications && historyLog.medications.length) {
                                 historyLog.medications.forEach(med => {
                                     if(!triggerScore[med]) triggerScore[med]={weight:0,count:0};
-                                    triggerScore[med].weight+=maxSymptom;
+                                    triggerScore[med].weight += maxSymptom;
                                     triggerScore[med].count++;
                                 });
                             }
@@ -834,34 +836,39 @@ const symptomsList = [
                     });
                 }
             });
-            const suspects = Object.entries(triggerScore).map(([name,data])=>({name, score:Math.min(10,Math.round((data.weight/(userLogs.length*2))*10))})).filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
+            const suspects = Object.entries(triggerScore).map(([name,data])=>({name, score: Math.min(10, Math.round((data.weight / (userLogs.length * 2)) * 10))})).filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
             if(!suspects.length) { container.innerHTML = '<div class="text-xs text-green-600 text-center py-2">✅ Явных триггеров (включая лекарства) не найдено</div>'; return; }
             container.innerHTML = `<div class="text-[11px] font-bold text-teal-900 mb-2">🔎 Потенциальные триггеры/помощники (48ч):</div><div class="space-y-1.5">${suspects.slice(0,5).map(s=>`<div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100"><span class="text-xs font-medium">${s.name}</span><span class="text-xs font-bold text-amber-600">индекс ${s.score}/10</span></div>`).join('')}</div><p class="text-[10px] text-slate-400 mt-2">*Анализ показывает частоту совпадений, а не гарантированную причину.</p>`;
         };
 
-        // ---- АНАЛИТИКА ПО ЦИКЛУ ----
+        // ---- АНАЛИТИКА ПО ЦИКЛУ (адаптирована для текстовых симптомов) ----
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет данных</div>'; return; }
             const phases = ["Начало цикла","Фолликулярная","Овуляция","Лютеиновая","ПМС"];
             const phaseData = {};
-            phases.forEach(p=>phaseData[p]={logs:[], totalSymptoms:0, productFreq:{}});
+            phases.forEach(p=>phaseData[p]={count:0, withSymptoms:0, productFreq:{}});
+            
             userLogs.forEach(log => {
                 const phase = getCyclePhaseName(log.cycleDay);
                 if(phaseData[phase]) {
-                    phaseData[phase].logs.push(log);
-                    const sum = Object.values(log.symptoms).reduce((a,b)=>a+b,0);
-                    phaseData[phase].totalSymptoms += sum;
-                    log.products.forEach(prod => { phaseData[phase].productFreq[prod] = (phaseData[phase].productFreq[prod]||0)+1; });
+                    phaseData[phase].count++;
+                    const hasSymptoms = log.symptomsText && log.symptomsText.trim() !== '';
+                    if (hasSymptoms) phaseData[phase].withSymptoms++;
+                    log.products.forEach(prod => {
+                        phaseData[phase].productFreq[prod] = (phaseData[phase].productFreq[prod]||0)+1;
+                    });
                 }
             });
+            
             let html = '';
             for(let phase of phases) {
                 const data = phaseData[phase];
-                const count = data.logs.length;
-                const avg = count ? (data.totalSymptoms/count).toFixed(1) : 0;
+                const count = data.count;
+                const withSym = data.withSymptoms;
+                const percent = count ? Math.round((withSym/count)*100) : 0;
                 const top3 = Object.entries(data.productFreq).sort((a,b)=>b[1]-a[1]).slice(0,3).map(p=>p[0]).join(', ');
-                html += `<div class="border-b border-slate-100 pb-2 mb-2"><div class="font-bold text-sm">${phase}</div><div class="text-[11px] text-slate-500">Записей: ${count} | Средняя сумма симптомов: ${avg}</div><div class="text-teal-700 text-[11px]">🍽️ Частые: ${top3 || '—'}</div></div>`;
+                html += `<div class="border-b border-slate-100 pb-2 mb-2"><div class="font-bold text-sm">${phase}</div><div class="text-[11px] text-slate-500">Записей: ${count} | Симптомы отмечены в ${percent}% случаев</div><div class="text-teal-700 text-[11px]">🍽️ Частые: ${top3 || '—'}</div></div>`;
             }
             container.innerHTML = html;
         }
@@ -870,30 +877,33 @@ const symptomsList = [
             const container = document.getElementById('cycle-load-calendar');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет данных</div>'; return; }
             const phases = ["Начало цикла","Фолликулярная","Овуляция","Лютеиновая","ПМС"];
-            const phaseSums = {"Начало цикла":[], "Фолликулярная":[], "Овуляция":[], "Лютеиновая":[], "ПМС":[]};
+            const phaseData = {};
+            phases.forEach(p=>phaseData[p]={count:0, withSymptoms:0});
             userLogs.forEach(log => {
                 const phase = getCyclePhaseName(log.cycleDay);
-                const sum = Object.values(log.symptoms).reduce((a,b)=>a+b,0);
-                if(phaseSums[phase]) phaseSums[phase].push(sum);
+                if(phaseData[phase]) {
+                    phaseData[phase].count++;
+                    if (log.symptomsText && log.symptomsText.trim() !== '') phaseData[phase].withSymptoms++;
+                }
             });
-            let maxAvg = 0;
-            let avgs = {};
-            for(let phase of phases) {
-                let avg = phaseSums[phase].length ? phaseSums[phase].reduce((a,b)=>a+b,0)/phaseSums[phase].length : 0;
-                avgs[phase] = avg;
-                if(avg > maxAvg) maxAvg = avg;
-            }
+            let maxPercent = 0;
+            const percents = {};
+            phases.forEach(phase => {
+                const p = phaseData[phase].count ? (phaseData[phase].withSymptoms / phaseData[phase].count) * 100 : 0;
+                percents[phase] = p;
+                if (p > maxPercent) maxPercent = p;
+            });
             let html = '';
             for(let phase of phases) {
-                let percent = maxAvg>0 ? (avgs[phase]/maxAvg)*100 : 0;
-                let color = percent<30 ? '#10b981' : (percent<70 ? '#f59e0b' : '#ef4444');
+                let percent = maxPercent > 0 ? (percents[phase] / maxPercent) * 100 : 0;
+                let color = percent < 30 ? '#10b981' : (percent < 70 ? '#f59e0b' : '#ef4444');
                 html += `<div class="calendar-row"><div class="phase-label">${phase}</div><div class="load-bar"><div class="load-fill" style="width:${percent}%; background-color:${color};"></div></div><div class="text-[10px] w-10">${Math.round(percent)}%</div></div>`;
             }
             container.innerHTML = html;
         }
 
         // ---- ЭКСПОРТ CSV ----
-                window.exportToCSV = function() {
+        window.exportToCSV = function() {
             if(!userLogs.length) { alert('Нет записей'); return; }
             let rows = [['Дата','Время','День цикла','Фаза','Продукты','Лекарства','Симптомы']];
             userLogs.forEach(log => {
@@ -920,7 +930,7 @@ const symptomsList = [
         }
         document.querySelectorAll('.tab-button').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.getAttribute('data-tab'))));
 
-        // ---- СКАНЕР ШТРИХ-КОДОВ И ГИСТАМИНОВЫЙ СТАТУС ----
+        // ---- СКАНЕР ШТРИХ-КОДОВ ----
         let html5QrCode = null;
 
         function scanBarcode() {
@@ -1019,19 +1029,11 @@ const symptomsList = [
                 });
         }
 
-                function getHistamineStatus(product) {
-            // Получаем название продукта (на русском, если есть)
+        function getHistamineStatus(product) {
             const productName = (product.product_name_ru || product.product_name || '').toLowerCase().trim();
-            
-            // Разбиваем название на слова (по пробелам, запятым, точкам, тире)
             const words = productName.split(/[\s,.;:—–-]+/).filter(word => word.length > 1);
-            
-            // Переменные для хранения найденных уровней
             let foundLevels = [];
-            
-            // Проходим по каждому слову и ищем совпадение в таблице
             for (let word of words) {
-                // Ищем в таблице запись, где имя содержит это слово или слово содержит имя
                 const found = myHistamineDB.find(item => 
                     word.includes(item.name.toLowerCase()) || 
                     item.name.toLowerCase().includes(word)
@@ -1040,17 +1042,13 @@ const symptomsList = [
                     foundLevels.push(found.level);
                 }
             }
-            
-            // Если есть совпадения, выбираем самый высокий уровень риска
             if (foundLevels.length > 0) {
-                // Определяем приоритет: 'высокий' > 'средний' > 'низкий'
                 let highestLevel = 'низкий';
                 if (foundLevels.includes('высокий')) {
                     highestLevel = 'высокий';
                 } else if (foundLevels.includes('средний')) {
                     highestLevel = 'средний';
                 }
-                
                 if (highestLevel === 'низкий') {
                     return { level: 'low', label: '🟢 Низкий гистамин', description: 'Продукт с низким содержанием гистамина. Обычно безопасен.' };
                 } else if (highestLevel === 'средний') {
@@ -1059,12 +1057,9 @@ const symptomsList = [
                     return { level: 'high', label: '🔴 Высокий гистамин', description: 'Продукт с высоким содержанием гистамина. Рекомендуется избегать.' };
                 }
             }
-            
-            // Если в своей таблице не нашли, проверяем теги в Open Food Facts
             const tags = product.tags || [];
             const lowHistamineTag = tags.find(tag => tag === 'en:Low histamine');
             const highHistamineTag = tags.find(tag => tag === 'en:High histamine');
-
             if (lowHistamineTag) {
                 return { level: 'low', label: '🟢 Низкий гистамин', description: 'Продукт с низким содержанием гистамина. Обычно безопасен.' };
             } else if (highHistamineTag) {
@@ -1080,7 +1075,6 @@ const symptomsList = [
         }
 
         // ---- ИНИЦИАЛИЗАЦИЯ ----
-                // ---- ИНИЦИАЛИЗАЦИЯ ----
         (function init() {
             const accepted = localStorage.getItem('histolite_legal_accepted');
             if (accepted === 'true') {
