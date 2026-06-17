@@ -19,30 +19,7 @@
             }
         }
     </script>
-    /* Стили для цветных кнопок симптомов */
-.symptom-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 9999px;
-    border-width: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    transition: all 0.15s ease;
-    cursor: pointer;
-    background-color: white;
-    color: #334155;
-}
-.symptom-btn:hover {
-    transform: scale(1.05);
-}
-.symptom-btn.active-symptom {
-    transform: scale(1.15);
-    border-width: 3px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
+    
     <style>
         /* Общие стили */
         .tab-content { display: none; }
@@ -772,29 +749,11 @@ const symptomsList = [
 
     
         // ---- ФУНКЦИЯ ДЛЯ ВЫБОРА СИМПТОМА (цветные кнопки) ----
-function setSymptomValue(symptomId, value) {
-    // Обновляем отображение числа
-    const valSpan = document.getElementById(`val-${symptomId}`);
-    if (valSpan) valSpan.innerText = value;
 
-    // Находим все кнопки для этого симптома
-    const buttons = document.querySelectorAll(`button[data-symptom="${symptomId}"]`);
-    buttons.forEach(btn => {
-        btn.classList.remove('active-symptom', 'scale-110', 'shadow-md');
-        btn.classList.add('bg-white');
-        
-        if (parseInt(btn.dataset.value) === value) {
-            btn.classList.add('active-symptom', 'scale-110', 'shadow-md');
-            if (value === 0) btn.classList.add('bg-emerald-100');
-            else if (value <= 2) btn.classList.add('bg-yellow-100');
-            else if (value <= 4) btn.classList.add('bg-orange-100');
-            else if (value === 5) btn.classList.add('bg-rose-100');
-        }
-    });
 }
 
         // ---- СОХРАНЕНИЕ ЗАПИСИ ----
-        window.saveLog = function() {
+               window.saveLog = function() {
             const date = document.getElementById('log-date').value;
             const time = document.getElementById('log-time').value;
             const cycleDay = parseInt(document.getElementById('cycle-day').value) || 1;
@@ -806,19 +765,37 @@ function setSymptomValue(symptomId, value) {
             const medsRaw = document.getElementById('medications').value;
             let medications = medsRaw.trim() ? medsRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
             if (allProducts.length === 0 && medications.length === 0) { alert('Выберите/введите продукты или лекарства'); return; }
-           const symptomsText = document.getElementById('symptoms-text-input').value.trim();
+            const symptomsText = document.getElementById('symptoms-text-input').value.trim();
+
+            // Удаляем старую запись с такой же датой и временем (если есть)
+            userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
+
+            // Добавляем новую запись
+            userLogs.push({ date, time, cycleDay, products: allProducts, medications, symptomsText });
+
+            // Сохраняем в localStorage
             localStorage.setItem('histolite_logs', JSON.stringify(userLogs));
+
+            // Сбрасываем форму
+            document.querySelectorAll('#products-checkboxes input:checked').forEach(el => el.checked = false);
+            document.getElementById('custom-products').value = '';
+            document.getElementById('medications').value = '';
             document.getElementById('symptoms-text-input').value = '';
 
+            // Обновляем историю и показываем уведомление
+            renderHistory();
+            alert('Запись сохранена');
+        };
+
         // ---- ИСТОРИЯ ----
-        window.renderHistory = function() {
+                window.renderHistory = function() {
             const container = document.getElementById('history-container');
             if (!userLogs.length) { container.innerHTML = '<div class="text-center text-slate-400 p-4">Нет записей</div>'; return; }
             const sorted = [...userLogs].sort((a,b)=>new Date(b.date+'T'+b.time)-new Date(a.date+'T'+a.time));
             container.innerHTML = sorted.slice(0,5).map(log => {
-                const symps = Object.entries(log.symptoms).filter(([k,v])=>v>0).map(([k,v])=>`${k}(${v})`).join(', ');
+                const symps = log.symptomsText || 'не указаны';
                 const meds = log.medications && log.medications.length ? `💊 ${log.medications.join(', ')}` : '';
-                return `<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1"><div class="flex justify-between"><div class="font-bold text-[10px] text-slate-400">📅 ${log.date} | ⏰ ${log.time}</div><button onclick="deleteLog('${log.date}','${log.time}')" class="text-red-500 text-[11px]">🗑️</button></div><div class="text-slate-700 text-xs">🍎 Рацион: ${log.products.join(', ') || '—'}</div>${meds ? `<div class="text-purple-700 text-xs">${meds}</div>` : ''}<div class="text-amber-600 text-xs">⚡ Реакции: ${symps || 'нет'}</div><div class="text-teal-600 text-[10px]">🌸 ${log.cycleDay} день цикла</div></div>`;
+                return `<div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1"><div class="flex justify-between"><div class="font-bold text-[10px] text-slate-400">📅 ${log.date} | ⏰ ${log.time}</div><button onclick="deleteLog('${log.date}','${log.time}')" class="text-red-500 text-[11px]">🗑️</button></div><div class="text-slate-700 text-xs">🍎 Рацион: ${log.products.join(', ') || '—'}</div>${meds ? `<div class="text-purple-700 text-xs">${meds}</div>` : ''}<div class="text-amber-600 text-xs">📝 Симптомы: ${symps}</div><div class="text-teal-600 text-[10px]">🌸 ${log.cycleDay} день цикла</div></div>`;
             }).join('');
         };
 
@@ -921,14 +898,14 @@ function setSymptomValue(symptomId, value) {
         }
 
         // ---- ЭКСПОРТ CSV ----
-        window.exportToCSV = function() {
+                window.exportToCSV = function() {
             if(!userLogs.length) { alert('Нет записей'); return; }
-            let rows = [['Дата','Время','День цикла','Фаза','Продукты','Лекарства','Симптомы (0-5)']];
+            let rows = [['Дата','Время','День цикла','Фаза','Продукты','Лекарства','Симптомы']];
             userLogs.forEach(log => {
                 const phase = getCyclePhaseName(log.cycleDay);
-                const symptomsStr = symptomsList.map(s=>`${s.name.split(' ')[1]||s.id}:${log.symptoms[s.id]||0}`).join('; ');
+                const symptomsText = log.symptomsText || '';
                 const medsStr = (log.medications && log.medications.length) ? log.medications.join(', ') : '';
-                rows.push([log.date, log.time, log.cycleDay, phase, log.products.join(', '), medsStr, symptomsStr]);
+                rows.push([log.date, log.time, log.cycleDay, phase, log.products.join(', '), medsStr, symptomsText]);
             });
             const csv = rows.map(row=>row.map(cell=>`"${cell}"`).join(',')).join('\n');
             const blob = new Blob(["\uFEFF"+csv], {type:'text/csv;charset=utf-8;'});
@@ -1113,18 +1090,8 @@ function setSymptomValue(symptomId, value) {
             if (accepted === 'true') {
                 document.getElementById('legal-modal').style.display = 'none';
                 document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-                renderDiaryForms(); renderHistory(); renderDirectory(); updateCyclePhaseDisplay();
-                const cycleInput = document.getElementById('cycle-day');
-                cycleInput.value = savedCycleDay;
-                cycleInput.addEventListener('change', function() { localStorage.setItem('histolite_cycle_day', cycleInput.value); updateCyclePhaseDisplay(); });
-            } else {
-                document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('log-time').value = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-                const cycleInput = document.getElementById('cycle-day');
-                cycleInput.value = savedCycleDay;
-                cycleInput.addEventListener('change', function() { localStorage.setItem('histolite_cycle_day', cycleInput.value); });
-            }
-        })();
+                
+       
     </script>
 </body>
 </html>
