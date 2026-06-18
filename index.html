@@ -701,17 +701,17 @@
         }
 
         // ---- ЮРИДИЧЕСКИЙ ЭКРАН ----
-        window.toggleLegalButton = function() {
-            const chk = document.getElementById('legal-checkbox');
-            const btn = document.getElementById('legal-submit-btn');
+                function toggleLegalButton() {
+            var chk = document.getElementById('legal-checkbox');
+            var btn = document.getElementById('legal-submit-btn');
             if (chk.checked) {
                 btn.disabled = false;
-                btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md shadow-emerald-100";
+                btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md";
             } else {
                 btn.disabled = true;
                 btn.className = "w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed";
             }
-        };
+        }
 
         window.acceptLegal = function() {
             localStorage.setItem('histolite_legal_accepted', 'true');
