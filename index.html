@@ -795,7 +795,6 @@
             localStorage.setItem('histolite_legal_accepted', 'true');
             document.getElementById('legal-modal').style.display = 'none';
             document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-            renderDiaryForms();
             renderHistory();
             updateCycleUI();
             const dateInput = document.getElementById('last-period-start');
@@ -805,10 +804,7 @@
             lengthInput.addEventListener('change', saveCycleSettings);
         };
 
-        // ---- ОТРИСОВКА ФОРМ ----
-              window.renderDiaryForms = function() {
-            // Больше не нужна, оставлена для совместимости
-        }; 
+       
         // ---- СОХРАНЕНИЕ ЗАПИСИ ----
         window.saveLog = function() {
             const date = document.getElementById('log-date').value;
@@ -821,10 +817,8 @@
                 return;
             }
 
-            const checked = Array.from(document.querySelectorAll('#products-checkboxes input:checked')).map(el => el.value);
-            const customRaw = document.getElementById('custom-products').value;
-            let custom = customRaw.trim() ? customRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
-            let allProducts = [...new Set([...checked, ...custom])];
+                        const customRaw = document.getElementById('custom-products').value;
+            let allProducts = customRaw.trim() ? customRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
             const medsRaw = document.getElementById('medications').value;
             let medications = medsRaw.trim() ? medsRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
             if (allProducts.length === 0 && medications.length === 0) { showModal('Выберите/введите продукты или лекарства'); return; }
@@ -834,7 +828,6 @@
             userLogs.push({ date, time, cycleDay, products: allProducts, medications, symptomsText });
             localStorage.setItem('histolite_logs', JSON.stringify(userLogs));
 
-            document.querySelectorAll('#products-checkboxes input:checked').forEach(el => el.checked = false);
             document.getElementById('custom-products').value = '';
             document.getElementById('medications').value = '';
             document.getElementById('symptoms-text-input').value = '';
@@ -873,15 +866,7 @@
             if (!log) return;
             document.getElementById('log-date').value = log.date;
             document.getElementById('log-time').value = log.time;
-            document.querySelectorAll('#products-checkboxes input:checked').forEach(el => el.checked = false);
-            const products = log.products || [];
-            const customProducts = [];
-            products.forEach(prod => {
-                const checkbox = document.querySelector(`#products-checkboxes input[value="${prod}"]`);
-                if (checkbox) checkbox.checked = true;
-                else customProducts.push(prod);
-            });
-            document.getElementById('custom-products').value = customProducts.join(', ');
+            document.getElementById('custom-products').value = (log.products || []).join(', ');
             document.getElementById('medications').value = (log.medications || []).join(', ');
             document.getElementById('symptoms-text-input').value = log.symptomsText || '';
             document.querySelector('.bg-white.p-4.rounded-2xl.shadow-sm.border').scrollIntoView({ behavior: 'smooth' });
@@ -1128,7 +1113,6 @@
             if (accepted === 'true') {
                 document.getElementById('legal-modal').style.display = 'none';
                 document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-                renderDiaryForms();
                 renderHistory();
                 updateCycleUI();
                 const dateInput = document.getElementById('last-period-start');
@@ -1198,6 +1182,63 @@ function startVoiceInput(fieldId) {
 
     recognition.start();
 } 
+                // ---- СКАНИРОВАНИЕ ШТРИХ-КОДА КАМЕРОЙ (ОБЁРТКА) ----
+        function scanBarcode() {
+            // Используем существующую функцию для вкладки "Продукты"
+            scanBarcodeForSearch();
+        }
+
+        // ---- ОСТАНОВКА СКАНЕРА (ОБЁРТКА) ----
+        function stopScanner() {
+            stopSearchScanner();
+        }
+
+        // ---- РАСПОЗНАВАНИЕ ШТРИХ-КОДА ИЗ ИЗОБРАЖЕНИЯ ----
+        function uploadBarcodeImage() {
+            document.getElementById('barcode-image-input').click();
+        }
+
+        function decodeBarcodeFromImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const btn = document.querySelector('button[onclick="uploadBarcodeImage()"]');
+            const originalText = btn ? btn.innerText : '📤 Загрузить фото';
+            if (btn) {
+                btn.innerText = '⏳ Обработка...';
+                btn.disabled = true;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const codeReader = new Html5Qrcode();
+                    codeReader.decodeFromImage(img)
+                        .then(decodedText => {
+                            if (btn) {
+                                btn.innerText = originalText;
+                                btn.disabled = false;
+                            }
+                            // Используем существующую функцию для поиска продукта
+                            onSearchScanSuccess(decodedText);
+                        })
+                        .catch(err => {
+                            console.error('Ошибка декодирования:', err);
+                            showModal('Не удалось распознать штрих-код на изображении. Попробуйте другое фото.');
+                            if (btn) {
+                                btn.innerText = originalText;
+                                btn.disabled = false;
+                            }
+                        })
+                        .finally(() => {
+                            input.value = '';
+                        });
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
                 // ---- МОДАЛЬНОЕ ОКНО ДЛЯ СООБЩЕНИЙ ----
         function showModal(message) {
             document.getElementById('custom-modal-message').innerText = message;
@@ -1208,12 +1249,5 @@ function startVoiceInput(fieldId) {
             document.getElementById('custom-modal').style.display = 'none';
         }
     </script>
-<!-- Модальное окно для сообщений -->
-<div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-        <p id="custom-modal-message" class="text-center text-sm text-slate-700 mb-4">Сообщение</p>
-        <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">OK</button>
-    </div>
-</div>
 </body>
 </html>
