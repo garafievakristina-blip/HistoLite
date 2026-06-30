@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -129,7 +129,6 @@
             border-color: #10b981;
         }
 
-        /* Кнопка микрофона в активном состоянии */
         .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
         .mic-error { background-color: #ef4444 !important; }
     </style>
@@ -208,17 +207,17 @@
                         <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label><input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
                         <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label><input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
                     </div>
-                   <div class="mb-4">
-    <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
-    <div class="flex items-center gap-2">
-        <div class="chip-container" id="chip-container">
-            <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
-            <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
-        </div>
-        <button id="mic-products-btn" onclick="startVoiceInputForProducts()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm flex-shrink-0" title="Голосовой ввод продуктов">🎤</button>
-    </div>
-    <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
-</div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
+                        <div class="flex items-center gap-2">
+                            <div class="chip-container" id="chip-container">
+                                <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
+                                <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
+                            </div>
+                            <button id="mic-products-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm flex-shrink-0" title="Голосовой ввод продуктов">🎤</button>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
+                    </div>
                     <div class="mb-4">
                         <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
                         <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
@@ -227,7 +226,7 @@
                         <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
                         <div class="flex gap-2 items-center">
                             <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                            <button id="mic-button" onclick="startVoiceInput('symptoms-text-input')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
+                            <button id="mic-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
                         </div>
                         <p class="text-[10px] text-slate-400 mt-1">Нажмите на микрофон и скажите текст. Кнопка подсветится во время записи.</p>
                     </div>
@@ -297,16 +296,13 @@
                         <input type="number" id="pms-start-days" min="1" max="14" value="7" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                         <p class="text-[9px] text-slate-400 mt-1">Например, если ПМС начинается за 10 дней до менструации — поставьте 10.</p>
                     </div>
-                    <!-- ОТДЕЛЬНАЯ КАРТОЧКА ЗАДЕРЖКИ -->
                     <div class="mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300 shadow-sm">
                         <div class="flex items-center justify-between">
                             <div>
                                 <span class="text-xs uppercase font-bold text-amber-700">⏳ Задержка менструации</span>
                                 <div id="delay-info" class="text-xs text-amber-700 mt-1 hidden"></div>
                             </div>
-                            <button id="delay-btn" onclick="toggleDelay()" class="px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300">
-                                ❌ Нет задержки
-                            </button>
+                            <button id="delay-btn" onclick="toggleDelay()" class="px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300">❌ Нет задержки</button>
                         </div>
                         <p class="text-[9px] text-amber-600 mt-2">Если менструация задерживается, нажмите кнопку, чтобы отметить это — приложение учтёт повышенный риск.</p>
                     </div>
@@ -373,9 +369,7 @@
                             <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> 🧈 Без молочных продуктов
                         </label>
                     </div>
-                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Карточки рецептов -->
-                    </div>
+                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                 </div>
             </div>
         </main>
@@ -581,6 +575,7 @@
             });
         };
 
+        // Обработчики кликов по кнопкам навигации
         document.querySelectorAll('.tab-button').forEach(btn => {
             btn.addEventListener('click', function() {
                 const tab = this.dataset.tab;
@@ -629,6 +624,7 @@
             renderChips();
         }
 
+        // Обработчики для поля ввода продуктов (Enter и запятая)
         document.addEventListener('DOMContentLoaded', function() {
             const chipInput = document.getElementById('chip-input');
             if (chipInput) {
@@ -814,149 +810,168 @@
         };
 
         // ================================================================
-       // ================================================================
-// 8. ГОЛОСОВОЙ ВВОД ДЛЯ СИМПТОМОВ (с индикацией)
-// ================================================================
-let recognition = null;
-window.startVoiceInput = function(inputId) {
-    const micBtn = document.getElementById('mic-button');
-    if (recognition) {
-        recognition.stop();
-        recognition = null;
-        micBtn.classList.remove('mic-active');
-        micBtn.textContent = '🎤';
-        return;
-    }
-    try {
-        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'ru-RU';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
+        // 8. ГОЛОСОВОЙ ВВОД ДЛЯ СИМПТОМОВ
+        // ================================================================
+        let recognition = null;
 
-        micBtn.classList.add('mic-active');
-        micBtn.textContent = '⏺';
-
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            const input = document.getElementById(inputId);
-            input.value += (input.value ? ', ' : '') + transcript;
-            recognition.stop();
-            recognition = null;
-            micBtn.classList.remove('mic-active');
-            micBtn.textContent = '🎤';
-        };
-
-        recognition.onerror = function(event) {
-            console.error('Ошибка распознавания:', event.error);
-            micBtn.classList.remove('mic-active');
-            micBtn.textContent = '🎤';
-            if (event.error === 'not-allowed') {
-                showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
-            } else {
-                showModal('Ошибка распознавания: ' + event.error);
+        // Назначаем обработчик на кнопку микрофона симптомов
+        document.addEventListener('DOMContentLoaded', function() {
+            const micBtn = document.getElementById('mic-button');
+            if (micBtn) {
+                micBtn.addEventListener('click', function() {
+                    startVoiceInput('symptoms-text-input');
+                });
             }
-            recognition = null;
-        };
+        });
 
-        recognition.onend = function() {
+        function startVoiceInput(inputId) {
+            const micBtn = document.getElementById('mic-button');
             if (recognition) {
+                recognition.stop();
                 recognition = null;
                 micBtn.classList.remove('mic-active');
                 micBtn.textContent = '🎤';
+                return;
             }
-        };
+            try {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'ru-RU';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
 
-        recognition.start();
-    } catch (e) {
-        console.error('Ошибка запуска распознавания:', e);
-        showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
-        micBtn.classList.remove('mic-active');
-        micBtn.textContent = '🎤';
-    }
-};
+                micBtn.classList.add('mic-active');
+                micBtn.textContent = '⏺';
 
-// ================================================================
-// 8.1. ГОЛОСОВОЙ ВВОД ДЛЯ ПРОДУКТОВ (глобально, с разбивкой)
-// ================================================================
-let productRecognition = null;
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    const input = document.getElementById(inputId);
+                    input.value += (input.value ? ', ' : '') + transcript;
+                    recognition.stop();
+                    recognition = null;
+                    micBtn.classList.remove('mic-active');
+                    micBtn.textContent = '🎤';
+                };
 
-// Разбивает голосовой текст на отдельные продукты
-function splitProducts(text) {
-    text = text.replace(/\s+/g, ' ').trim();
-    text = text.replace(/\s+и\s+/g, ', ');
-    text = text.replace(/\s+или\s+/g, ', ');
-    let parts = text.split(/[,.]\s*/).filter(p => p.trim() !== '');
-    if (parts.length === 0) {
-        parts = text.split(/\s+/).filter(p => p.trim() !== '');
-    }
-    return parts;
-}
-
-window.startVoiceInputForProducts = function() {
-    const micBtn = document.getElementById('mic-products-btn');
-    if (productRecognition) {
-        productRecognition.stop();
-        productRecognition = null;
-        micBtn.classList.remove('mic-active');
-        micBtn.textContent = '🎤';
-        return;
-    }
-    try {
-        productRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        productRecognition.lang = 'ru-RU';
-        productRecognition.interimResults = false;
-        productRecognition.maxAlternatives = 1;
-
-        micBtn.classList.add('mic-active');
-        micBtn.textContent = '⏺';
-
-        productRecognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript.trim();
-            if (transcript) {
-                const products = splitProducts(transcript);
-                products.forEach(function(product) {
-                    if (product.trim()) {
-                        addChip(product.trim());
+                recognition.onerror = function(event) {
+                    console.error('Ошибка распознавания:', event.error);
+                    micBtn.classList.remove('mic-active');
+                    micBtn.textContent = '🎤';
+                    if (event.error === 'not-allowed') {
+                        showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+                    } else {
+                        showModal('Ошибка распознавания: ' + event.error);
                     }
-                });
-            }
-            productRecognition.stop();
-            productRecognition = null;
-            micBtn.classList.remove('mic-active');
-            micBtn.textContent = '🎤';
-        };
+                    recognition = null;
+                };
 
-        productRecognition.onerror = function(event) {
-            console.error('Ошибка распознавания:', event.error);
-            micBtn.classList.remove('mic-active');
-            micBtn.textContent = '🎤';
-            if (event.error === 'not-allowed') {
-                showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
-            } else {
-                showModal('Ошибка распознавания: ' + event.error);
-            }
-            productRecognition = null;
-        };
+                recognition.onend = function() {
+                    if (recognition) {
+                        recognition = null;
+                        micBtn.classList.remove('mic-active');
+                        micBtn.textContent = '🎤';
+                    }
+                };
 
-        productRecognition.onend = function() {
-            if (productRecognition) {
-                productRecognition = null;
+                recognition.start();
+            } catch (e) {
+                console.error('Ошибка запуска распознавания:', e);
+                showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
                 micBtn.classList.remove('mic-active');
                 micBtn.textContent = '🎤';
             }
-        };
-
-        productRecognition.start();
-    } catch (e) {
-        console.error('Ошибка запуска распознавания:', e);
-        showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
-        micBtn.classList.remove('mic-active');
-        micBtn.textContent = '🎤';
-    }
-};
+        }
 
         // ================================================================
-        // 9. СОХРАНЕНИЕ ЗАПИСИ
+        // 9. ГОЛОСОВОЙ ВВОД ДЛЯ ПРОДУКТОВ (независимый)
+        // ================================================================
+        let productRecognition = null;
+
+        // Назначаем обработчик на кнопку микрофона продуктов
+        document.addEventListener('DOMContentLoaded', function() {
+            const micBtn = document.getElementById('mic-products-btn');
+            if (micBtn) {
+                micBtn.addEventListener('click', function() {
+                    startVoiceInputForProducts();
+                });
+            }
+        });
+
+        function splitProducts(text) {
+            text = text.replace(/\s+/g, ' ').trim();
+            text = text.replace(/\s+и\s+/g, ', ');
+            text = text.replace(/\s+или\s+/g, ', ');
+            let parts = text.split(/[,.]\s*/).filter(p => p.trim() !== '');
+            if (parts.length === 0) {
+                parts = text.split(/\s+/).filter(p => p.trim() !== '');
+            }
+            return parts;
+        }
+
+        function startVoiceInputForProducts() {
+            const micBtn = document.getElementById('mic-products-btn');
+            if (productRecognition) {
+                productRecognition.stop();
+                productRecognition = null;
+                micBtn.classList.remove('mic-active');
+                micBtn.textContent = '🎤';
+                return;
+            }
+            try {
+                productRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                productRecognition.lang = 'ru-RU';
+                productRecognition.interimResults = false;
+                productRecognition.maxAlternatives = 1;
+
+                micBtn.classList.add('mic-active');
+                micBtn.textContent = '⏺';
+
+                productRecognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript.trim();
+                    if (transcript) {
+                        const products = splitProducts(transcript);
+                        products.forEach(function(product) {
+                            if (product.trim()) {
+                                addChip(product.trim());
+                            }
+                        });
+                    }
+                    productRecognition.stop();
+                    productRecognition = null;
+                    micBtn.classList.remove('mic-active');
+                    micBtn.textContent = '🎤';
+                };
+
+                productRecognition.onerror = function(event) {
+                    console.error('Ошибка распознавания:', event.error);
+                    micBtn.classList.remove('mic-active');
+                    micBtn.textContent = '🎤';
+                    if (event.error === 'not-allowed') {
+                        showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+                    } else {
+                        showModal('Ошибка распознавания: ' + event.error);
+                    }
+                    productRecognition = null;
+                };
+
+                productRecognition.onend = function() {
+                    if (productRecognition) {
+                        productRecognition = null;
+                        micBtn.classList.remove('mic-active');
+                        micBtn.textContent = '🎤';
+                    }
+                };
+
+                productRecognition.start();
+            } catch (e) {
+                console.error('Ошибка запуска распознавания:', e);
+                showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
+                micBtn.classList.remove('mic-active');
+                micBtn.textContent = '🎤';
+            }
+        }
+
+        // ================================================================
+        // 10. СОХРАНЕНИЕ ЗАПИСИ
         // ================================================================
         window.saveLog = function() {
             const date = document.getElementById('log-date').value;
@@ -991,7 +1006,7 @@ window.startVoiceInputForProducts = function() {
         };
 
         // ================================================================
-        // 10. ИСТОРИЯ
+        // 11. ИСТОРИЯ
         // ================================================================
         window.renderHistory = function() {
             const container = document.getElementById('history-container');
@@ -1034,7 +1049,7 @@ window.startVoiceInputForProducts = function() {
         };
 
         // ================================================================
-        // 11. ДАШБОРД (СЕГОДНЯ) с явным учётом задержки
+        // 12. ДАШБОРД (СЕГОДНЯ) с явным учётом задержки
         // ================================================================
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
@@ -1147,7 +1162,7 @@ window.startVoiceInputForProducts = function() {
         }
 
         // ================================================================
-        // 12. ЗАДЕРЖКА (улучшенная видимость)
+        // 13. ЗАДЕРЖКА
         // ================================================================
         window.toggleDelay = function() {
             const btn = document.getElementById('delay-btn');
@@ -1189,7 +1204,7 @@ window.startVoiceInputForProducts = function() {
         }
 
         // ================================================================
-        // 13. УВЕДОМЛЕНИЯ
+        // 14. УВЕДОМЛЕНИЯ
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1204,14 +1219,14 @@ window.startVoiceInputForProducts = function() {
         }
 
         // ================================================================
-        // 14. АНАЛИТИКА (заглушка)
+        // 15. АНАЛИТИКА (заглушка)
         // ================================================================
         window.runAdvancedAnalytics = function() {
             showModal('Анализ триггеров пока в разработке. Скоро появится!');
         };
 
         // ================================================================
-        // 15. ЭКСПОРТ (заглушки)
+        // 16. ЭКСПОРТ (заглушки)
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1221,7 +1236,7 @@ window.startVoiceInputForProducts = function() {
         };
 
         // ================================================================
-        // 16. МОДАЛЬНЫЕ ОКНА
+        // 17. МОДАЛЬНЫЕ ОКНА
         // ================================================================
         window.showModal = function(msg) {
             document.getElementById('custom-modal-message').textContent = msg;
@@ -1233,7 +1248,7 @@ window.startVoiceInputForProducts = function() {
         };
 
         // ================================================================
-        // 17. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
+        // 18. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
         function toggleLegalButton() {
             const chk = document.getElementById('legal-checkbox');
@@ -1281,7 +1296,7 @@ window.startVoiceInputForProducts = function() {
         };
 
         // ================================================================
-        // 18. РАБОТА С РЕЦЕПТАМИ
+        // 19. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         async function loadRecipes() {
             try {
@@ -1404,7 +1419,7 @@ window.startVoiceInputForProducts = function() {
         });
 
         // ================================================================
-        // 19. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 20. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(() => {
@@ -1435,7 +1450,7 @@ window.startVoiceInputForProducts = function() {
             }, 100);
         }
 
-        console.log('✅ Приложение загружено (без погоды). Все функции работают.');
+        console.log('✅ Приложение загружено. Голосовой ввод для продуктов и симптомов работает независимо.');
     </script>
 
 </body>
