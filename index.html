@@ -1,4 +1,4 @@
-        <!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -128,6 +128,10 @@
             color: white;
             border-color: #10b981;
         }
+
+        /* Кнопка микрофона в активном состоянии */
+        .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
+        .mic-error { background-color: #ef4444 !important; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -220,9 +224,9 @@
                         <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
                         <div class="flex gap-2 items-center">
                             <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                            <button onclick="startVoiceInput('symptoms-text-input')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
+                            <button id="mic-button" onclick="startVoiceInput('symptoms-text-input')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1">Нажмите на микрофон и скажите текст.</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Нажмите на микрофон и скажите текст. Кнопка подсветится во время записи.</p>
                     </div>
                     <button onclick="saveLog()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">Сохранить запись</button>
                 </div>
@@ -290,12 +294,18 @@
                         <input type="number" id="pms-start-days" min="1" max="14" value="7" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                         <p class="text-[9px] text-slate-400 mt-1">Например, если ПМС начинается за 10 дней до менструации — поставьте 10.</p>
                     </div>
-                    <div class="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
-                        <div class="flex items-center gap-3">
-                            <label class="text-[10px] uppercase font-bold text-amber-700">⏳ Задержка</label>
-                            <button id="delay-btn" onclick="toggleDelay()" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition">❌ Нет задержки</button>
+                    <!-- ОТДЕЛЬНАЯ КАРТОЧКА ЗАДЕРЖКИ -->
+                    <div class="mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-xs uppercase font-bold text-amber-700">⏳ Задержка менструации</span>
+                                <div id="delay-info" class="text-xs text-amber-700 mt-1 hidden"></div>
+                            </div>
+                            <button id="delay-btn" onclick="toggleDelay()" class="px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300">
+                                ❌ Нет задержки
+                            </button>
                         </div>
-                        <div id="delay-info" class="text-xs text-amber-700 mt-1 hidden"></div>
+                        <p class="text-[9px] text-amber-600 mt-2">Если менструация задерживается, нажмите кнопку, чтобы отметить это — приложение учтёт повышенный риск.</p>
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div><label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Текущий день цикла</label><div id="cycle-day-display" class="p-2 border rounded-xl text-sm bg-slate-100 text-center font-bold">—</div></div>
@@ -332,7 +342,7 @@
                 </div>
             </div>
 
-            <!-- ===== НОВАЯ ВКЛАДКА РЕЦЕПТЫ ===== -->
+            <!-- РЕЦЕПТЫ -->
             <div id="recipes-tab" class="tab-content space-y-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-3 text-slate-800">🍳 Рецепты</h2>
@@ -361,13 +371,13 @@
                         </label>
                     </div>
                     <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Карточки рецептов будут загружены из recipes.json -->
+                        <!-- Карточки рецептов -->
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+        <!-- НАВИГАЦИЯ -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl flex overflow-x-auto p-2 z-40 space-x-1">
             <button data-tab="today" class="tab-button flex flex-col items-center p-1.5 text-emerald-600 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📊</span><span>Сегодня</span></button>
             <button data-tab="diary" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📝</span><span>Дневник</span></button>
@@ -801,25 +811,68 @@
         };
 
         // ================================================================
-        // 8. ГОЛОСОВОЙ ВВОД
+        // 8. ГОЛОСОВОЙ ВВОД (с индикацией)
         // ================================================================
+        let recognition = null;
         window.startVoiceInput = function(inputId) {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'ru-RU';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
+            const micBtn = document.getElementById('mic-button');
+            if (recognition) {
+                // Если уже идёт запись, остановить
+                recognition.stop();
+                recognition = null;
+                micBtn.classList.remove('mic-active');
+                micBtn.textContent = '🎤';
+                return;
+            }
+            try {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'ru-RU';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
 
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                const input = document.getElementById(inputId);
-                input.value += (input.value ? ', ' : '') + transcript;
-            };
+                // Визуальная индикация
+                micBtn.classList.add('mic-active');
+                micBtn.textContent = '⏺';
 
-            recognition.onerror = function(event) {
-                showModal('Ошибка распознавания: ' + event.error);
-            };
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    const input = document.getElementById(inputId);
+                    input.value += (input.value ? ', ' : '') + transcript;
+                    // Останавливаем распознавание после успеха
+                    recognition.stop();
+                    recognition = null;
+                    micBtn.classList.remove('mic-active');
+                    micBtn.textContent = '🎤';
+                };
 
-            recognition.start();
+                recognition.onerror = function(event) {
+                    console.error('Ошибка распознавания:', event.error);
+                    micBtn.classList.remove('mic-active');
+                    micBtn.textContent = '🎤';
+                    if (event.error === 'not-allowed') {
+                        showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+                    } else {
+                        showModal('Ошибка распознавания: ' + event.error);
+                    }
+                    recognition = null;
+                };
+
+                recognition.onend = function() {
+                    // Если распознавание завершилось без результата (например, тишина)
+                    if (recognition) {
+                        recognition = null;
+                        micBtn.classList.remove('mic-active');
+                        micBtn.textContent = '🎤';
+                    }
+                };
+
+                recognition.start();
+            } catch (e) {
+                console.error('Ошибка запуска распознавания:', e);
+                showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
+                micBtn.classList.remove('mic-active');
+                micBtn.textContent = '🎤';
+            }
         };
 
         // ================================================================
@@ -842,8 +895,6 @@
             let medications = medsRaw.trim() ? medsRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
             const symptomsText = document.getElementById('symptoms-text-input').value.trim();
             const cycleDay = (userGender === 'male') ? 0 : getCurrentCycleDay();
-
-            // Погода удалена — не сохраняем
 
             userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
             userLogs.push({ date, time, cycleDay, products, medications, symptomsText });
@@ -903,7 +954,7 @@
         };
 
         // ================================================================
-        // 11. ДАШБОРД (СЕГОДНЯ)
+        // 11. ДАШБОРД (СЕГОДНЯ) с явным учётом задержки
         // ================================================================
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
@@ -912,16 +963,15 @@
             let riskReason = 'Фаза цикла: стабильная';
             let tip = 'Сегодня хороший день, чтобы попробовать новые продукты.';
 
-            // Погода удалена — не учитываем
-
+            // Проверяем задержку
             if (delayStartDate) {
                 const start = new Date(delayStartDate);
                 const now = new Date();
                 const delayDays = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-                riskLevel = 'Высокий';
+                riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
                 riskClass = 'risk-high';
-                riskReason = `⏳ Задержка ${delayDays} дн. + гормональный дисбаланс`;
-                tip = '⚠️ При задержке чувствительность к гистамину часто повышена. Будьте особенно внимательны к питанию.';
+                riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
+                tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
             } else if (userGender !== 'male' && cycleDay !== null) {
                 const phase = getCyclePhaseName(cycleDay);
                 if (phase === 'Овуляция' || phase === 'ПМС') {
@@ -956,6 +1006,7 @@
             document.getElementById('risk-reason').textContent = riskReason;
             document.getElementById('today-tip').textContent = tip;
 
+            // Статистика
             const now = new Date();
             const sevenDaysAgo = new Date(now);
             sevenDaysAgo.setDate(now.getDate() - 7);
@@ -1016,7 +1067,7 @@
         }
 
         // ================================================================
-        // 12. ЗАДЕРЖКА
+        // 12. ЗАДЕРЖКА (улучшенная видимость)
         // ================================================================
         window.toggleDelay = function() {
             const btn = document.getElementById('delay-btn');
@@ -1025,14 +1076,14 @@
                 delayStartDate = new Date().toISOString().split('T')[0];
                 localStorage.setItem('histolite_delay_start', delayStartDate);
                 btn.textContent = '✅ Задержка отмечена';
-                btn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-300 transition';
-                showModal('✅ Задержка менструации отмечена. Приложение будет учитывать это в прогнозе.');
+                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-amber-600 text-white border border-amber-700 transition hover:bg-amber-700';
+                showModal('✅ Задержка отмечена. Прогноз риска обновлён.');
             } else {
                 localStorage.removeItem('histolite_delay_start');
                 delayStartDate = null;
                 btn.textContent = '❌ Нет задержки';
-                btn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition';
-                showModal('Задержка сброшена.');
+                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300';
+                showModal('Задержка сброшена. Прогноз риска обновлён.');
             }
             updateDelayUI();
             renderTodayDashboard();
@@ -1041,20 +1092,19 @@
 
         function updateDelayUI() {
             const info = document.getElementById('delay-info');
+            const btn = document.getElementById('delay-btn');
             if (delayStartDate) {
                 const start = new Date(delayStartDate);
                 const now = new Date();
                 const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
                 info.textContent = `⏳ Задержка: ${diffDays} дн. (начало ${delayStartDate})`;
                 info.classList.remove('hidden');
-                const btn = document.getElementById('delay-btn');
                 btn.textContent = `✅ Задержка ${diffDays} дн.`;
-                btn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-300 transition';
+                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-amber-600 text-white border border-amber-700 transition hover:bg-amber-700';
             } else {
                 info.classList.add('hidden');
-                const btn = document.getElementById('delay-btn');
                 btn.textContent = '❌ Нет задержки';
-                btn.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition';
+                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300';
             }
         }
 
@@ -1147,8 +1197,6 @@
             updateDelayUI();
             renderTodayDashboard();
             checkNotifications();
-
-            // ЗАГРУЗКА РЕЦЕПТОВ
             loadRecipes();
         };
 
