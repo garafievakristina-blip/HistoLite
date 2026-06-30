@@ -208,14 +208,17 @@
                         <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label><input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
                         <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label><input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
-                        <div class="chip-container" id="chip-container">
-                            <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
-                            <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
-                        </div>
-                        <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
-                    </div>
+                   <div class="mb-4">
+    <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
+    <div class="flex items-center gap-2">
+        <div class="chip-container" id="chip-container">
+            <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
+            <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
+        </div>
+        <button id="mic-products-btn" onclick="startVoiceInputForProducts()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm flex-shrink-0" title="Голосовой ввод продуктов">🎤</button>
+    </div>
+    <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
+</div>
                     <div class="mb-4">
                         <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
                         <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
@@ -824,6 +827,66 @@
                 micBtn.textContent = '🎤';
                 return;
             }
+            // Голосовой ввод для продуктов (добавляет продукт сразу в чипсы)
+let productRecognition = null;
+
+window.startVoiceInputForProducts = function() {
+    const micBtn = document.getElementById('mic-products-btn');
+    if (productRecognition) {
+        productRecognition.stop();
+        productRecognition = null;
+        micBtn.classList.remove('mic-active');
+        micBtn.textContent = '🎤';
+        return;
+    }
+    try {
+        productRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        productRecognition.lang = 'ru-RU';
+        productRecognition.interimResults = false;
+        productRecognition.maxAlternatives = 1;
+
+        micBtn.classList.add('mic-active');
+        micBtn.textContent = '⏺';
+
+        productRecognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript.trim();
+            if (transcript) {
+                addChip(transcript);
+            }
+            productRecognition.stop();
+            productRecognition = null;
+            micBtn.classList.remove('mic-active');
+            micBtn.textContent = '🎤';
+        };
+
+        productRecognition.onerror = function(event) {
+            console.error('Ошибка распознавания:', event.error);
+            micBtn.classList.remove('mic-active');
+            micBtn.textContent = '🎤';
+            if (event.error === 'not-allowed') {
+                showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+            } else {
+                showModal('Ошибка распознавания: ' + event.error);
+            }
+            productRecognition = null;
+        };
+
+        productRecognition.onend = function() {
+            if (productRecognition) {
+                productRecognition = null;
+                micBtn.classList.remove('mic-active');
+                micBtn.textContent = '🎤';
+            }
+        };
+
+        productRecognition.start();
+    } catch (e) {
+        console.error('Ошибка запуска распознавания:', e);
+        showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
+        micBtn.classList.remove('mic-active');
+        micBtn.textContent = '🎤';
+    }
+};
             try {
                 recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
                 recognition.lang = 'ru-RU';
