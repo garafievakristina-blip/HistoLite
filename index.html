@@ -131,6 +131,31 @@
 
         .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
         .mic-error { background-color: #ef4444 !important; }
+
+        /* Стили для календаря */
+        .cycle-day-cell {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.1s;
+        }
+        .cycle-day-cell.today {
+            border: 2px solid #2563eb;
+            box-shadow: 0 0 4px #2563eb;
+        }
+        .cycle-day-cell.ovulation {
+            border: 2px solid #d97706;
+            box-shadow: 0 0 4px #d97706;
+        }
+        .cycle-day-cell.delay {
+            background-color: #e5e7eb;
+            color: #6b7280;
+            font-style: italic;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -288,14 +313,21 @@
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Женский календарь</h3>
                     <div class="grid grid-cols-2 gap-2 mb-4">
-                        <div><label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день последней менструации</label><input type="date" id="last-period-start" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50"></div>
-                        <div><label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Длительность цикла (дней)</label><input type="number" id="cycle-length" min="20" max="45" value="28" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50"></div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день последней менструации</label>
+                            <input type="date" id="last-period-start" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Длительность цикла (дней)</label>
+                            <input type="number" id="cycle-length" min="20" max="45" value="28" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                        </div>
                     </div>
                     <div class="mb-4">
                         <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">ПМС начинается за (дней до цикла)</label>
                         <input type="number" id="pms-start-days" min="1" max="14" value="7" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                         <p class="text-[9px] text-slate-400 mt-1">Например, если ПМС начинается за 10 дней до менструации — поставьте 10.</p>
                     </div>
+                    <!-- ОТДЕЛЬНАЯ КАРТОЧКА ЗАДЕРЖКИ -->
                     <div class="mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300 shadow-sm">
                         <div class="flex items-center justify-between">
                             <div>
@@ -312,6 +344,11 @@
                     </div>
                     <div class="mt-4 p-3 bg-slate-50 rounded-xl text-xs text-slate-600" id="cycle-forecast">
                         <p class="text-center">Настройте дату начала цикла для прогноза.</p>
+                    </div>
+                    <!-- ВИЗУАЛЬНЫЙ КАЛЕНДАРЬ -->
+                    <div class="mt-4 p-3 bg-white rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">📅 Визуальный календарь цикла</div>
+                        <div id="cycle-load-calendar" class="cycle-calendar"></div>
                     </div>
                 </div>
             </div>
@@ -476,9 +513,9 @@
 
         function getCyclePhaseName(day) {
             if (day === null || day > savedCycleLength) return "Вне цикла";
-            const len = savedCycleLength;
+            const len = parseInt(savedCycleLength);
             const ovulationDay = len - 14;
-            const pmsStart = len - savedPmsStartDays;
+            const pmsStart = len - parseInt(savedPmsStartDays);
             if (day <= 5) return "Начало цикла";
             if (day >= 6 && day < ovulationDay) return "Фолликулярная";
             if (day >= ovulationDay && day <= ovulationDay + 1) return "Овуляция";
@@ -513,34 +550,33 @@
                 badge.innerText = 'Задержка';
                 badge.className = 'p-2 rounded-xl text-xs font-bold text-center bg-amber-100 text-amber-700 border border-amber-200';
                 forecast.innerHTML = `<p class="text-xs text-amber-700"><strong>⏳ Задержка менструации (${diffDays} дн.)</strong></p><p class="text-xs text-slate-500 mt-1">При задержке чувствительность к гистамину часто повышена. Будьте внимательны к питанию.</p>`;
-                return;
-            }
-
-            if (day === null || !savedLastPeriodStart) {
+            } else if (day === null || !savedLastPeriodStart) {
                 display.innerText = '—';
                 badge.innerText = 'Не определена';
                 badge.className = 'p-2 rounded-xl text-xs font-bold text-center bg-slate-100 text-slate-500';
                 forecast.innerHTML = '<p class="text-center text-slate-500">Укажите дату начала последней менструации в календаре.</p>';
-                return;
-            }
-
-            display.innerText = day;
-            const phase = getCyclePhaseName(day);
-            badge.innerText = phase;
-            badge.className = `p-2 rounded-xl text-xs font-bold text-center border ${getPhaseColor(phase)}`;
-
-            let advice = '', adviceColor = 'text-slate-600';
-            if (phase === "Овуляция" || phase === "ПМС") {
-                advice = '⚠️ Повышенная чувствительность. Выбирайте зелёные продукты.';
-                adviceColor = 'text-amber-700';
-            } else if (phase === "Начало цикла" || phase === "Лютеиновая") {
-                advice = '🟡 Умеренная чувствительность. Следите за реакциями.';
-                adviceColor = 'text-yellow-700';
             } else {
-                advice = '✅ Организм стабилен. Можно пробовать новые продукты.';
-                adviceColor = 'text-emerald-700';
+                display.innerText = day;
+                const phase = getCyclePhaseName(day);
+                badge.innerText = phase;
+                badge.className = `p-2 rounded-xl text-xs font-bold text-center border ${getPhaseColor(phase)}`;
+
+                let advice = '', adviceColor = 'text-slate-600';
+                if (phase === "Овуляция" || phase === "ПМС") {
+                    advice = '⚠️ Повышенная чувствительность. Выбирайте зелёные продукты.';
+                    adviceColor = 'text-amber-700';
+                } else if (phase === "Начало цикла" || phase === "Лютеиновая") {
+                    advice = '🟡 Умеренная чувствительность. Следите за реакциями.';
+                    adviceColor = 'text-yellow-700';
+                } else {
+                    advice = '✅ Организм стабилен. Можно пробовать новые продукты.';
+                    adviceColor = 'text-emerald-700';
+                }
+                forecast.innerHTML = `<p class="text-xs text-slate-600"><strong>Текущая фаза: ${phase}</strong></p><p class="text-xs ${adviceColor} mt-1">${advice}</p>`;
             }
-            forecast.innerHTML = `<p class="text-xs text-slate-600"><strong>Текущая фаза: ${phase}</strong></p><p class="text-xs ${adviceColor} mt-1">${advice}</p>`;
+
+            // Отображаем календарь
+            renderCycleCalendar();
         }
 
         function saveCycleSettings() {
@@ -555,6 +591,7 @@
             localStorage.setItem('histolite_pms_start_days', savedPmsStartDays);
             updateCycleUI();
             renderTodayDashboard();
+            renderCycleCalendar();
         }
 
         // ================================================================
@@ -582,7 +619,7 @@
         });
 
         // ================================================================
-        // 4. ЧИПСЫ (ПРОДУКТЫ) - С РАЗБИВКОЙ ДЛЯ РУЧНОГО ВВОДА
+        // 4. ЧИПСЫ (ПРОДУКТЫ)
         // ================================================================
         function normalizeProductName(name) {
             return String(name).trim().toLowerCase().replace(/\s+/g, ' ');
@@ -626,7 +663,6 @@
             renderChips();
         }
 
-        // Функция разбивки текста на отдельные продукты (общая для голоса и ручного ввода)
         function splitProducts(text) {
             text = String(text).toLowerCase().trim();
             text = text.replace(/^добавьте продукты\s*/i, '');
@@ -636,7 +672,6 @@
             return text.split(/[,.]/).map(p => p.trim()).filter(Boolean);
         }
 
-        // Обработчики для поля ввода продуктов (с разбивкой)
         document.addEventListener('DOMContentLoaded', function() {
             const chipInput = document.getElementById('chip-input');
             if (chipInput) {
@@ -647,9 +682,7 @@
                         if (val) {
                             const products = splitProducts(val);
                             products.forEach(function(product) {
-                                if (product.trim()) {
-                                    addChip(product.trim());
-                                }
+                                if (product.trim()) addChip(product.trim());
                             });
                             this.value = '';
                         }
@@ -660,9 +693,7 @@
                     if (val) {
                         const products = splitProducts(val);
                         products.forEach(function(product) {
-                            if (product.trim()) {
-                                addChip(product.trim());
-                            }
+                            if (product.trim()) addChip(product.trim());
                         });
                         this.value = '';
                     }
@@ -839,10 +870,9 @@
         };
 
         // ================================================================
-        // 8. ГОЛОСОВОЙ ВВОД ДЛЯ СИМПТОМОВ
+        // 8. ГОЛОСОВОЙ ВВОД
         // ================================================================
         let recognition = null;
-
         document.addEventListener('DOMContentLoaded', function() {
             const micBtn = document.getElementById('mic-button');
             if (micBtn) {
@@ -910,7 +940,7 @@
         }
 
         // ================================================================
-        // 9. ГОЛОСОВОЙ ВВОД ДЛЯ ПРОДУКТОВ (с разбивкой)
+        // 9. ГОЛОСОВОЙ ВВОД ДЛЯ ПРОДУКТОВ
         // ================================================================
         let productRecognition = null;
 
@@ -946,11 +976,9 @@
                 productRecognition.onresult = function(event) {
                     const transcript = event.results[0][0].transcript.trim();
                     const products = splitProducts(transcript);
-
                     products.forEach(function(product) {
                         if (product.trim()) addChip(product.trim());
                     });
-
                     productRecognition.stop();
                     productRecognition = null;
                     micBtn.classList.remove('mic-active');
@@ -1060,7 +1088,103 @@
         };
 
         // ================================================================
-        // 12. ДАШБОРД (СЕГОДНЯ)
+        // 12. ВИЗУАЛЬНЫЙ КАЛЕНДАРЬ
+        // ================================================================
+        function renderCycleCalendar() {
+            const container = document.getElementById('cycle-load-calendar');
+            if (!container) return;
+
+            const startDate = new Date(savedLastPeriodStart);
+            if (!savedLastPeriodStart || isNaN(startDate.getTime())) {
+                container.innerHTML = '<p class="text-center text-slate-400 text-xs">Настройте дату начала цикла</p>';
+                return;
+            }
+
+            const cycleLength = parseInt(savedCycleLength) || 28;
+            const currentDay = getCurrentCycleDay();
+            const pmsStart = cycleLength - parseInt(savedPmsStartDays);
+            const ovulationDay = cycleLength - 14;
+
+            // Определяем общее количество дней для отображения (включая дни задержки)
+            let totalDays = cycleLength;
+            let delayDays = 0;
+            if (currentDay !== null && currentDay > cycleLength) {
+                totalDays = currentDay;
+                delayDays = currentDay - cycleLength;
+            }
+
+            let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
+            const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            html += weekDays.map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
+
+            // Вычисляем день недели для первого дня цикла (день 1)
+            let firstDayOfWeek = startDate.getDay(); // 0 - воскресенье, 1 - понедельник, ...
+            // Приводим к понедельнику как 0
+            let offset = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
+
+            // Заполняем пустые ячейки до первого дня
+            for (let i = 0; i < offset; i++) {
+                html += '<div></div>';
+            }
+
+            // Отображаем дни цикла
+            for (let d = 1; d <= totalDays; d++) {
+                let bg = 'bg-slate-100';
+                let text = 'text-slate-600';
+                let label = d;
+                let isToday = (d === currentDay);
+                let isOvulation = (d === ovulationDay && ovulationDay > 0 && ovulationDay <= cycleLength);
+                let isDelay = (d > cycleLength);
+
+                // Определяем фазу
+                let phase = getCyclePhaseName(d);
+                if (phase === 'Начало цикла') bg = 'bg-red-200';
+                else if (phase === 'Фолликулярная') bg = 'bg-green-200';
+                else if (phase === 'Овуляция') bg = 'bg-amber-200';
+                else if (phase === 'Лютеиновая') bg = 'bg-green-200';
+                else if (phase === 'ПМС') bg = 'bg-rose-200';
+                else bg = 'bg-slate-100';
+
+                if (isDelay) {
+                    bg = 'bg-gray-200';
+                    text = 'text-gray-500';
+                    label = `+${d - cycleLength}`;
+                }
+                if (isToday) {
+                    bg = 'bg-blue-300';
+                    text = 'text-white font-bold';
+                }
+                if (isOvulation && !isToday) {
+                    // добавляем рамку овуляции через класс, но оставляем фон
+                }
+
+                let extraClasses = '';
+                if (isToday) extraClasses += ' today';
+                if (isOvulation && !isToday) extraClasses += ' ovulation';
+                if (isDelay) extraClasses += ' delay';
+
+                html += `<div class="cycle-day-cell ${bg} ${text} ${extraClasses}">${label}</div>`;
+            }
+
+            html += '</div>';
+
+            // Легенда
+            html += `
+                <div class="flex flex-wrap gap-3 mt-2 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-red-200 rounded"></span> Начало</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-green-200 rounded"></span> Фолликулярная/Лютеиновая</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-amber-200 rounded border border-amber-500"></span> Овуляция</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-rose-200 rounded"></span> ПМС</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-blue-300 rounded"></span> Сегодня</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-gray-200 rounded"></span> Задержка</span>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // ================================================================
+        // 13. ДАШБОРД (СЕГОДНЯ)
         // ================================================================
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
@@ -1171,7 +1295,7 @@
         }
 
         // ================================================================
-        // 13. ЗАДЕРЖКА
+        // 14. ЗАДЕРЖКА
         // ================================================================
         window.toggleDelay = function() {
             const btn = document.getElementById('delay-btn');
@@ -1192,6 +1316,7 @@
             updateDelayUI();
             renderTodayDashboard();
             updateCycleUI();
+            renderCycleCalendar();
         };
 
         function updateDelayUI() {
@@ -1213,7 +1338,7 @@
         }
 
         // ================================================================
-        // 14. УВЕДОМЛЕНИЯ
+        // 15. УВЕДОМЛЕНИЯ
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1228,14 +1353,14 @@
         }
 
         // ================================================================
-        // 15. АНАЛИТИКА (заглушка)
+        // 16. АНАЛИТИКА (заглушка)
         // ================================================================
         window.runAdvancedAnalytics = function() {
             showModal('Анализ триггеров пока в разработке. Скоро появится!');
         };
 
         // ================================================================
-        // 16. ЭКСПОРТ (заглушки)
+        // 17. ЭКСПОРТ (заглушки)
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1245,7 +1370,7 @@
         };
 
         // ================================================================
-        // 17. МОДАЛЬНЫЕ ОКНА
+        // 18. МОДАЛЬНЫЕ ОКНА
         // ================================================================
         window.showModal = function(msg) {
             document.getElementById('custom-modal-message').textContent = msg;
@@ -1257,7 +1382,7 @@
         };
 
         // ================================================================
-        // 18. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
+        // 19. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
         function toggleLegalButton() {
             const chk = document.getElementById('legal-checkbox');
@@ -1286,8 +1411,11 @@
             const dateInput = document.getElementById('last-period-start');
             const lengthInput = document.getElementById('cycle-length');
             const pmsInput = document.getElementById('pms-start-days');
+
             if (savedLastPeriodStart) dateInput.value = savedLastPeriodStart;
+            if (savedCycleLength) lengthInput.value = savedCycleLength;
             if (savedPmsStartDays) pmsInput.value = savedPmsStartDays;
+
             dateInput.addEventListener('change', saveCycleSettings);
             lengthInput.addEventListener('change', saveCycleSettings);
             pmsInput.addEventListener('change', saveCycleSettings);
@@ -1302,10 +1430,11 @@
             renderTodayDashboard();
             checkNotifications();
             loadRecipes();
+            renderCycleCalendar();
         };
 
         // ================================================================
-        // 19. РАБОТА С РЕЦЕПТАМИ
+        // 20. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         async function loadRecipes() {
             try {
@@ -1428,7 +1557,7 @@
         });
 
         // ================================================================
-        // 20. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 21. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(() => {
@@ -1443,6 +1572,7 @@
                 const lengthInput = document.getElementById('cycle-length');
                 const pmsInput = document.getElementById('pms-start-days');
                 if (savedLastPeriodStart) dateInput.value = savedLastPeriodStart;
+                if (savedCycleLength) lengthInput.value = savedCycleLength;
                 if (savedPmsStartDays) pmsInput.value = savedPmsStartDays;
                 dateInput.addEventListener('change', saveCycleSettings);
                 lengthInput.addEventListener('change', saveCycleSettings);
@@ -1456,10 +1586,11 @@
                 renderTodayDashboard();
                 checkNotifications();
                 loadRecipes();
+                renderCycleCalendar();
             }, 100);
         }
 
-        console.log('✅ Приложение загружено. Ручной и голосовой ввод продуктов разбивают текст на отдельные чипсы.');
+        console.log('✅ Приложение загружено. Календарь цикла работает с сохранением длины.');
     </script>
 
 </body>
