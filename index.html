@@ -389,6 +389,7 @@
                         <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
                     </div>
                 </div>
+                <button onclick="clearAllMarks()" class="w-full mt-3 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl text-sm transition">🗑️ Очистить все отметки цикла</button>
             </div>
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
@@ -1716,6 +1717,18 @@
             }, 100);
         }
 
+        window.clearAllMarks = function() {
+    if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
+        localStorage.removeItem('histolite_cycle_marks');
+        localStorage.removeItem('histolite_last_period_start');
+        // Обновляем переменные
+        cycleMarks = {};
+        savedLastPeriodStart = '';
+        renderCycleCalendar();
+        renderTodayDashboard();
+        showModal('Все отметки удалены. Теперь отметьте первый день цикла заново.');
+    }
+};
         console.log('✅ Приложение загружено. Календарь использует корректную логику: ожидаемый день начала = первый день + (длительность цикла - 1)');
     </script>
 </body>
