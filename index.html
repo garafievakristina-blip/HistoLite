@@ -1431,15 +1431,7 @@ window.acceptLegal = function() {
     loadRecipes();
     renderCycleCalendar();
 };
-                pmsInput.value = savedPmsStartDays;
-                pmsInput.addEventListener('change', function() {
-                    const val = parseInt(this.value) || 7;
-                    savedPmsStartDays = val;
-                    localStorage.setItem('histolite_pms_start_days', val);
-                    renderCycleCalendar();
-                    renderTodayDashboard();
-                });
-            }
+                
 
             if (userGender === 'male') {
                 document.getElementById('calendar-nav-btn').style.display = 'none';
