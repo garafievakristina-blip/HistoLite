@@ -271,17 +271,86 @@
 
             <!-- ВКЛАДКА ДНЕВНИК -->
             <div id="diary-tab" class="tab-content space-y-4">
-                <!-- ... -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">📝 Новая запись</h2>
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label><input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
+                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label><input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
+                        <div class="flex items-center gap-2">
+                            <div class="chip-container" id="chip-container">
+                                <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
+                                <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
+                            </div>
+                            <button id="mic-products-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm flex-shrink-0" title="Голосовой ввод продуктов">🎤</button>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
+                        <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                    </div>
+                    <div class="space-y-2 border-t border-slate-100 pt-3">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                            <button id="mic-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Нажмите на микрофон и скажите текст. Кнопка подсветится во время записи.</p>
+                    </div>
+                    <button onclick="saveLog()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">Сохранить запись</button>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Последние записи</h3>
+                        <button onclick="clearAllLogs()" class="text-[10px] text-red-500 hover:text-red-700 underline">Очистить всё</button>
+                    </div>
+                    <div id="history-container" class="space-y-2 text-xs text-slate-500"></div>
+                </div>
             </div>
 
             <!-- ВКЛАДКА ПРОДУКТЫ -->
             <div id="products-tab" class="tab-content space-y-4">
-                <!-- ... -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">🔍 Узнать уровень гистамина</h2>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Введите название продукта</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="product-search-input" placeholder="например: помидор, сыр, кефир" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                            <button onclick="searchProductByName()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">Найти</button>
+                        </div>
+                    </div>
+                    <div class="mb-4 flex gap-2 flex-wrap">
+                        <button onclick="scanBarcode()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📷 Сканировать камерой</button>
+                        <button onclick="uploadBarcodeImage()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📤 Загрузить фото</button>
+                    </div>
+                    <input type="file" id="barcode-image-input" accept="image/*" style="display:none" onchange="decodeBarcodeFromImage(this)">
+                    <div id="scanner-container" style="display: none; margin-bottom: 15px;">
+                        <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
+                        <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">❌ Закрыть сканер</button>
+                    </div>
+                    <div id="product-search-result" class="hidden"></div>
+                </div>
             </div>
 
             <!-- ВКЛАДКА БАЗА -->
             <div id="safe-tab" class="tab-content space-y-4">
-                <!-- ... -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">📋 Моя база «Можно / Нельзя»</h2>
+                    <div class="flex gap-2 mb-3 flex-wrap">
+                        <input type="text" id="safe-search-input" placeholder="Поиск продукта..." class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50" oninput="renderSafeProducts()">
+                        <div class="flex gap-1">
+                            <button class="safe-filter-btn active" data-filter="all" onclick="setSafeFilter('all')">Все</button>
+                            <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">✅ Можно</button>
+                            <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">❌ Нельзя</button>
+                            <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">❓ Под вопросом</button>
+                        </div>
+                    </div>
+                    <div id="safe-products-list" class="space-y-1.5 max-h-96 overflow-y-auto pr-1"></div>
+                    <div class="text-xs text-slate-400 mt-3">Нажимайте на кнопки, чтобы отметить продукт.</div>
+                </div>
             </div>
 
             <!-- ВКЛАДКА КАЛЕНДАРЬ -->
@@ -324,12 +393,59 @@
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
-                <!-- ... -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">📈 Связь симптомов с фазой цикла</h2>
+                    <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">📊 Визуальный календарь нагрузки</h2>
+                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">🔍 Анализ совпадений (48ч) — продукты и лекарства</h2>
+                    <button onclick="runAdvancedAnalytics()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md">Найти скрытые триггеры</button>
+                    <div id="analytics-results" class="mt-4 space-y-2"><p class="text-xs text-slate-400 text-center py-4">Нажмите кнопку для расчёта.</p></div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-2">📎 Экспорт данных</h2>
+                    <button onclick="exportToCSV()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md">Скачать отчёт (CSV)</button>
+                    <button onclick="exportToPDF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md mt-2">
+                        📄 Скачать отчёт для врача (PDF)
+                    </button>
+                    <p class="text-[10px] text-slate-400 mt-2">*PDF с таблицей, статистикой и графиком</p>
+                </div>
             </div>
 
             <!-- РЕЦЕПТЫ -->
             <div id="recipes-tab" class="tab-content space-y-4">
-                <!-- ... -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">🍳 Рецепты</h2>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button class="recipe-filter-btn active" data-category="all">Все</button>
+                        <button class="recipe-filter-btn" data-category="завтрак">Завтрак</button>
+                        <button class="recipe-filter-btn" data-category="обед">Обед</button>
+                        <button class="recipe-filter-btn" data-category="ужин">Ужин</button>
+                        <button class="recipe-filter-btn" data-category="перекус">Перекус</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button class="level-filter-btn active" data-level="all">Все уровни</button>
+                        <button class="level-filter-btn" data-level="низкий">🟢 Низкий</button>
+                        <button class="level-filter-btn" data-level="средний">🟡 Средний</button>
+                        <button class="level-filter-btn" data-level="высокий">🔴 Высокий</button>
+                    </div>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <label class="flex items-center gap-1 text-xs">
+                            <input type="checkbox" id="filter-gluten-free" onchange="renderRecipes()"> 🌾 Без глютена
+                        </label>
+                        <label class="flex items-center gap-1 text-xs">
+                            <input type="checkbox" id="filter-lactose-free" onchange="renderRecipes()"> 🥛 Без лактозы
+                        </label>
+                        <label class="flex items-center gap-1 text-xs">
+                            <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> 🧈 Без молочных продуктов
+                        </label>
+                    </div>
+                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                </div>
             </div>
         </main>
 
@@ -386,11 +502,32 @@
     </div>
 
     <div id="recipe-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <!-- ... -->
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeRecipeModal()" class="float-right text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+            <img id="recipe-modal-image" src="" alt="" class="w-full h-48 object-cover rounded-xl mb-4">
+            <h3 id="recipe-modal-name" class="text-xl font-bold text-slate-800 mb-2"></h3>
+            <div class="flex flex-wrap gap-2 text-sm text-slate-500 mb-3">
+                <span id="recipe-modal-category" class="bg-slate-100 px-2 py-1 rounded-full"></span>
+                <span id="recipe-modal-level" class="bg-slate-100 px-2 py-1 rounded-full"></span>
+                <span id="recipe-modal-time" class="bg-slate-100 px-2 py-1 rounded-full">⏱</span>
+                <span id="recipe-modal-servings" class="bg-slate-100 px-2 py-1 rounded-full">🍽</span>
+            </div>
+            <div id="recipe-modal-diets" class="flex flex-wrap gap-1 mb-3"></div>
+            <h4 class="font-bold text-slate-700 mt-3">📝 Описание</h4>
+            <p id="recipe-modal-description" class="text-sm text-slate-600 mb-3 italic"></p>
+            <h4 class="font-bold text-slate-700 mt-3">🥘 Ингредиенты:</h4>
+            <ul id="recipe-modal-ingredients" class="list-disc list-inside text-sm text-slate-600 mb-3"></ul>
+            <h4 class="font-bold text-slate-700 mt-3">👨‍🍳 Приготовление:</h4>
+            <p id="recipe-modal-instructions" class="text-sm text-slate-600 whitespace-pre-line"></p>
+            <div id="recipe-modal-tips" class="mt-3 p-3 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200"></div>
+        </div>
     </div>
 
     <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <!-- ... -->
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <p id="custom-modal-message" class="text-center text-sm text-slate-700 mb-4">Сообщение</p>
+            <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">OK</button>
+        </div>
     </div>
 
     <script>
