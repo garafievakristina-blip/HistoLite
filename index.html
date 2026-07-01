@@ -364,7 +364,7 @@
                 <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Первый день цикла</button>
                 <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
                 <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
-                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
+               <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
                 <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
             </div>
         </div>
@@ -965,33 +965,45 @@
         }
 
         window.confirmEvent = function(type) {
-            if (!selectedDate) return;
-            if (type === 'clear') {
-                delete cycleMarks[selectedDate];
-                if (selectedDate === savedLastPeriodStart) {
-                    savedLastPeriodStart = '';
-                    localStorage.setItem('histolite_last_period_start', '');
-                }
-                showModal('Отметка снята');
-            } else {
-                if (type === 'first_day') {
-                    for (let key in cycleMarks) {
-                        if (cycleMarks[key] === 'first_day') {
-                            delete cycleMarks[key];
-                        }
-                    }
-                    savedLastPeriodStart = selectedDate;
-                    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-                }
-                cycleMarks[selectedDate] = type;
-                showModal(`Отмечено: ${type === 'first_day' ? 'Первый день цикла' : type === 'ovulation' ? 'Овуляция' : 'Последний день менструации'}`);
-            }
-            localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-            closeEventModal();
-            renderCycleCalendar();
-            renderTodayDashboard();
-        };
+    if (!selectedDate) {
+        showModal('Ошибка: дата не выбрана');
+        return;
+    }
 
+    if (type === 'clear') {
+        // Удаляем отметку
+        delete cycleMarks[selectedDate];
+        // Если это был первый день цикла, сбрасываем savedLastPeriodStart
+        if (selectedDate === savedLastPeriodStart) {
+            savedLastPeriodStart = '';
+            localStorage.setItem('histolite_last_period_start', '');
+        }
+        showModal('Отметка снята');
+    } else {
+        // Устанавливаем отметку
+        if (type === 'first_day') {
+            // Удаляем все старые отметки первого дня
+            for (let key in cycleMarks) {
+                if (cycleMarks[key] === 'first_day') {
+                    delete cycleMarks[key];
+                }
+            }
+            savedLastPeriodStart = selectedDate;
+            localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+        }
+        cycleMarks[selectedDate] = type;
+        let label = type === 'first_day' ? 'Первый день цикла' : type === 'ovulation' ? 'Овуляция' : 'Последний день менструации';
+        showModal(`Отмечено: ${label}`);
+    }
+
+    // Сохраняем отметки в localStorage
+    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+    // Закрываем модальное окно
+    closeEventModal();
+    // Перерисовываем календарь и дашборд
+    renderCycleCalendar();
+    renderTodayDashboard();
+};
         window.changeMonth = function(delta) {
             currentMonth += delta;
             if (currentMonth > 11) {
@@ -1063,9 +1075,9 @@
 
                 // Проверяем ожидаемую дату (после того, как определены mark и isToday)
                 const isExpected = expectedStartDate && dateStr === formatDate(expectedStartDate.getFullYear(), expectedStartDate.getMonth(), expectedStartDate.getDate());
-                if (isExpected && !mark && !isToday) {
-                    extraClasses += ' expected';
-                }
+if (isExpected && !mark && !isToday) {
+    extraClasses += ' expected';
+}
 
                 if (mark === 'first_day') {
                     bg = 'bg-red-200';
