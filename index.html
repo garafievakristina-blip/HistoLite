@@ -1157,44 +1157,60 @@
         };
 
         window.confirmEvent = function(type) {
-            if (!selectedDate) {
-                showModal('Ошибка: дата не выбрана');
-                return;
+    if (!selectedDate) {
+        showModal('Ошибка: дата не выбрана');
+        return;
+    }
+
+    if (type === 'clear') {
+        // Удаляем отметку
+        delete cycleMarks[selectedDate];
+        // Если это был первый день цикла, сбрасываем savedLastPeriodStart
+        if (selectedDate === savedLastPeriodStart) {
+            savedLastPeriodStart = '';
+            localStorage.setItem('histolite_last_period_start', '');
+        }
+        localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+        closeEventModal();
+        renderCycleCalendar();
+        renderTodayDashboard();
+        showModal('Отметка снята');
+        return;
+    }
+
+    if (type === 'first_day') {
+        // Удаляем ВСЕ старые отметки первого дня
+        for (let key in cycleMarks) {
+            if (cycleMarks[key] === 'first_day') {
+                delete cycleMarks[key];
             }
+        }
+        // Устанавливаем новый первый день
+        savedLastPeriodStart = selectedDate;
+        localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+        cycleMarks[selectedDate] = 'first_day';
+        localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+        closeEventModal();
+        renderCycleCalendar();
+        renderTodayDashboard();
+        showModal('Первый день цикла установлен на ' + new Date(selectedDate).toLocaleDateString('ru-RU'));
+        return;
+    }
 
-            if (type === 'clear') {
-                delete cycleMarks[selectedDate];
-
-                if (selectedDate === savedLastPeriodStart) {
-                    savedLastPeriodStart = '';
-                    localStorage.setItem('histolite_last_period_start', '');
-                }
-
-                localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-                closeEventModal();
-                renderCycleCalendar();
-                renderTodayDashboard();
-                showModal('Отметка снята');
-                return;
-            }
-
-            if (type === 'first_day') {
-                for (let key in cycleMarks) {
-                    if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
-                }
-                savedLastPeriodStart = selectedDate;
-                localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-            }
-
-            cycleMarks[selectedDate] = type;
-            localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-
-            const label = type === 'first_day' ? 'Первый день цикла' : type === 'ovulation' ? 'Овуляция' : 'Последний день менструации';
-            closeEventModal();
-            renderCycleCalendar();
-            renderTodayDashboard();
-            showModal(`Отмечено: ${label}`);
-        };
+    // Для остальных отметок (ovulation, last_day)
+    // Если такая отметка уже есть, удаляем её (переключение)
+    if (cycleMarks[selectedDate] === type) {
+        delete cycleMarks[selectedDate];
+    } else {
+        cycleMarks[selectedDate] = type;
+    }
+    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+    closeEventModal();
+    renderCycleCalendar();
+    renderTodayDashboard();
+    const label = type === 'ovulation' ? 'Овуляция' : 'Последний день менструации';
+    showModal(`Отмечено: ${label}`);
+};
 
         window.changeMonth = function(delta) {
             currentMonth += delta;
