@@ -144,6 +144,11 @@
             transition: all 0.1s;
             cursor: pointer;
             user-select: none;
+            position: relative;
+        }
+        .cycle-day-cell:hover {
+            opacity: 0.8;
+            transform: scale(0.95);
         }
         .cycle-day-cell.today {
             border: 2px solid #2563eb;
@@ -162,9 +167,44 @@
             border: 3px solid #dc2626;
             box-shadow: 0 0 6px #dc2626;
         }
-        .cycle-day-cell:hover {
-            opacity: 0.8;
-            transform: scale(0.95);
+        .cycle-day-cell.last-day {
+            border: 3px solid #8b5cf6;
+            box-shadow: 0 0 6px #8b5cf6;
+        }
+        .cycle-day-cell.has-mark::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .cycle-day-cell.has-mark.first-day::after {
+            background: #dc2626;
+        }
+        .cycle-day-cell.has-mark.ovulation::after {
+            background: #d97706;
+        }
+        .cycle-day-cell.has-mark.last-day::after {
+            background: #8b5cf6;
+        }
+        .calendar-nav-btn {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .calendar-nav-btn:hover {
+            background: #f1f5f9;
+        }
+        .calendar-month-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #0f172a;
         }
     </style>
 </head>
@@ -333,26 +373,23 @@
                         </div>
                     </div>
                     <div class="mb-3 text-xs text-slate-500 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                        💡 Нажмите на любой день в календаре, чтобы отметить первый день менструации.
+                        💡 Кликните по дате, чтобы отметить: первый день цикла, овуляцию или последний день менструации.
                     </div>
-                    <!-- Блок задержки -->
-                    <div class="mb-4 p-4 bg-amber-50 rounded-xl border-2 border-amber-300 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-xs uppercase font-bold text-amber-700">⏳ Задержка менструации</span>
-                                <div id="delay-info" class="text-xs text-amber-700 mt-1 hidden"></div>
-                            </div>
-                            <button id="delay-btn" onclick="toggleDelay()" class="px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300">❌ Нет задержки</button>
-                        </div>
-                        <p class="text-[9px] text-amber-600 mt-2">Если менструация задерживается, нажмите кнопку, чтобы отметить это — приложение учтёт повышенный риск.</p>
+                    <!-- Навигация по месяцам -->
+                    <div class="flex items-center justify-between mb-3">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
+                        <span class="calendar-month-label" id="calendar-month-label">Январь 2025</span>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
                     </div>
-                    <div id="cycle-info" class="text-xs text-slate-600 mb-2">
-                        <!-- Здесь будет выводиться информация о первом дне -->
-                    </div>
-                    <!-- ВИЗУАЛЬНЫЙ КАЛЕНДАРЬ -->
-                    <div class="mt-2 p-3 bg-white rounded-xl border border-slate-200">
-                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">📅 Календарь цикла</div>
-                        <div id="cycle-load-calendar" class="cycle-calendar"></div>
+                    <!-- Сетка календаря -->
+                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
+                    <!-- Легенда -->
+                    <div class="flex flex-wrap gap-3 mt-2 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block border-2 border-red-600 rounded"></span> 1-й день</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block border-2 border-purple-600 rounded"></span> Последний день</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block border-2 border-amber-500 rounded"></span> Овуляция</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-blue-300 rounded"></span> Сегодня</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-gray-200 rounded"></span> Задержка</span>
                     </div>
                 </div>
             </div>
@@ -437,7 +474,22 @@
         </footer>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА -->
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ВЫБОРА СОБЫТИЯ -->
+    <div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
+            <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
+            <div class="space-y-2">
+                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Первый день цикла</button>
+                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
+                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
+                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
+                <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО РЕЦЕПТА -->
     <div id="recipe-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <button onclick="closeRecipeModal()" class="float-right text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
@@ -479,10 +531,16 @@
         let savedLastPeriodStart = localStorage.getItem('histolite_last_period_start') || '';
         let savedCycleLength = localStorage.getItem('histolite_cycle_length') || 28;
         let savedPmsStartDays = localStorage.getItem('histolite_pms_start_days') || 7;
-        let delayStartDate = localStorage.getItem('histolite_delay_start') || null;
         let myHistamineDB = [];
         let recipesDB = [];
         let userRecipes = JSON.parse(localStorage.getItem('histolite_user_recipes')) || [];
+
+        // Хранилище отметок: объект { '2025-01-15': 'first_day', '2025-01-20': 'ovulation', ... }
+        let cycleMarks = JSON.parse(localStorage.getItem('histolite_cycle_marks')) || {};
+
+        // Текущий отображаемый месяц (0-11) и год
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
 
         const symptomsList = [
             { id: "brain_fog", name: "🌫️ Туман в голове" },
@@ -501,7 +559,7 @@
         ];
 
         // ================================================================
-        // 2. ЦИКЛ И ФАЗЫ
+        // 2. ФУНКЦИИ ЦИКЛА
         // ================================================================
         function getCurrentCycleDay() {
             if (!savedLastPeriodStart) return null;
@@ -964,8 +1022,8 @@
             if (!date) { showModal('Укажите дату'); return; }
             if (userGender !== 'male') {
                 const cycleDay = getCurrentCycleDay();
-                if (cycleDay === null && !delayStartDate && !savedLastPeriodStart) {
-                    showModal('Сначала настройте календарь цикла (укажите первый день менструации).');
+                if (cycleDay === null && !savedLastPeriodStart) {
+                    showModal('Сначала отметьте первый день цикла в календаре.');
                     return;
                 }
             }
@@ -1034,163 +1092,178 @@
         };
 
         // ================================================================
-        // 12. ВИЗУАЛЬНЫЙ КАЛЕНДАРЬ (интерактивный)
+        // 12. КАЛЕНДАРЬ (интерактивный, на весь год)
         // ================================================================
+
+        // Функция для получения даты в формате YYYY-MM-DD
+        function formatDate(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+
+        // Открытие модального окна для выбора события
+        let selectedDate = null;
+
+        function openEventModal(year, month, day) {
+            selectedDate = formatDate(year, month, day);
+            const dateObj = new Date(year, month, day);
+            document.getElementById('event-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
+            document.getElementById('event-modal').style.display = 'flex';
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').style.display = 'none';
+            selectedDate = null;
+        }
+
+        // Подтверждение выбора события
+        window.confirmEvent = function(type) {
+            if (!selectedDate) return;
+            if (type === 'clear') {
+                delete cycleMarks[selectedDate];
+                // Если это был первый день, сбрасываем savedLastPeriodStart
+                if (selectedDate === savedLastPeriodStart) {
+                    savedLastPeriodStart = '';
+                    localStorage.setItem('histolite_last_period_start', '');
+                }
+                showModal('Отметка снята');
+            } else {
+                // Если это первый день, обновляем savedLastPeriodStart и удаляем старый первый день
+                if (type === 'first_day') {
+                    // Удаляем старую отметку первого дня, если была
+                    for (let key in cycleMarks) {
+                        if (cycleMarks[key] === 'first_day') {
+                            delete cycleMarks[key];
+                        }
+                    }
+                    savedLastPeriodStart = selectedDate;
+                    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+                }
+                cycleMarks[selectedDate] = type;
+                showModal(`Отмечено: ${type === 'first_day' ? 'Первый день цикла' : type === 'ovulation' ? 'Овуляция' : 'Последний день менструации'}`);
+            }
+            localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+            closeEventModal();
+            renderCycleCalendar();
+            renderTodayDashboard();
+        };
+
+        // Навигация по месяцам
+        window.changeMonth = function(delta) {
+            currentMonth += delta;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCycleCalendar();
+        };
+
+        // Основная функция отрисовки календаря
         function renderCycleCalendar() {
             const container = document.getElementById('cycle-load-calendar');
             if (!container) return;
 
-            // Если дата начала не задана, показываем пустой календарь с подсказкой
-            if (!savedLastPeriodStart) {
-                container.innerHTML = `
-                    <div class="text-center text-slate-400 text-xs py-4">
-                        Нажмите на любой день, чтобы отметить первый день цикла.
-                    </div>
-                `;
-                document.getElementById('cycle-info').innerHTML = '';
-                return;
-            }
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            document.getElementById('calendar-month-label').textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
-            const startDate = new Date(savedLastPeriodStart);
-            if (isNaN(startDate.getTime())) {
-                container.innerHTML = '<p class="text-center text-slate-400 text-xs">Ошибка в дате начала цикла. Попробуйте выбрать заново.</p>';
-                return;
-            }
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDayOfWeek = firstDay.getDay(); // 0 - воскресенье, 1 - понедельник, ...
 
-            const cycleLength = parseInt(savedCycleLength) || 28;
+            // Определяем смещение для начала с понедельника
+            let offset = (startDayOfWeek === 0) ? 6 : startDayOfWeek - 1;
+
+            // Сегодняшняя дата для подсветки
+            const today = new Date();
+            const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+
+            // Получаем день цикла для сегодня (если есть первый день)
             const currentDay = getCurrentCycleDay();
-            const pmsStart = cycleLength - parseInt(savedPmsStartDays);
+            const cycleLength = parseInt(savedCycleLength);
             const ovulationDay = cycleLength - 14;
-
-            let totalDays = cycleLength;
-            let delayDays = 0;
-            if (currentDay !== null && currentDay > cycleLength) {
-                totalDays = currentDay;
-                delayDays = currentDay - cycleLength;
-            }
 
             let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
             const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
             html += weekDays.map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
-
-            // Определяем день недели первого дня (день 1)
-            let firstDayOfWeek = startDate.getDay();
-            let offset = (firstDayOfWeek === 0) ? 6 : firstDayOfWeek - 1;
 
             // Пустые ячейки до первого дня
             for (let i = 0; i < offset; i++) {
                 html += '<div></div>';
             }
 
-            // Генерируем дни цикла
-            for (let d = 1; d <= totalDays; d++) {
+            // Ячейки дней
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = formatDate(currentYear, currentMonth, d);
+                const isToday = (dateStr === todayStr);
+                const mark = cycleMarks[dateStr] || null;
+
                 let bg = 'bg-slate-100';
                 let text = 'text-slate-600';
+                let extraClasses = '';
                 let label = d;
-                let isToday = (d === currentDay);
-                let isOvulation = (d === ovulationDay && ovulationDay > 0 && ovulationDay <= cycleLength);
-                let isDelay = (d > cycleLength);
-                let isFirstDay = (d === 1);
 
-                // Определяем фазу для цвета
-                let phase = getCyclePhaseName(d);
-                if (phase === 'Начало цикла') bg = 'bg-red-200';
-                else if (phase === 'Фолликулярная') bg = 'bg-green-200';
-                else if (phase === 'Овуляция') bg = 'bg-amber-200';
-                else if (phase === 'Лютеиновая') bg = 'bg-green-200';
-                else if (phase === 'ПМС') bg = 'bg-rose-200';
-                else bg = 'bg-slate-100';
-
-                if (isDelay) {
-                    bg = 'bg-gray-200';
-                    text = 'text-gray-500';
-                    label = `+${d - cycleLength}`;
+                // Если есть отметка первого дня – он всегда первый день
+                if (mark === 'first_day') {
+                    bg = 'bg-red-200';
+                    text = 'text-red-800';
+                    extraClasses += ' first-day has-mark';
+                } else if (mark === 'ovulation') {
+                    bg = 'bg-amber-200';
+                    text = 'text-amber-800';
+                    extraClasses += ' ovulation has-mark';
+                } else if (mark === 'last_day') {
+                    bg = 'bg-purple-200';
+                    text = 'text-purple-800';
+                    extraClasses += ' last-day has-mark';
+                } else {
+                    // Если нет отметки, но есть первый день цикла – вычисляем фазу
+                    if (savedLastPeriodStart) {
+                        const startDate = new Date(savedLastPeriodStart);
+                        const currentDate = new Date(currentYear, currentMonth, d);
+                        const diffDays = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                        if (diffDays >= 1 && diffDays <= 45) {
+                            // Проверяем, не превышает ли цикл
+                            if (diffDays <= cycleLength) {
+                                const phase = getCyclePhaseName(diffDays);
+                                if (phase === 'Начало цикла') bg = 'bg-red-200';
+                                else if (phase === 'Фолликулярная') bg = 'bg-green-200';
+                                else if (phase === 'Овуляция') { bg = 'bg-amber-200'; extraClasses += ' ovulation'; }
+                                else if (phase === 'Лютеиновая') bg = 'bg-green-200';
+                                else if (phase === 'ПМС') bg = 'bg-rose-200';
+                                // Если это день овуляции по расчёту, но нет отметки, показываем рамку
+                                if (diffDays === ovulationDay && mark !== 'ovulation') {
+                                    extraClasses += ' ovulation';
+                                }
+                            } else {
+                                // Задержка: если diffDays > cycleLength
+                                bg = 'bg-gray-200';
+                                text = 'text-gray-500';
+                                extraClasses += ' delay';
+                                label = `+${diffDays - cycleLength}`;
+                            }
+                        }
+                    }
                 }
+
                 if (isToday) {
                     bg = 'bg-blue-300';
                     text = 'text-white font-bold';
-                }
-                if (isFirstDay) {
-                    bg = 'bg-red-400';
-                    text = 'text-white font-bold';
+                    extraClasses += ' today';
                 }
 
-                let extraClasses = '';
-                if (isToday) extraClasses += ' today';
-                if (isOvulation && !isToday && !isFirstDay) extraClasses += ' ovulation';
-                if (isDelay) extraClasses += ' delay';
-                if (isFirstDay) extraClasses += ' first-day';
-
-                // Сохраняем номер дня в атрибуте data-day для обработки клика
-                html += `<div class="cycle-day-cell ${bg} ${text} ${extraClasses}" data-day="${d}">${label}</div>`;
+                // Добавляем data-атрибуты для обработки клика
+                html += `<div class="cycle-day-cell ${bg} ${text} ${extraClasses}" data-year="${currentYear}" data-month="${currentMonth}" data-day="${d}" onclick="openEventModal(${currentYear}, ${currentMonth}, ${d})">${label}</div>`;
             }
 
             html += '</div>';
-
-            // Легенда
-            html += `
-                <div class="flex flex-wrap gap-3 mt-2 text-xs">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-red-400 rounded"></span> 1-й день</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-red-200 rounded"></span> Начало</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-green-200 rounded"></span> Фолликулярная/Лютеиновая</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-amber-200 rounded border border-amber-500"></span> Овуляция</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-rose-200 rounded"></span> ПМС</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-blue-300 rounded"></span> Сегодня</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block bg-gray-200 rounded"></span> Задержка</span>
-                </div>
-            `;
-
             container.innerHTML = html;
-
-            // Обновляем информацию о первом дне
-            const infoDiv = document.getElementById('cycle-info');
-            const dateStr = startDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-            const phase = getCyclePhaseName(currentDay);
-            infoDiv.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <span><span class="font-bold">Первый день:</span> ${dateStr}</span>
-                    <span><span class="font-bold">День цикла:</span> ${currentDay !== null ? currentDay : '—'}</span>
-                    <span class="px-2 py-0.5 rounded-full text-xs ${getPhaseColor(phase)}">${phase}</span>
-                </div>
-            `;
-
-            // Навешиваем обработчик клика на каждую ячейку (через делегирование)
-            container.querySelectorAll('.cycle-day-cell').forEach(cell => {
-                cell.addEventListener('click', function(e) {
-                    const dayNum = parseInt(this.dataset.day);
-                    if (isNaN(dayNum)) return;
-                    // Вычисляем дату первого дня цикла: текущая дата - (dayNum - 1) дней
-                    const today = new Date();
-                    today.setHours(0,0,0,0);
-                    const firstDate = new Date(today);
-                    firstDate.setDate(today.getDate() - (dayNum - 1));
-                    const newStart = firstDate.toISOString().split('T')[0];
-                    if (newStart) {
-                        savedLastPeriodStart = newStart;
-                        localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-                        // Обновляем UI
-                        updateCycleUI();
-                        renderTodayDashboard();
-                        renderCycleCalendar();
-                        // Показываем сообщение
-                        showModal(`Первый день цикла установлен на ${firstDate.toLocaleDateString('ru-RU')}`);
-                    }
-                });
-            });
         }
 
         // ================================================================
-        // 13. ОБНОВЛЕНИЕ UI ЦИКЛА (вызывается из календаря и настроек)
-        // ================================================================
-        function updateCycleUI() {
-            // Эта функция больше не обновляет поля "текущий день" и "фаза", так как мы их убрали.
-            // Вместо этого она просто перерисовывает календарь и дашборд.
-            renderCycleCalendar();
-            renderTodayDashboard();
-        }
-
-        // ================================================================
-        // 14. ДАШБОРД (СЕГОДНЯ) - убрали учёт погоды, оставили только цикл и задержку
+        // 13. ДАШБОРД (СЕГОДНЯ)
         // ================================================================
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
@@ -1199,10 +1272,15 @@
             let riskReason = 'Фаза цикла: стабильная';
             let tip = 'Сегодня хороший день, чтобы попробовать новые продукты.';
 
-            if (delayStartDate) {
-                const start = new Date(delayStartDate);
-                const now = new Date();
-                const delayDays = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+            // Проверяем, есть ли задержка (если цикл превышен)
+            let delayDays = 0;
+            if (savedLastPeriodStart && cycleDay !== null) {
+                if (cycleDay > savedCycleLength) {
+                    delayDays = cycleDay - savedCycleLength;
+                }
+            }
+
+            if (delayDays > 0) {
                 riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
                 riskClass = 'risk-high';
                 riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
@@ -1232,7 +1310,7 @@
                 tip = '✅ Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
             } else {
                 riskReason = 'Цикл не настроен';
-                tip = 'Настройте календарь цикла, выбрав первый день менструации.';
+                tip = 'Отметьте первый день цикла в календаре.';
             }
 
             const riskCard = document.getElementById('risk-card');
@@ -1301,49 +1379,7 @@
         }
 
         // ================================================================
-        // 15. ЗАДЕРЖКА
-        // ================================================================
-        window.toggleDelay = function() {
-            const btn = document.getElementById('delay-btn');
-            const info = document.getElementById('delay-info');
-            if (!delayStartDate) {
-                delayStartDate = new Date().toISOString().split('T')[0];
-                localStorage.setItem('histolite_delay_start', delayStartDate);
-                btn.textContent = '✅ Задержка отмечена';
-                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-amber-600 text-white border border-amber-700 transition hover:bg-amber-700';
-                showModal('✅ Задержка отмечена. Прогноз риска обновлён.');
-            } else {
-                localStorage.removeItem('histolite_delay_start');
-                delayStartDate = null;
-                btn.textContent = '❌ Нет задержки';
-                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300';
-                showModal('Задержка сброшена. Прогноз риска обновлён.');
-            }
-            updateDelayUI();
-            renderTodayDashboard();
-            renderCycleCalendar();
-        };
-
-        function updateDelayUI() {
-            const info = document.getElementById('delay-info');
-            const btn = document.getElementById('delay-btn');
-            if (delayStartDate) {
-                const start = new Date(delayStartDate);
-                const now = new Date();
-                const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-                info.textContent = `⏳ Задержка: ${diffDays} дн. (начало ${delayStartDate})`;
-                info.classList.remove('hidden');
-                btn.textContent = `✅ Задержка ${diffDays} дн.`;
-                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-amber-600 text-white border border-amber-700 transition hover:bg-amber-700';
-            } else {
-                info.classList.add('hidden');
-                btn.textContent = '❌ Нет задержки';
-                btn.className = 'px-4 py-2 rounded-full text-xs font-bold bg-slate-200 text-slate-600 border border-slate-300 transition hover:bg-slate-300';
-            }
-        }
-
-        // ================================================================
-        // 16. УВЕДОМЛЕНИЯ
+        // 14. УВЕДОМЛЕНИЯ
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1358,14 +1394,14 @@
         }
 
         // ================================================================
-        // 17. АНАЛИТИКА (заглушка)
+        // 15. АНАЛИТИКА (заглушка)
         // ================================================================
         window.runAdvancedAnalytics = function() {
             showModal('Анализ триггеров пока в разработке. Скоро появится!');
         };
 
         // ================================================================
-        // 18. ЭКСПОРТ (заглушки)
+        // 16. ЭКСПОРТ (заглушки)
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1375,7 +1411,7 @@
         };
 
         // ================================================================
-        // 19. МОДАЛЬНЫЕ ОКНА
+        // 17. МОДАЛЬНЫЕ ОКНА
         // ================================================================
         window.showModal = function(msg) {
             document.getElementById('custom-modal-message').textContent = msg;
@@ -1387,7 +1423,7 @@
         };
 
         // ================================================================
-        // 20. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
+        // 18. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
         function toggleLegalButton() {
             const chk = document.getElementById('legal-checkbox');
@@ -1437,7 +1473,6 @@
             } else {
                 document.getElementById('calendar-nav-btn').style.display = 'flex';
             }
-            updateDelayUI();
             renderTodayDashboard();
             checkNotifications();
             loadRecipes();
@@ -1445,7 +1480,7 @@
         };
 
         // ================================================================
-        // 21. РАБОТА С РЕЦЕПТАМИ
+        // 19. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         async function loadRecipes() {
             try {
@@ -1568,7 +1603,7 @@
         });
 
         // ================================================================
-        // 22. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ (если пользователь уже авторизован)
+        // 20. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ (если пользователь уже авторизован)
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(() => {
@@ -1599,7 +1634,6 @@
                 } else {
                     document.getElementById('calendar-nav-btn').style.display = 'flex';
                 }
-                updateDelayUI();
                 renderTodayDashboard();
                 checkNotifications();
                 loadRecipes();
@@ -1607,7 +1641,7 @@
             }, 100);
         }
 
-        console.log('✅ Приложение загружено. Календарь интерактивный, длина цикла сохраняется.');
+        console.log('✅ Приложение загружено. Календарь на год, события с подтверждением, задержка автоматическая.');
     </script>
 
 </body>
