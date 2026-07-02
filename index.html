@@ -1107,14 +1107,13 @@
             return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
 
-        let selectedDate = null;
-        
+     
 function parseLocalDate(dateStr) {
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(year, month - 1, day);
 }
-        
-        let selectedDate = null;
+       let selectedDate = null; 
+       
         
         function openEventModal(year, month, day) {
             selectedDate = formatDate(year, month, day);
