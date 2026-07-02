@@ -1100,250 +1100,337 @@
             }
         };
 
-        // ================================================================
-        // 12. КАЛЕНДАРЬ – ОСНОВНАЯ ФУНКЦИЯ (С ИСПРАВЛЕННОЙ ЛОГИКОЙ)
-        // ================================================================
-        function formatDate(year, month, day) {
-            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        }
+       // ================================================================
+// 12. НОВЫЙ КАЛЕНДАРЬ ЦИКЛА
+// ================================================================
 
-     
+function formatDate(year, month, day) {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 function parseLocalDate(dateStr) {
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(year, month - 1, day);
 }
-       let selectedDate = null; 
-       
-        
-        function openEventModal(year, month, day) {
-            selectedDate = formatDate(year, month, day);
-            const dateObj = new Date(year, month, day);
-            document.getElementById('event-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
-            document.getElementById('event-modal').style.display = 'flex';
-        }
 
-        function closeEventModal() {
-            document.getElementById('event-modal').style.display = 'none';
-            selectedDate = null;
-        }
+let selectedDate = null;
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
 
-        function openCycleDay(year, month, day) {
-            const dateStr = formatDate(year, month, day);
-            const dateObj = new Date(year, month, day);
-            const cycleDay = savedLastPeriodStart
-                ? Math.floor((parseLocalDate(dateStr) - parseLocalDate(savedLastPeriodStart)) / (1000 * 60 * 60 * 24)) + 1
-                : null;
+let cycleNotes = JSON.parse(localStorage.getItem('histolite_cycle_notes') || '{}');
+let savedLastPeriodStart = localStorage.getItem('histolite_last_period_start') || '';
+let savedCycleLength = parseInt(localStorage.getItem('histolite_cycle_length')) || 28;
+let savedPeriodDays = parseInt(localStorage.getItem('histolite_period_days')) || 5;
 
-            selectedCycleDayDate = dateStr;
-            document.getElementById('cycle-day-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
-            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+function getCurrentCycleDay() {
+    if (!savedLastPeriodStart) return null;
+    const start = parseLocalDate(savedLastPeriodStart);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    start.setHours(0, 0, 0, 0);
+    const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+    if (diffDays < 1) return 1;
+    return diffDays;
+}
 
-            const saved = cycleDayNotes[dateStr] || { symptoms: '', comment: '' };
-            document.getElementById('cycle-day-symptoms').value = saved.symptoms || '';
-            document.getElementById('cycle-day-comment').value = saved.comment || '';
+function getNextPeriodDate() {
+    if (!savedLastPeriodStart) return null;
+    const start = parseLocalDate(savedLastPeriodStart);
+    const next = new Date(start);
+    next.setDate(start.getDate() + savedCycleLength);
+    return next;
+}
 
-            document.getElementById('cycle-day-modal').style.display = 'flex';
-        }
+function getOvulationDate() {
+    if (!savedLastPeriodStart) return null;
+    const start = parseLocalDate(savedLastPeriodStart);
+    const ovulationDay = savedCycleLength - 14;
+    const ovulation = new Date(start);
+    ovulation.setDate(start.getDate() + ovulationDay - 1);
+    return ovulation;
+}
 
-        function closeCycleDayModal() {
-            document.getElementById('cycle-day-modal').style.display = 'none';
-            selectedCycleDayDate = null;
-        }
+function getFertileRange() {
+    const ovulation = getOvulationDate();
+    if (!ovulation) return null;
+    const from = new Date(ovulation);
+    from.setDate(ovulation.getDate() - 5);
+    const to = new Date(ovulation);
+    to.setDate(ovulation.getDate() + 1);
+    return { from, to, ovulation };
+}
 
-        window.saveCycleDay = function() {
-            if (!selectedCycleDayDate) return;
+function getDelayDays() {
+    const next = getNextPeriodDate();
+    if (!next) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    next.setHours(0, 0, 0, 0);
+    const diff = Math.floor((today - next) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+}
 
-            cycleDayNotes[selectedCycleDayDate] = {
-                symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
-                comment: document.getElementById('cycle-day-comment').value.trim()
-            };
+function saveCycleSettings() {
+    const dateInput = document.getElementById('last-period-start');
+    const lengthInput = document.getElementById('cycle-length');
+    const periodDaysInput = document.getElementById('period-days');
 
-            localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
-            closeCycleDayModal();
-            showModal('Данные дня сохранены');
-        };
+    savedLastPeriodStart = dateInput.value || '';
+    savedCycleLength = parseInt(lengthInput.value) || 28;
+    savedPeriodDays = parseInt(periodDaysInput.value) || 5;
 
-        window.confirmEvent = function(type) {
-    if (!selectedDate) {
-        showModal('Ошибка: дата не выбрана');
-        return;
-    }
+    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+    localStorage.setItem('histolite_cycle_length', savedCycleLength);
+    localStorage.setItem('histolite_period_days', savedPeriodDays);
 
-    if (type === 'clear') {
-        // Удаляем отметку
-        delete cycleMarks[selectedDate];
-        // Если это был первый день цикла, сбрасываем savedLastPeriodStart
-        if (selectedDate === savedLastPeriodStart) {
-            savedLastPeriodStart = '';
-            localStorage.setItem('histolite_last_period_start', '');
-        }
-        localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-        closeEventModal();
-        renderCycleCalendar();
-        renderTodayDashboard();
-        showModal('Отметка снята');
-        return;
-    }
-
-    if (type === 'first_day') {
-        // Удаляем ВСЕ старые отметки первого дня
-        for (let key in cycleMarks) {
-            if (cycleMarks[key] === 'first_day') {
-                delete cycleMarks[key];
-            }
-        }
-        // Устанавливаем новый первый день
-        savedLastPeriodStart = selectedDate;
-        localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-        cycleMarks[selectedDate] = 'first_day';
-        localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-        closeEventModal();
-        renderCycleCalendar();
-        renderTodayDashboard();
-        showModal('Первый день цикла установлен на ' + new Date(selectedDate).toLocaleDateString('ru-RU'));
-        return;
-    }
-
-    // Для остальных отметок (ovulation, last_day)
-    // Если такая отметка уже есть, удаляем её (переключение)
-    if (cycleMarks[selectedDate] === type) {
-        delete cycleMarks[selectedDate];
-    } else {
-        cycleMarks[selectedDate] = type;
-    }
-    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-    closeEventModal();
     renderCycleCalendar();
-    renderTodayDashboard();
-    const label = type === 'ovulation' ? 'Овуляция' : 'Последний день менструации';
-    showModal(`Отмечено: ${label}`);
-};
+    updateCycleUI();
+    showModal('Настройки цикла сохранены');
+}
 
-        window.changeMonth = function(delta) {
-            currentMonth += delta;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            } else if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            renderCycleCalendar();
-        };
+function updateCycleUI() {
+    const day = getCurrentCycleDay();
+    const dayBox = document.getElementById('cycle-day-display');
+    const phaseBox = document.getElementById('phase-badge');
+    const forecastBox = document.getElementById('cycle-forecast');
+    const delayInfo = document.getElementById('delay-info');
 
-        window.goToToday = function() {
-            const today = new Date();
-            currentMonth = today.getMonth();
-            currentYear = today.getFullYear();
-            renderCycleCalendar();
-        };
+    if (!day || !savedLastPeriodStart) {
+        if (dayBox) dayBox.textContent = '—';
+        if (phaseBox) {
+            phaseBox.textContent = 'Не определена';
+            phaseBox.className = 'p-2 rounded-xl text-xs font-bold text-center bg-emerald-50 text-emerald-700 border border-emerald-100 mt-0.5';
+        }
+        if (forecastBox) forecastBox.innerHTML = '<p class="text-center text-slate-500">Укажите первый день последних месячных.</p>';
+        if (delayInfo) delayInfo.classList.add('hidden');
+        return;
+    }
 
-        function renderCycleCalendar() {
-            const container = document.getElementById('cycle-load-calendar');
-            if (!container) return;
+    const nextPeriod = getNextPeriodDate();
+    const ovulation = getOvulationDate();
+    const delayDays = getDelayDays();
 
-            savedCycleLength = parseInt(localStorage.getItem('histolite_cycle_length')) || 28;
-            savedPmsStartDays = parseInt(localStorage.getItem('histolite_pms_start_days')) || 7;
+    const ovulationDay = savedCycleLength - 14;
 
-            // Правильный расчёт ожидаемой даты начала следующего цикла:
-            // первый день + (длительность цикла - 1)
-            if (savedLastPeriodStart) {
-                const start = parseLocalDate(savedLastPeriodStart);
-                expectedStartDate = new Date(start);
-                expectedStartDate.setDate(start.getDate() + parseInt(savedCycleLength) - 1);
-            } else {
-                expectedStartDate = null;
-            }
+    let phaseText = 'Стабильный';
+    let phaseClass = 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+    let advice = 'Сегодня можно вести обычное наблюдение за симптомами.';
 
-            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-            document.getElementById('calendar-month-label').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    if (day <= savedPeriodDays) {
+        phaseText = 'Менструация';
+        phaseClass = 'bg-red-50 text-red-700 border border-red-100';
+        advice = 'Отмечайте симптомы и самочувствие по дням.';
+    } else if (day === ovulationDay) {
+        phaseText = 'Овуляция';
+        phaseClass = 'bg-amber-50 text-amber-700 border border-amber-100';
+        advice = 'Возможна повышенная чувствительность.';
+    } else if (day >= ovulationDay - 5 && day <= ovulationDay + 1) {
+        phaseText = 'Фертильное окно';
+        phaseClass = 'bg-green-50 text-green-700 border border-green-100';
+        advice = 'Это благоприятные дни рядом с овуляцией.';
+    } else if (delayDays > 0) {
+        phaseText = 'Задержка';
+        phaseClass = 'bg-violet-50 text-violet-700 border border-violet-100';
+        advice = `Ожидаемая менструация уже задерживается на ${delayDays} дн.`;
+    }
 
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const daysInMonth = lastDay.getDate();
-            const startDayOfWeek = firstDay.getDay();
-            let offset = (startDayOfWeek === 0) ? 6 : startDayOfWeek - 1;
+    if (dayBox) dayBox.textContent = String(day);
+    if (phaseBox) {
+        phaseBox.textContent = phaseText;
+        phaseBox.className = `p-2 rounded-xl text-xs font-bold text-center mt-0.5 ${phaseClass}`;
+    }
 
-            const today = new Date();
-            const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+    let forecastHtml = '';
+    if (nextPeriod) {
+        forecastHtml += `<p class="text-xs text-slate-600"><strong>Следующая менструация:</strong> ${nextPeriod.toLocaleDateString('ru-RU')}</p>`;
+    }
+    if (ovulation) {
+        forecastHtml += `<p class="text-xs text-slate-600 mt-1"><strong>Овуляция:</strong> ${ovulation.toLocaleDateString('ru-RU')}</p>`;
+    }
+    if (delayDays > 0) {
+        forecastHtml += `<p class="text-xs text-violet-700 mt-1"><strong>Задержка:</strong> ${delayDays} дн.</p>`;
+    }
+    forecastHtml += `<p class="text-xs text-slate-500 mt-2">${advice}</p>`;
+    if (forecastBox) forecastBox.innerHTML = forecastHtml;
 
-            const cycleLength = parseInt(savedCycleLength);
-            const ovulationDay = cycleLength - 14;
+    if (delayInfo) {
+        if (delayDays > 0) {
+            delayInfo.classList.remove('hidden');
+            delayInfo.textContent = `Задержка: ${delayDays} дн.`;
+        } else {
+            delayInfo.classList.add('hidden');
+        }
+    }
+}
 
-            let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
-            const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-            html += weekDays.map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
+function openDayModal(dateStr) {
+    selectedDate = dateStr;
+    const dateObj = parseLocalDate(dateStr);
+    const existing = cycleNotes[dateStr] || { symptoms: '', comment: '' };
 
-            for (let i = 0; i < offset; i++) {
-                html += '<div></div>';
-            }
+    document.getElementById('cycle-day-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
+    document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
+    document.getElementById('cycle-day-comment').value = existing.comment || '';
+    document.getElementById('cycle-day-modal').style.display = 'flex';
+}
 
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = formatDate(currentYear, currentMonth, d);
-                const isToday = (dateStr === todayStr);
-                const mark = cycleMarks[dateStr] || null;
+function closeCycleDayModal() {
+    document.getElementById('cycle-day-modal').style.display = 'none';
+    selectedDate = null;
+}
 
-                let bg = 'bg-slate-100';
-                let text = 'text-slate-600';
-                let extraClasses = '';
-                let label = d;
+function saveCycleDay() {
+    if (!selectedDate) return;
 
-                const isExpected = expectedStartDate && dateStr === formatDate(expectedStartDate.getFullYear(), expectedStartDate.getMonth(), expectedStartDate.getDate());
-                if (isExpected && !mark && !isToday) {
-                    extraClasses += ' expected';
-                }
+    cycleNotes[selectedDate] = {
+        symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
+        comment: document.getElementById('cycle-day-comment').value.trim()
+    };
 
-                if (mark === 'first_day') {
-                    bg = 'bg-red-200';
-                    text = 'text-red-800';
-                    extraClasses += ' first-day has-mark';
-                } else if (mark === 'ovulation') {
-                    bg = 'bg-amber-200';
-                    text = 'text-amber-800';
-                    extraClasses += ' ovulation has-mark';
-                } else if (mark === 'last_day') {
-                    bg = 'bg-purple-200';
-                    text = 'text-purple-800';
-                    extraClasses += ' last-day has-mark';
-                } else {
-                    if (savedLastPeriodStart) {
-                        const startDate = parseLocalDate(savedLastPeriodStart);
-                        const currentDate = new Date(currentYear, currentMonth, d);
-                        const diffDays = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                        if (diffDays >= 1 && diffDays <= 45) {
-                            if (diffDays <= cycleLength) {
-                                const phase = getCyclePhaseName(diffDays);
-                                if (phase === 'Начало цикла') bg = 'bg-red-200';
-                                else if (phase === 'Фолликулярная') bg = 'bg-green-200';
-                                else if (phase === 'Овуляция') { bg = 'bg-amber-200'; extraClasses += ' ovulation'; }
-                                else if (phase === 'Лютеиновая') bg = 'bg-green-200';
-                                else if (phase === 'ПМС') bg = 'bg-rose-200';
-                                if (diffDays === ovulationDay && mark !== 'ovulation') {
-                                    extraClasses += ' ovulation';
-                                }
-                            } else {
-                                bg = 'bg-gray-200';
-                                text = 'text-gray-500';
-                                extraClasses += ' delay';
-                                label = `+${diffDays - cycleLength}`;
-                            }
-                        }
-                    }
-                }
+    localStorage.setItem('histolite_cycle_notes', JSON.stringify(cycleNotes));
+    closeCycleDayModal();
+    showModal('Данные дня сохранены');
+}
 
-                if (isToday) {
-                    bg = 'bg-blue-300';
-                    text = 'text-white font-bold';
-                    extraClasses += ' today';
-                }
+function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    } else if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCycleCalendar();
+}
 
-                html += `<div class="cycle-day-cell ${bg} ${text} ${extraClasses}" data-year="${currentYear}" data-month="${currentMonth}" data-day="${d}" onclick="openEventModal(${currentYear}, ${currentMonth}, ${d})" ondblclick="openCycleDay(${currentYear}, ${currentMonth}, ${d})">${label}</div>`;
-            }
+function goToToday() {
+    const today = new Date();
+    currentMonth = today.getMonth();
+    currentYear = today.getFullYear();
+    renderCycleCalendar();
+}
 
-            html += '</div>';
-            container.innerHTML = html;
+function renderCycleCalendar() {
+    const container = document.getElementById('cycle-load-calendar');
+    if (!container) return;
+
+    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    document.getElementById('calendar-month-label').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startDayOfWeek = firstDay.getDay();
+    let offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+
+    const today = new Date();
+    const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const start = savedLastPeriodStart ? parseLocalDate(savedLastPeriodStart) : null;
+    const ovulation = getOvulationDate();
+    const fertile = getFertileRange();
+    const nextPeriod = getNextPeriodDate();
+    const delayDays = getDelayDays();
+
+    let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
+    const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    html += weekDays.map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
+
+    for (let i = 0; i < offset; i++) {
+        html += '<div></div>';
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = formatDate(currentYear, currentMonth, d);
+        const dateObj = parseLocalDate(dateStr);
+        const isToday = dateStr === todayStr;
+        const hasNote = !!cycleNotes[dateStr];
+
+        let bg = 'bg-slate-100';
+        let text = 'text-slate-600';
+        let extra = '';
+        let label = String(d);
+
+        const diffDays = start ? Math.floor((dateObj - start) / (1000 * 60 * 60 * 24)) + 1 : null;
+
+        const isPeriod = diffDays !== null && diffDays >= 1 && diffDays <= savedPeriodDays;
+        const isOvulation = ovulation && dateStr === formatDate(ovulation.getFullYear(), ovulation.getMonth(), ovulation.getDate());
+        const isFertile = fertile && dateObj >= fertile.from && dateObj <= fertile.to;
+        const isNextPeriod = nextPeriod && dateStr === formatDate(nextPeriod.getFullYear(), nextPeriod.getMonth(), nextPeriod.getDate());
+
+        if (isPeriod) {
+            bg = 'bg-red-200';
+            text = 'text-red-800';
+            extra += ' period-day';
+        } else if (isOvulation) {
+            bg = 'bg-amber-200';
+            text = 'text-amber-800';
+            extra += ' ovulation-day';
+        } else if (isFertile) {
+            bg = 'bg-green-200';
+            text = 'text-green-800';
+            extra += ' fertile-day';
+        } else if (isNextPeriod) {
+            bg = 'bg-violet-200';
+            text = 'text-violet-800';
+            extra += ' next-period-day';
         }
 
+        if (delayDays > 0 && !isNextPeriod && !isPeriod && nextPeriod && dateObj > nextPeriod) {
+            bg = 'bg-violet-100';
+            text = 'text-violet-700';
+            extra += ' delay-day';
+            label = `+${Math.floor((dateObj - nextPeriod) / (1000 * 60 * 60 * 24))}`;
+        }
+
+        if (isToday) {
+            extra += ' today';
+            if (!isPeriod && !isOvulation && !isFertile && !isNextPeriod) {
+                bg = 'bg-blue-300';
+                text = 'text-white font-bold';
+            }
+        }
+
+        if (hasNote) {
+            extra += ' has-note';
+        }
+
+        html += `
+            <div class="cycle-day-cell ${bg} ${text} ${extra}"
+                 data-date="${dateStr}"
+                 onclick="openDayModal('${dateStr}')">
+                <div>${label}</div>
+                ${hasNote ? '<div class="text-[10px] leading-none mt-0.5">•</div>' : ''}
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+    updateCycleUI();
+}
+
+function initCycleModule() {
+    const dateInput = document.getElementById('last-period-start');
+    const lengthInput = document.getElementById('cycle-length');
+    const periodDaysInput = document.getElementById('period-days');
+
+    if (dateInput) dateInput.value = savedLastPeriodStart;
+    if (lengthInput) lengthInput.value = savedCycleLength;
+    if (periodDaysInput) periodDaysInput.value = savedPeriodDays;
+
+    if (dateInput) dateInput.addEventListener('change', saveCycleSettings);
+    if (lengthInput) lengthInput.addEventListener('change', saveCycleSettings);
+    if (periodDaysInput) periodDaysInput.addEventListener('change', saveCycleSettings);
+
+    renderCycleCalendar();
+    updateCycleUI();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initCycleModule();
+});
         // ================================================================
         // 13. ОБНОВЛЕНИЕ НАСТРОЕК ЦИКЛА
         // ================================================================
