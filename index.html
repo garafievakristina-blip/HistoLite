@@ -1584,56 +1584,66 @@
         };
 
         // ================================================================
-        // 25. РАБОТА С РЕЦЕПТАМИ (ТЕСТОВАЯ ВЕРСИЯ)
+        // 25. РАБОТА С РЕЦЕПТАМИ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
         // ================================================================
         async function loadRecipes() {
-    const container = document.getElementById('recipes-container');
-    if (!container) {
-        alert('Контейнер recipes-container не найден!');
-        return;
-    }
-
-    container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">⏳ Загрузка рецептов...</p>';
-
-    try {
-        const resp = await fetch('recipes.json');
-        if (!resp.ok) {
-            throw new Error(`Ошибка HTTP: ${resp.status}`);
-        }
-        const data = await resp.json();
-        recipesDB = data;
-        console.log(`✅ Загружено ${recipesDB.length} рецептов из файла`);
-        renderRecipes();
-    } catch (error) {
-        console.error('Ошибка загрузки рецептов:', error);
-        // Если не удалось загрузить файл, показываем подсказку
-        container.innerHTML = `
-            <div class="text-center text-red-500 col-span-full py-4">
-                <p>❌ Не удалось загрузить рецепты.</p>
-                <p class="text-xs text-slate-500 mt-2">Убедитесь, что файл recipes.json лежит в той же папке.</p>
-                <p class="text-xs text-slate-500">Если вы открываете страницу локально (через file://), попробуйте запустить через Live Server или Python http.server.</p>
-                <button onclick="loadRecipes()" class="mt-3 bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm">🔄 Повторить попытку</button>
-            </div>
-        `;
-        // Для демонстрации можно оставить тестовые рецепты, чтобы не было пусто
-        // Но мы покажем ошибку, чтобы вы знали, что делать.
-        // Если хотите, чтобы тестовые рецепты оставались при ошибке, можно сделать:
-        // const testRecipes = [...]; // и использовать их
-        // но я оставлю ошибку, чтобы вы поняли, что нужно запустить сервер.
-        recipesDB = [];
-        renderRecipes();
-    }
-}
             const container = document.getElementById('recipes-container');
             if (!container) {
                 alert('Контейнер recipes-container не найден!');
                 return;
             }
 
-            // Загружаем тестовые рецепты
-            recipesDB = testRecipes;
-            container.innerHTML = `<p class="text-center text-emerald-600 col-span-full py-2">✅ Загружено ${recipesDB.length} тестовых рецептов</p>`;
-            renderRecipes();
+            container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">⏳ Загрузка рецептов...</p>';
+
+            // Тестовые рецепты (используются только при ошибке загрузки файла)
+            const testRecipes = [
+                {
+                    id: 1,
+                    name: 'Овсяная каша на воде',
+                    category: 'завтрак',
+                    histamine_level: 'низкий',
+                    prep_time: 10,
+                    servings: 1,
+                    description: 'Лёгкий и безопасный завтрак при гистаминовой непереносимости.',
+                    ingredients: ['овсяные хлопья 50 г', 'вода 200 мл', 'соль по вкусу', 'банан 1 шт (по желанию)'],
+                    instructions: 'Залейте хлопья водой, доведите до кипения, варите 5 минут. Подавайте с бананом.',
+                    tips: 'Можно добавить немного мёда, если переносится.',
+                    gluten_free: true,
+                    lactose_free: true,
+                    dairy_free: true,
+                    image: 'https://via.placeholder.com/300x200?text=Овсянка'
+                },
+                {
+                    id: 2,
+                    name: 'Запечённая куриная грудка с овощами',
+                    category: 'обед',
+                    histamine_level: 'средний',
+                    prep_time: 30,
+                    servings: 2,
+                    description: 'Сытное блюдо с низким содержанием гистамина при правильном приготовлении.',
+                    ingredients: ['куриная грудка 300 г', 'цукини 1 шт', 'перец болгарский 1 шт', 'оливковое масло 1 ст.л.', 'специи (без острых)'],
+                    instructions: 'Нарежьте овощи и грудку, смешайте с маслом и специями, запекайте при 180°C 25 минут.',
+                    tips: 'Не используйте томаты или сыр — они могут повысить уровень гистамина.',
+                    gluten_free: true,
+                    lactose_free: true,
+                    dairy_free: true,
+                    image: 'https://via.placeholder.com/300x200?text=Курица+с+овощами'
+                }
+            ];
+
+            try {
+                const resp = await fetch('recipes.json');
+                if (!resp.ok) throw new Error('Файл не найден');
+                const data = await resp.json();
+                recipesDB = data; // загружаем реальные рецепты
+                console.log(`✅ Загружено ${recipesDB.length} рецептов из файла`);
+                renderRecipes();
+            } catch (error) {
+                console.warn('Не удалось загрузить recipes.json, используем тестовые рецепты:', error);
+                recipesDB = testRecipes; // подставляем тестовые
+                container.innerHTML = `<p class="text-center text-amber-600 col-span-full py-2">⚠️ Используются встроенные тестовые рецепты (файл не найден)</p>`;
+                renderRecipes();
+            }
         }
 
         function renderRecipes() {
@@ -1822,7 +1832,7 @@
             }, 100);
         }
 
-        console.log('✅ Приложение загружено. Рецепты загружаются из тестового массива.');
+        console.log('✅ Приложение загружено. Рецепты загружаются из файла (или тестовые при ошибке).');
     </script>
 </body>
 </html>
