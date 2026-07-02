@@ -1108,7 +1108,14 @@
         }
 
         let selectedDate = null;
-
+        
+function parseLocalDate(dateStr) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+        
+        let selectedDate = null;
+        
         function openEventModal(year, month, day) {
             selectedDate = formatDate(year, month, day);
             const dateObj = new Date(year, month, day);
@@ -1125,7 +1132,7 @@
             const dateStr = formatDate(year, month, day);
             const dateObj = new Date(year, month, day);
             const cycleDay = savedLastPeriodStart
-                ? Math.floor((new Date(dateStr) - new Date(savedLastPeriodStart)) / (1000 * 60 * 60 * 24)) + 1
+                ? Math.floor((parseLocalDate(dateStr) - parseLocalDate(savedLastPeriodStart)) / (1000 * 60 * 60 * 24)) + 1
                 : null;
 
             selectedCycleDayDate = dateStr;
@@ -1242,7 +1249,7 @@
             // Правильный расчёт ожидаемой даты начала следующего цикла:
             // первый день + (длительность цикла - 1)
             if (savedLastPeriodStart) {
-                const start = new Date(savedLastPeriodStart);
+                const start = parseLocalDate(savedLastPeriodStart);
                 expectedStartDate = new Date(start);
                 expectedStartDate.setDate(start.getDate() + parseInt(savedCycleLength) - 1);
             } else {
@@ -1301,7 +1308,7 @@
                     extraClasses += ' last-day has-mark';
                 } else {
                     if (savedLastPeriodStart) {
-                        const startDate = new Date(savedLastPeriodStart);
+                        const startDate = parseLocalDate(savedLastPeriodStart);
                         const currentDate = new Date(currentYear, currentMonth, d);
                         const diffDays = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
                         if (diffDays >= 1 && diffDays <= 45) {
