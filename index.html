@@ -1664,17 +1664,29 @@
         // 27. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         async function loadRecipes() {
-            try {
-                const resp = await fetch('recipes.json');
-                if (!resp.ok) throw new Error('Файл рецептов не найден');
-                recipesDB = await resp.json();
-                renderRecipes();
-            } catch (error) {
-                console.warn('Не удалось загрузить recipes.json, используем только пользовательские', error);
-                recipesDB = [];
-                renderRecipes();
-            }
+    const container = document.getElementById('recipes-container');
+    if (!container) {
+        console.error('Контейнер recipes-container не найден!');
+        return;
+    }
+    container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">⏳ Загрузка рецептов...</p>';
+
+    try {
+        const resp = await fetch('recipes.json');
+        if (!resp.ok) {
+            throw new Error(`HTTP ошибка: ${resp.status}`);
         }
+        const data = await resp.json();
+        recipesDB = data;
+        console.log(`✅ Загружено ${recipesDB.length} рецептов`);
+        renderRecipes();
+    } catch (error) {
+        console.error('Ошибка загрузки рецептов:', error);
+        container.innerHTML = `<p class="text-center text-red-500 col-span-full py-8">❌ Не удалось загрузить рецепты: ${error.message}</p>`;
+        recipesDB = [];
+        renderRecipes(); // покажет "ничего не найдено"
+    }
+}
 
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
