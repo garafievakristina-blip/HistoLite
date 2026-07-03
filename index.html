@@ -1497,9 +1497,8 @@
         };
         window.closeModal = function() {
             document.getElementById('custom-modal').style.display = 'none';
-            
         };
-        часть 4/4 
+
         // ================================================================
         // 24. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
@@ -1536,7 +1535,7 @@
         };
 
         // ================================================================
-        // 25. РАБОТА С РЕЦЕПТАМИ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+        // 25. РАБОТА С РЕЦЕПТАМИ (ЗАГРУЗКА ИЗ ФАЙЛА + ЗАПАСНОЙ ВАРИАНТ)
         // ================================================================
         // Тестовые рецепты (используются, если recipes.json не загружен)
         const defaultRecipes = [
@@ -1554,7 +1553,7 @@
                 gluten_free: true,
                 lactose_free: true,
                 dairy_free: true,
-                image: 'https://via.placeholder.com/300x200?text=Овсянка'
+                image: ''
             },
             {
                 id: 2,
@@ -1570,7 +1569,7 @@
                 gluten_free: true,
                 lactose_free: true,
                 dairy_free: true,
-                image: 'https://via.placeholder.com/300x200?text=Курица+с+овощами'
+                image: ''
             }
         ];
 
@@ -1592,6 +1591,7 @@
                 if (Array.isArray(data) && data.length > 0) {
                     recipesDB = data;
                     console.log('✅ Загружено рецептов из файла:', recipesDB.length);
+                    container.innerHTML = ''; // убираем сообщение о загрузке
                 } else {
                     throw new Error('Файл пуст или не содержит массива');
                 }
@@ -1804,7 +1804,7 @@
             }, 100);
         }
 
-        console.log('✅ Приложение загружено. Рецепты появятся на вкладке 🍳.');
+        console.log('✅ Приложение загружено. Рецепты загружаются из файла recipes.json');
     </script>
 </body>
-</html>. 
+</html>
