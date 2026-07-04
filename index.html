@@ -407,7 +407,7 @@
                 </div>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">📊 Визуальный календарь нагрузки</h2>
-                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
+                    <div id="cycle-load-calendar-analytics" class="cycle-calendar"></div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">🔍 Анализ совпадений (48ч) — продукты и лекарства</h2>
@@ -1870,7 +1870,7 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
         }
 
         function renderCycleLoadCalendar() {
-            const container = document.getElementById('cycle-load-calendar');
+            const container = document.getElementById('cycle-load-calendar-analytics');
             if (!container) return;
             const today = new Date();
             const start = new Date(today);
