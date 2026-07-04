@@ -562,6 +562,7 @@
 // Проверяем, загружен ли массив recipes (из подключенного скрипта)
 if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length > 0) {
     window.recipesDB = recipes;  // делаем глобальным для всего приложения
+    recipesDB = recipes; // сразу присваиваем в основную переменную
     console.log('✅ Рецепты загружены из recipes.js, количество:', recipes.length);
 } else {
     // Если recipes не определён, оставляем как есть (может, будет загружен позже)
@@ -1602,16 +1603,14 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
     const container = document.getElementById('recipes-container');
     if (!container) return;
 
-    // Проверяем, загружена ли переменная recipes из recipes.js
-    if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length > 0) {
-        window.recipesDB = recipes;
-        container.innerHTML = `<p class="text-center text-green-600 col-span-full py-2">✅ Загружено рецептов: ${recipes.length}</p>`;
-        // Если есть функция renderRecipes, вызываем её
+    // Используем уже загруженные данные, если они есть
+    if (window.recipesDB && window.recipesDB.length > 0) {
+        recipesDB = window.recipesDB;
+        container.innerHTML = `<p class="text-center text-green-600 col-span-full py-2">✅ Загружено рецептов: ${recipesDB.length}</p>`;
         if (typeof renderRecipes === 'function') {
             renderRecipes();
         } else {
-            // Просто показываем список названий (для проверки)
-            container.innerHTML += recipes.map(r => `<div class="border p-2 my-2 rounded">${r.name}</div>`).join('');
+            container.innerHTML += recipesDB.map(r => `<div class="border p-2 my-2 rounded">${r.name}</div>`).join('');
         }
     } else {
         container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
