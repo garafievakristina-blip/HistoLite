@@ -7,6 +7,21 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="recipes.js"></script>
+    <div id="recipes-indicator" style="position:fixed; top:10px; right:10px; padding:10px; background:yellow; z-index:9999; border-radius:8px;"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var el = document.getElementById('recipes-indicator');
+        if (typeof recipes !== 'undefined' && recipes.length > 0) {
+            el.textContent = '✅ Рецепты загружены: ' + recipes.length;
+            el.style.background = '#bbf7d0';
+            el.style.color = '#166534';
+        } else {
+            el.textContent = '❌ Рецепты НЕ загружены';
+            el.style.background = '#fecaca';
+            el.style.color = '#991b1b';
+        }
+    });
+</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
