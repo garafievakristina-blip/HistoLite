@@ -1574,34 +1574,35 @@
         ];
 
         async function loadRecipes() {
-            const container = document.getElementById('recipes-container');
-            if (!container) {
-                console.error('Контейнер recipes-container не найден');
-                return;
-            }
+    const container = document.getElementById('recipes-container');
+    if (!container) {
+        alert('Контейнер не найден');
+        return;
+    }
+    container.innerHTML = '<p class="text-center text-slate-500 col-span-full py-8">⏳ Загрузка рецептов...</p>';
 
-            container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">⏳ Загрузка рецептов...</p>';
-
-            try {
-                const resp = await fetch('./recipes.json');
-                if (!resp.ok) {
-                    throw new Error(`recipes.json не найден, статус: ${resp.status}`);
-                }
-                const data = await resp.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    recipesDB = data;
-                    console.log('✅ Загружено рецептов из файла:', recipesDB.length);
-                    container.innerHTML = ''; // убираем сообщение о загрузке
-                } else {
-                    throw new Error('Файл пуст или не содержит массива');
-                }
-            } catch (error) {
-                console.warn('⚠️ Не удалось загрузить recipes.json, используем тестовые рецепты:', error);
-                recipesDB = defaultRecipes;
-                container.innerHTML = '<p class="text-center text-amber-600 col-span-full py-2">⚠️ Используются встроенные тестовые рецепты (файл не найден)</p>';
-            }
-            renderRecipes();
+    try {
+        const url = 'https://garafievakristina-blip.github.io/HistoLite/recipes.json';
+        const resp = await fetch(url, { cache: 'no-store' });
+        if (!resp.ok) {
+            container.innerHTML = `<p class="text-center text-red-500 col-span-full py-8">❌ Ошибка: ${resp.status} ${resp.statusText}</p>`;
+            return;
         }
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length > 0) {
+            recipesDB = data;
+            container.innerHTML = ''; // очищаем сообщение
+            renderRecipes();
+        } else {
+            container.innerHTML = '<p class="text-center text-amber-600 col-span-full py-8">⚠️ Файл пуст или не содержит массив</p>';
+        }
+    } catch (error) {
+        container.innerHTML = `<p class="text-center text-red-500 col-span-full py-8">❌ Ошибка: ${error.message}</p>`;
+        // Если ошибка, показываем тестовые рецепты (чтобы не было пусто)
+        recipesDB = defaultRecipes;
+        renderRecipes();
+    }
+}
 
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
