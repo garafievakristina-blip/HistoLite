@@ -8,20 +8,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="recipes.js"></script>
     <div id="recipes-indicator" style="position:fixed; top:10px; right:10px; padding:10px; background:yellow; z-index:9999; border-radius:8px;"></div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var el = document.getElementById('recipes-indicator');
-        if (typeof recipes !== 'undefined' && recipes.length > 0) {
-            el.textContent = '✅ Рецепты загружены: ' + recipes.length;
-            el.style.background = '#bbf7d0';
-            el.style.color = '#166534';
-        } else {
-            el.textContent = '❌ Рецепты НЕ загружены';
-            el.style.background = '#fecaca';
-            el.style.color = '#991b1b';
-        }
-    });
-</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var el = document.getElementById('recipes-indicator');
+            if (typeof recipes !== 'undefined' && recipes.length > 0) {
+                el.textContent = '✅ Рецепты загружены: ' + recipes.length;
+                el.style.background = '#bbf7d0';
+                el.style.color = '#166534';
+            } else {
+                el.textContent = '❌ Рецепты НЕ загружены';
+                el.style.background = '#fecaca';
+                el.style.color = '#991b1b';
+            }
+        });
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
@@ -129,7 +129,6 @@
         .chip-remove:hover { opacity: 1; }
         .chip-input { border: none; background: transparent; outline: none; font-size: 14px; flex: 1; min-width: 80px; color: #0f172a; }
         .chip-input::placeholder { color: #94a3b8; }
-
         .recipe-filter-btn, .level-filter-btn {
             border-radius: 9999px;
             padding: 4px 14px;
@@ -144,10 +143,8 @@
             color: white;
             border-color: #10b981;
         }
-
         .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
         .mic-error { background-color: #ef4444 !important; }
-
         .cycle-day-cell {
             aspect-ratio: 1 / 1;
             display: flex;
@@ -172,7 +169,6 @@
         .cycle-day-cell.next-period-day { background-color: #E8DAEF !important; border: 2px dashed #8E44AD; box-shadow: 0 0 4px #8E44AD; }
         .cycle-day-cell.delay-day { background-color: #EAECEE !important; color: #7F8C8D; border: 1px solid #BDC3C7; }
         .cycle-day-cell.has-note::after { content: '📝'; position: absolute; top: 1px; right: 3px; font-size: 0.5rem; }
-
         .calendar-nav-btn {
             padding: 4px 10px;
             border-radius: 9999px;
@@ -198,6 +194,18 @@
         }
         .cycle-info-item .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
         .cycle-info-item .value { font-size: 16px; font-weight: bold; color: #0f172a; }
+
+        /* Стили для тепловой карты нагрузки */
+        .load-graph-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .load-graph-table th, .load-graph-table td { padding: 2px 4px; border: 1px solid #e2e8f0; text-align: center; }
+        .load-graph-table th { background: #f1f5f9; font-weight: 600; }
+        .load-graph-cell { width: 20px; height: 20px; border-radius: 4px; }
+        .load-graph-cell.present { background: #ef4444; }
+        .load-graph-cell.absent { background: #bbf7d0; }
+        .load-graph-cell.no-data { background: #e2e8f0; }
+        .load-graph-legend { display: flex; gap: 16px; justify-content: center; margin-top: 8px; font-size: 10px; }
+        .load-graph-legend span { display: inline-flex; align-items: center; gap: 4px; }
+        .legend-color { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -406,8 +414,8 @@
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-1">📊 Визуальный календарь нагрузки</h2>
-                    <div id="cycle-load-calendar-analytics" class="cycle-calendar"></div>
+                    <h2 class="text-base font-bold mb-1">📊 Тепловая карта симптомов (последние 30 дней)</h2>
+                    <div id="load-graph-container"></div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">🔍 Анализ совпадений (48ч) — продукты и лекарства</h2>
@@ -559,15 +567,13 @@
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
         // === ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА РЕЦЕПТОВ ИЗ ФАЙЛА recipes.js ===
-// Проверяем, загружен ли массив recipes (из подключенного скрипта)
-if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length > 0) {
-    window.recipesDB = recipes;  // делаем глобальным для всего приложения
-    recipesDB = recipes; // сразу присваиваем в основную переменную
-    console.log('✅ Рецепты загружены из recipes.js, количество:', recipes.length);
-} else {
-    // Если recipes не определён, оставляем как есть (может, будет загружен позже)
-    console.warn('⚠️ Массив recipes не найден, проверьте подключение recipes.js');
-}
+        if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length > 0) {
+            window.recipesDB = recipes;
+            recipesDB = recipes;
+            console.log('✅ Рецепты загружены из recipes.js, количество:', recipes.length);
+        } else {
+            console.warn('⚠️ Массив recipes не найден, проверьте подключение recipes.js');
+        }
 
         // ================================================================
         // 2. ФУНКЦИИ ДАТ И ЦИКЛА
@@ -1015,7 +1021,6 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
                 });
             }
             initCycleModule();
-            // Если пользователь уже авторизован, загружаем рецепты сразу
             if (localStorage.getItem('histolite_legal_accepted') === 'true') {
                 loadRecipes();
             }
@@ -1498,10 +1503,6 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
         }
 
         // ================================================================
-        // 21. АНАЛИТИКА (заглушка – будет переопределена ниже)
-        // ================================================================
-
-        // ================================================================
         // 22. ЭКСПОРТ (заглушки)
         // ================================================================
         window.exportToCSV = function() {
@@ -1558,9 +1559,8 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
         };
 
         // ================================================================
-        // 25. РАБОТА С РЕЦЕПТАМИ (ЗАГРУЗКА ИЗ ФАЙЛА + ЗАПАСНОЙ ВАРИАНТ)
+        // 25. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
-        // Тестовые рецепты (используются, если recipes.json не загружен)
         const defaultRecipes = [
             {
                 id: 1,
@@ -1597,42 +1597,30 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
         ];
 
         function loadRecipes() {
-    const container = document.getElementById('recipes-container');
-    if (!container) return;
-
-    // Используем уже загруженные данные, если они есть
-    if (window.recipesDB && window.recipesDB.length > 0) {
-        recipesDB = window.recipesDB;
-        container.innerHTML = `<p class="text-center text-green-600 col-span-full py-2">✅ Загружено рецептов: ${recipesDB.length}</p>`;
-        if (typeof renderRecipes === 'function') {
-            renderRecipes();
-        } else {
-            container.innerHTML += recipesDB.map(r => `<div class="border p-2 my-2 rounded">${r.name}</div>`).join('');
+            const container = document.getElementById('recipes-container');
+            if (!container) return;
+            if (window.recipesDB && window.recipesDB.length > 0) {
+                recipesDB = window.recipesDB;
+                container.innerHTML = `<p class="text-center text-green-600 col-span-full py-2">✅ Загружено рецептов: ${recipesDB.length}</p>`;
+                if (typeof renderRecipes === 'function') {
+                    renderRecipes();
+                } else {
+                    container.innerHTML += recipesDB.map(r => `<div class="border p-2 my-2 rounded">${r.name}</div>`).join('');
+                }
+            } else {
+                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
+            }
         }
-    } else {
-        container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
-    }
-}
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
-            if (!container) {
-                console.error('Контейнер recipes-container не найден в renderRecipes');
-                return;
-            }
-
-            // Если по какой-то причине recipesDB пуста, подставляем тестовые
-            if (recipesDB.length === 0) {
-                recipesDB = defaultRecipes;
-            }
-
+            if (!container) return;
+            if (recipesDB.length === 0) recipesDB = defaultRecipes;
             const allRecipes = [...recipesDB, ...userRecipes];
-
             const categoryFilter = document.querySelector('.recipe-filter-btn.active')?.dataset.category || 'all';
             const levelFilter = document.querySelector('.level-filter-btn.active')?.dataset.level || 'all';
             const gf = document.getElementById('filter-gluten-free')?.checked || false;
             const lf = document.getElementById('filter-lactose-free')?.checked || false;
             const df = document.getElementById('filter-dairy-free')?.checked || false;
-
             const filtered = allRecipes.filter(r => {
                 const matchCategory = categoryFilter === 'all' || r.category === categoryFilter;
                 const matchLevel = levelFilter === 'all' || r.histamine_level === levelFilter;
@@ -1642,12 +1630,10 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
                 if (df) matchDiet = matchDiet && r.dairy_free === true;
                 return matchCategory && matchLevel && matchDiet;
             });
-
             if (filtered.length === 0) {
                 container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">По вашему запросу ничего не найдено.</p>';
                 return;
             }
-
             container.innerHTML = filtered.map(r => `
                 <div class="border border-slate-200 rounded-xl p-3 bg-white hover:shadow-md transition cursor-pointer" onclick="openRecipeModal(${r.id})">
                     <img src="${r.image || 'https://via.placeholder.com/300x200?text=Рецепт'}" alt="${r.name}" class="w-full h-32 object-cover rounded-lg mb-2" onerror="this.src='https://via.placeholder.com/300x200?text=Изображение+отсутствует'">
@@ -1667,12 +1653,10 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
                 </div>
             `).join('');
         }
-
         function openRecipeModal(id) {
             const allRecipes = [...recipesDB, ...userRecipes];
             const recipe = allRecipes.find(r => r.id === id);
             if (!recipe) return;
-
             document.getElementById('recipe-modal-image').src = recipe.image || 'https://via.placeholder.com/400x300?text=Рецепт';
             document.getElementById('recipe-modal-name').textContent = recipe.name || '';
             document.getElementById('recipe-modal-category').textContent = recipe.category || '';
@@ -1682,14 +1666,9 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
             document.getElementById('recipe-modal-time').textContent = `⏱ ${recipe.prep_time || 0} мин`;
             document.getElementById('recipe-modal-servings').textContent = `🍽 ${recipe.servings || 1} порц.`;
             document.getElementById('recipe-modal-description').textContent = recipe.description || '';
-
             const ingList = document.getElementById('recipe-modal-ingredients');
-            ingList.innerHTML = Array.isArray(recipe.ingredients)
-                ? recipe.ingredients.map(i => `<li>${i}</li>`).join('')
-                : '';
-
+            ingList.innerHTML = Array.isArray(recipe.ingredients) ? recipe.ingredients.map(i => `<li>${i}</li>`).join('') : '';
             document.getElementById('recipe-modal-instructions').textContent = recipe.instructions || '';
-
             const tipsDiv = document.getElementById('recipe-modal-tips');
             if (recipe.tips) {
                 tipsDiv.innerHTML = `<strong>💡 Совет:</strong> ${recipe.tips}`;
@@ -1697,7 +1676,6 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
             } else {
                 tipsDiv.style.display = 'none';
             }
-
             const dietsDiv = document.getElementById('recipe-modal-diets');
             dietsDiv.innerHTML = '';
             if (recipe.gluten_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">🌾 Без глютена</span> ';
@@ -1706,15 +1684,11 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
             if (!recipe.gluten_free && !recipe.lactose_free && !recipe.dairy_free) {
                 dietsDiv.innerHTML = '<span class="text-xs text-slate-400">Нет специальных маркеров</span>';
             }
-
             document.getElementById('recipe-modal').style.display = 'flex';
         }
-
         function closeRecipeModal() {
             document.getElementById('recipe-modal').style.display = 'none';
         }
-
-        // Обработчики фильтров
         document.querySelectorAll('.recipe-filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.recipe-filter-btn').forEach(b => b.classList.remove('active'));
@@ -1722,7 +1696,6 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
                 renderRecipes();
             });
         });
-
         document.querySelectorAll('.level-filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.level-filter-btn').forEach(b => b.classList.remove('active'));
@@ -1730,7 +1703,6 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
                 renderRecipes();
             });
         });
-
         document.getElementById('recipe-modal')?.addEventListener('click', function(e) {
             if (e.target === this) closeRecipeModal();
         });
@@ -1752,18 +1724,10 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
         window.fullReset = function() {
             if (confirm('Это удалит ВСЕ данные: записи, продукты, настройки цикла, отметки. Продолжить?')) {
                 const keys = [
-                    'histolite_logs',
-                    'histolite_safe_products',
-                    'histolite_gender',
-                    'histolite_last_period_start',
-                    'histolite_cycle_length',
-                    'histolite_pms_start_days',
-                    'histolite_cycle_marks',
-                    'histolite_cycle_day_notes',
-                    'histolite_period_days',
-                    'histolite_user_recipes',
-                    'histolite_last_visit',
-                    'histolite_legal_accepted'
+                    'histolite_logs', 'histolite_safe_products', 'histolite_gender',
+                    'histolite_last_period_start', 'histolite_cycle_length', 'histolite_pms_start_days',
+                    'histolite_cycle_marks', 'histolite_cycle_day_notes', 'histolite_period_days',
+                    'histolite_user_recipes', 'histolite_last_visit', 'histolite_legal_accepted'
                 ];
                 keys.forEach(key => localStorage.removeItem(key));
                 location.reload();
@@ -1817,8 +1781,6 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
         // ================================================================
         // 28. АНАЛИТИКА – РАБОЧАЯ ВЕРСИЯ
         // ================================================================
-        // (вставлена после всего, чтобы переопределить заглушки)
-
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!container) return;
@@ -1869,35 +1831,91 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
             container.innerHTML = html;
         }
 
-        function renderCycleLoadCalendar() {
-            const container = document.getElementById('cycle-load-calendar-analytics');
+        function renderLoadGraph() {
+            const container = document.getElementById('load-graph-container');
             if (!container) return;
+
+            // Собираем все симптомы за последние 30 дней
             const today = new Date();
             const start = new Date(today);
-            start.setDate(today.getDate() - 30);
-            const symptomDays = {};
-            userLogs.forEach(log => { if (log.symptomsText) symptomDays[log.date] = (symptomDays[log.date]||0) + 1; });
-            Object.keys(cycleDayNotes).forEach(d => { if (cycleDayNotes[d].symptoms) symptomDays[d] = (symptomDays[d]||0) + 1; });
-            let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
-            html += ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
+            start.setDate(today.getDate() - 29);
+
+            // Массив дней (строки дат)
+            const days = [];
             let cur = new Date(start);
-            while (cur.getDay() !== 1) cur.setDate(cur.getDate() - 1);
-            for (let i=0; i<42; i++) {
-                const dateStr = formatDate(cur.getFullYear(), cur.getMonth(), cur.getDate());
-                const inRange = cur >= start && cur <= today;
-                const has = symptomDays[dateStr] || false;
-                let bg = 'bg-slate-100', text = 'text-slate-600', label = cur.getDate();
-                if (inRange && has) { bg = 'bg-rose-200'; text = 'text-rose-800'; }
-                else if (!inRange) { bg = 'bg-slate-50'; text = 'text-slate-300'; label = ''; }
-                html += `<div class="aspect-square flex items-center justify-center rounded ${bg} ${text}">${label}</div>`;
+            while (cur <= today) {
+                days.push(formatDate(cur.getFullYear(), cur.getMonth(), cur.getDate()));
                 cur.setDate(cur.getDate() + 1);
             }
-            html += '</div><div class="text-xs text-slate-500 mt-2">🔴 Розовые дни — были симптомы</div>';
+
+            // Собираем симптомы из записей
+            const symptomMap = {};
+            userLogs.forEach(log => {
+                if (!log.symptomsText || !log.date) return;
+                const date = log.date;
+                if (!symptomMap[date]) symptomMap[date] = new Set();
+                log.symptomsText.split(/[,;]/).map(s => s.trim().toLowerCase()).filter(Boolean).forEach(sym => {
+                    symptomMap[date].add(sym);
+                });
+            });
+            // Добавляем симптомы из заметок календаря
+            Object.keys(cycleDayNotes).forEach(date => {
+                if (cycleDayNotes[date].symptoms) {
+                    if (!symptomMap[date]) symptomMap[date] = new Set();
+                    cycleDayNotes[date].symptoms.split(/[,;]/).map(s => s.trim().toLowerCase()).filter(Boolean).forEach(sym => {
+                        symptomMap[date].add(sym);
+                    });
+                }
+            });
+
+            // Считаем частоту симптомов за все дни
+            const symptomFreq = {};
+            Object.values(symptomMap).forEach(set => {
+                set.forEach(sym => {
+                    symptomFreq[sym] = (symptomFreq[sym] || 0) + 1;
+                });
+            });
+            // Берём топ-10 симптомов
+            const topSymptoms = Object.entries(symptomFreq).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([s]) => s);
+
+            if (topSymptoms.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-4">Нет данных о симптомах.</p>';
+                return;
+            }
+
+            // Строим таблицу
+            let html = '<div style="overflow-x: auto;"><table class="load-graph-table">';
+            // Заголовок: даты
+            html += '<tr><th style="min-width:80px;">Симптомы</th>';
+            days.forEach(d => {
+                const dateObj = parseLocalDate(d);
+                const day = dateObj ? dateObj.getDate() : '';
+                html += `<th style="font-weight:400; font-size:9px;">${day}</th>`;
+            });
+            html += '</tr>';
+
+            // Строки: симптомы
+            topSymptoms.forEach(sym => {
+                html += `<tr><td style="font-weight:500; font-size:9px; white-space:nowrap;">${sym}</td>`;
+                days.forEach(d => {
+                    const has = symptomMap[d] && symptomMap[d].has(sym);
+                    const cls = has ? 'present' : 'absent';
+                    html += `<td><div class="load-graph-cell ${cls}" title="${has ? 'Был симптом' : 'Не было симптома'}"></div></td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</table></div>';
+
+            // Легенда
+            html += `<div class="load-graph-legend">
+                <span><span class="legend-color" style="background:#ef4444;"></span> Был симптом</span>
+                <span><span class="legend-color" style="background:#bbf7d0;"></span> Не было</span>
+            </div>`;
             container.innerHTML = html;
         }
 
-        // Переопределяем заглушку runAdvancedAnalytics
-        window.runAdvancedAnalytics = function() {
+        function runAdvancedAnalytics() {
             const container = document.getElementById('analytics-results');
             if (!container) return;
             container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">⏳ Анализ...</p>';
@@ -1937,22 +1955,22 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
             });
             html += '<div class="text-[10px] text-slate-400 mt-2">* Совпадения с симптомами в течение 48 часов после употребления.</div></div>';
             container.innerHTML = html;
-        };
+        }
 
         // Автозапуск при переключении на вкладку "Анализ"
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
             if (btn) {
                 btn.addEventListener('click', function() {
-                    setTimeout(() => { renderCycleSymptomAnalysis(); renderCycleLoadCalendar(); }, 100);
+                    setTimeout(() => { renderCycleSymptomAnalysis(); renderLoadGraph(); }, 100);
                 });
             }
             if (document.getElementById('analytics-tab')?.classList.contains('active')) {
-                setTimeout(() => { renderCycleSymptomAnalysis(); renderCycleLoadCalendar(); }, 200);
+                setTimeout(() => { renderCycleSymptomAnalysis(); renderLoadGraph(); }, 200);
             }
         });
 
-        console.log('✅ Приложение загружено. Рецепты загружаются из файла recipes.json');
+        console.log('✅ Приложение загружено.');
     </script>
 </body>
 </html>
