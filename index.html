@@ -1586,16 +1586,22 @@ if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length >
         function loadRecipes() {
     const container = document.getElementById('recipes-container');
     if (!container) return;
-    
-    // Если рецепты уже загружены через переменную recipes
-    if (window.recipesDB && window.recipesDB.length > 0) {
-        container.innerHTML = `<p class="text-green-600 text-center">✅ Загружено рецептов: ${window.recipesDB.length}</p>`;
-        renderRecipes(); // предполагаем, что функция renderRecipes есть
+
+    // Проверяем, загружена ли переменная recipes из recipes.js
+    if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length > 0) {
+        window.recipesDB = recipes;
+        container.innerHTML = `<p class="text-center text-green-600 col-span-full py-2">✅ Загружено рецептов: ${recipes.length}</p>`;
+        // Если есть функция renderRecipes, вызываем её
+        if (typeof renderRecipes === 'function') {
+            renderRecipes();
+        } else {
+            // Просто показываем список названий (для проверки)
+            container.innerHTML += recipes.map(r => `<div class="border p-2 my-2 rounded">${r.name}</div>`).join('');
+        }
     } else {
-        container.innerHTML = '<p class="text-red-500 text-center">❌ Рецепты не найдены</p>';
+        container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
     }
 }
-
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) {
