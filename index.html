@@ -1,1823 +1,224 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ГистЛайт — дневник гистамина и цикла</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="recipes.js"></script>
-    <div id="recipes-indicator" style="position:fixed; top:10px; right:10px; padding:10px; background:yellow; z-index:9999; border-radius:8px;"></div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var el = document.getElementById('recipes-indicator');
-        if (typeof recipes !== 'undefined' && recipes.length > 0) {
-            el.textContent = '✅ Рецепты загружены: ' + recipes.length;
-            el.style.background = '#bbf7d0';
-            el.style.color = '#166534';
-        } else {
-            el.textContent = '❌ Рецепты НЕ загружены';
-            el.style.background = '#fecaca';
-            el.style.color = '#991b1b';
-        }
-    });
-</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        emerald: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b' }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-        .cycle-calendar { display: flex; flex-direction: column; gap: 8px; }
-        .calendar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .phase-label { width: 110px; font-weight: bold; font-size: 11px; }
-        .load-bar { height: 20px; border-radius: 8px; background-color: #e2e8f0; flex: 1; overflow: hidden; }
-        .load-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.3s; }
-        .product-result { padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0; }
-        .product-result.low { border-color: #4ade80; background-color: #dcfce7; }
-        .product-result.medium { border-color: #facc15; background-color: #fef9c3; }
-        .product-result.high { border-color: #f87171; background-color: #fee2e2; }
-        .product-result.unknown { border-color: #94a3b8; background-color: #f1f5f9; }
-        .risk-card {
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            margin-bottom: 16px;
-        }
-        .risk-low { background-color: #dcfce7; border: 2px solid #4ade80; }
-        .risk-medium { background-color: #fef9c3; border: 2px solid #facc15; }
-        .risk-high { background-color: #fee2e2; border: 2px solid #f87171; }
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-            flex: 1;
-        }
-        .stat-number { font-size: 24px; font-weight: 700; }
-        .product-status-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 9999px;
-            border: 2px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.15s;
-            background: white;
-        }
-        .product-status-btn.active-safe { border-color: #4ade80; background: #dcfce7; }
-        .product-status-btn.active-unsafe { border-color: #f87171; background: #fee2e2; }
-        .product-status-btn.active-question { border-color: #facc15; background: #fef9c3; }
-        .product-status-btn:hover { transform: scale(1.05); }
-        .safe-filter-btn {
-            border-radius: 9999px;
-            padding: 4px 12px;
-            font-size: 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .safe-filter-btn.active { background: #10b981; color: white; border-color: #10b981; }
-        .safe-filter-btn.unsafe-active { background: #ef4444; color: white; border-color: #ef4444; }
-        .safe-filter-btn.question-active { background: #f59e0b; color: white; border-color: #f59e0b; }
-        .chip-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            padding: 8px 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: #f8fafc;
-            min-height: 42px;
-            align-items: center;
-        }
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 13px;
-            font-weight: 500;
-            background: white;
-            border: 1px solid #e2e8f0;
-            color: #334155;
-        }
-        .chip-safe { border-color: #4ade80; background: #dcfce7; color: #166534; }
-        .chip-unsafe { border-color: #f87171; background: #fee2e2; color: #991b1b; }
-        .chip-question { border-color: #facc15; background: #fef9c3; color: #854d0e; }
-        .chip-unknown { border-color: #cbd5e1; background: #f1f5f9; color: #475569; }
-        .chip-remove { cursor: pointer; font-size: 12px; opacity: 0.6; transition: opacity 0.2s; margin-left: 2px; }
-        .chip-remove:hover { opacity: 1; }
-        .chip-input { border: none; background: transparent; outline: none; font-size: 14px; flex: 1; min-width: 80px; color: #0f172a; }
-        .chip-input::placeholder { color: #94a3b8; }
-
-        .recipe-filter-btn, .level-filter-btn {
-            border-radius: 9999px;
-            padding: 4px 14px;
-            font-size: 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .recipe-filter-btn.active, .level-filter-btn.active {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
-        }
-
-        .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
-        .mic-error { background-color: #ef4444 !important; }
-
-        .cycle-day-cell {
-            aspect-ratio: 1 / 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.1s;
-            cursor: pointer;
-            user-select: none;
-            position: relative;
-            padding: 2px;
-            line-height: 1.2;
-        }
-        .cycle-day-cell:hover { opacity: 0.8; transform: scale(0.95); }
-        .cycle-day-cell.today { background-color: #D6EAF8 !important; border: 2px solid #2980B9; box-shadow: 0 0 4px #2980B9; }
-        .cycle-day-cell.period-day { background-color: #FADBD8 !important; border: 2px solid #E74C3C; box-shadow: 0 0 4px #E74C3C; }
-        .cycle-day-cell.ovulation-day { background-color: #FCF3CF !important; border: 2px solid #F39C12; box-shadow: 0 0 4px #F39C12; }
-        .cycle-day-cell.fertile-day { background-color: #D5F5E3 !important; border: 2px solid #27AE60; box-shadow: 0 0 4px #27AE60; }
-        .cycle-day-cell.next-period-day { background-color: #E8DAEF !important; border: 2px dashed #8E44AD; box-shadow: 0 0 4px #8E44AD; }
-        .cycle-day-cell.delay-day { background-color: #EAECEE !important; color: #7F8C8D; border: 1px solid #BDC3C7; }
-        .cycle-day-cell.has-note::after { content: '📝'; position: absolute; top: 1px; right: 3px; font-size: 0.5rem; }
-
-        .calendar-nav-btn {
-            padding: 4px 10px;
-            border-radius: 9999px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .calendar-nav-btn:hover { background: #f1f5f9; }
-        .calendar-month-label { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
-        .cycle-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .cycle-info-item {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 8px 12px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-        }
-        .cycle-info-item .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
-        .cycle-info-item .value { font-size: 16px; font-weight: bold; color: #0f172a; }
-    </style>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
-
-    <!-- ЮРИДИЧЕСКИЙ ЭКРАН -->
-    <div id="legal-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
-            <div class="text-center text-3xl mb-2">⚖️</div>
-            <h2 class="text-base font-bold text-center text-slate-800 mb-3">Пользовательское соглашение</h2>
-            <div class="overflow-y-auto text-xs text-slate-500 space-y-2.5 pr-1 mb-4 flex-1 border-b border-t border-slate-100 py-3 leading-relaxed">
-                <p><strong>1. Не является медицинским сервисом.</strong> Данное приложение представляет собой бытовой электронный дневник.</p>
-                <p><strong>2. Отказ от постановки диагнозов.</strong> Сервис не является медицинской рекомендацией.</p>
-                <p><strong>3. Необходимость консультации специалиста.</strong> Любые выводы носят ознакомительный характер.</p>
-                <p><strong>4. Ограничение ответственности.</strong> Разработчик не несет ответственности за последствия использования дневника.</p>
-            </div>
-            <div class="mt-2">
-                <label class="block text-xs font-bold text-slate-600 mb-2">Выберите ваш пол:</label>
-                <div class="flex gap-4">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="gender" value="female" checked class="accent-emerald-600">
-                        <span class="text-sm">👩 Женщина</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="gender" value="male" class="accent-emerald-600">
-                        <span class="text-sm">👨 Мужчина</span>
-                    </label>
-                </div>
-            </div>
-            <div class="space-y-4 mt-4">
-                <label class="flex items-start gap-2.5 cursor-pointer select-none">
-                    <input type="checkbox" id="legal-checkbox" onchange="toggleLegalButton()" class="w-5 h-5 mt-0.5 accent-emerald-600 rounded shrink-0">
-                    <span class="text-[11px] text-slate-600 leading-tight">Я подтверждаю, что платформа <strong>не является медицинской</strong>.</span>
-                </label>
-                <button id="legal-submit-btn" onclick="acceptLegal()" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed">Войти в приложение</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
-    <div id="app-body" class="opacity-30 pointer-events-none">
-        <header class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 shadow-md sticky top-0 z-40">
-            <h1 class="text-xl font-bold text-center">ГистЛайт</h1>
-            <p class="text-[10px] text-center text-emerald-100 uppercase tracking-wider mt-0.5">дневник питания, лекарств и биоритмов</p>
-        </header>
-
-        <main class="max-w-md mx-auto p-4 space-y-4">
-            <!-- ВКЛАДКА СЕГОДНЯ -->
-            <div id="today-tab" class="tab-content active space-y-4">
-                <div id="today-dashboard">
-                    <div id="risk-card" class="risk-card risk-low">
-                        <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
-                        <div class="text-2xl font-bold" id="risk-level">Низкий</div>
-                        <div class="text-xs text-slate-500" id="risk-reason">Фаза цикла: стабильная</div>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">💡 Совет дня</div>
-                        <div id="today-tip" class="text-sm text-slate-700">Сегодня хороший день, чтобы попробовать новые продукты.</div>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="stat-card"><div class="text-xs text-slate-400">Записей за 7 дней</div><div class="stat-number text-emerald-600" id="week-logs">0</div></div>
-                        <div class="stat-card"><div class="text-xs text-slate-400">Дней подряд</div><div class="stat-number text-amber-600" id="streak">0</div></div>
-                        <div class="stat-card"><div class="text-xs text-slate-400">Найдено триггеров</div><div class="stat-number text-rose-600" id="triggers-count">0</div></div>
-                    </div>
-                    <div id="progress-container"></div>
-                    <button onclick="switchTab('diary'); document.querySelector('.bg-white.p-4.rounded-2xl.shadow-sm.border').scrollIntoView({ behavior: 'smooth' });" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-sm shadow-md">➕ Добавить запись</button>
-                </div>
-            </div>
-
-            <!-- ВКЛАДКА ДНЕВНИК -->
-            <div id="diary-tab" class="tab-content space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-3 text-slate-800">📝 Новая запись</h2>
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label><input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label><input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
-                        <div class="flex items-center gap-2">
-                            <div class="chip-container" id="chip-container">
-                                <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
-                                <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
-                            </div>
-                            <button id="mic-products-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm flex-shrink-0" title="Голосовой ввод продуктов">🎤</button>
-                        </div>
-                        <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
-                        <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                    </div>
-                    <div class="space-y-2 border-t border-slate-100 pt-3">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
-                        <div class="flex gap-2 items-center">
-                            <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                            <button id="mic-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
-                        </div>
-                        <p class="text-[10px] text-slate-400 mt-1">Нажмите на микрофон и скажите текст. Кнопка подсветится во время записи.</p>
-                    </div>
-                    <button onclick="saveLog()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">Сохранить запись</button>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Последние записи</h3>
-                        <button onclick="clearAllLogs()" class="text-[10px] text-red-500 hover:text-red-700 underline">Очистить всё</button>
-                    </div>
-                    <div id="history-container" class="space-y-2 text-xs text-slate-500"></div>
-                </div>
-            </div>
-
-            <!-- ВКЛАДКА ПРОДУКТЫ -->
-            <div id="products-tab" class="tab-content space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-3 text-slate-800">🔍 Узнать уровень гистамина</h2>
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Введите название продукта</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="product-search-input" placeholder="например: помидор, сыр, кефир" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                            <button onclick="searchProductByName()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">Найти</button>
-                        </div>
-                    </div>
-                    <div class="mb-4 flex gap-2 flex-wrap">
-                        <button onclick="scanBarcode()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📷 Сканировать камерой</button>
-                        <button onclick="uploadBarcodeImage()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📤 Загрузить фото</button>
-                    </div>
-                    <input type="file" id="barcode-image-input" accept="image/*" style="display:none" onchange="decodeBarcodeFromImage(this)">
-                    <div id="scanner-container" style="display: none; margin-bottom: 15px;">
-                        <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
-                        <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">❌ Закрыть сканер</button>
-                    </div>
-                    <div id="product-search-result" class="hidden"></div>
-                </div>
-            </div>
-
-            <!-- ВКЛАДКА БАЗА -->
-            <div id="safe-tab" class="tab-content space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-3 text-slate-800">📋 Моя база «Можно / Нельзя»</h2>
-                    <div class="flex gap-2 mb-3 flex-wrap">
-                        <input type="text" id="safe-search-input" placeholder="Поиск продукта..." class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50" oninput="renderSafeProducts()">
-                        <div class="flex gap-1">
-                            <button class="safe-filter-btn active" data-filter="all" onclick="setSafeFilter('all')">Все</button>
-                            <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">✅ Можно</button>
-                            <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">❌ Нельзя</button>
-                            <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">❓ Под вопросом</button>
-                        </div>
-                    </div>
-                    <div id="safe-products-list" class="space-y-1.5 max-h-96 overflow-y-auto pr-1"></div>
-                    <div class="text-xs text-slate-400 mt-3">Нажимайте на кнопки, чтобы отметить продукт.</div>
-                </div>
-            </div>
-
-            <!-- ВКЛАДКА КАЛЕНДАРЬ -->
-            <div id="calendar-tab" class="tab-content space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Женский календарь</h3>
-                    <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день</label>
-                            <input type="date" id="last-period-start" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Длина цикла</label>
-                            <input type="number" id="cycle-length" min="20" max="45" value="28" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Дней менструации</label>
-                            <input type="number" id="period-days" min="1" max="10" value="5" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                        </div>
-                    </div>
-                    <div class="cycle-info-grid" id="cycle-info-grid">
-                        <div class="cycle-info-item">
-                            <div class="label">День цикла</div>
-                            <div class="value" id="cycle-day-display">—</div>
-                        </div>
-                        <div class="cycle-info-item">
-                            <div class="label">Фаза</div>
-                            <div class="value" id="phase-badge" style="font-size:14px;">Не определена</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between mb-3">
-                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
-                        <span class="calendar-month-label" id="calendar-month-label">Январь 2025</span>
-                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
-                        <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
-                    </div>
-                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
-                    <div class="flex flex-wrap gap-3 mt-2 text-xs">
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FADBD8; border:2px solid #E74C3C; border-radius:4px;"></span> Менструация</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FCF3CF; border:2px solid #F39C12; border-radius:4px;"></span> Овуляция</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D5F5E3; border:2px solid #27AE60; border-radius:4px;"></span> Фертильное окно</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#E8DAEF; border:2px dashed #8E44AD; border-radius:4px;"></span> Ожидаемый день</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D6EAF8; border:2px solid #2980B9; border-radius:4px;"></span> Сегодня</span>
-                        <span class="flex items-center gap-1">📝 Заметка</span>
-                    </div>
-                    <button onclick="clearAllMarks()" class="w-full mt-3 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl text-sm transition">🗑️ Очистить все отметки цикла</button>
-                    <button onclick="fullReset()" class="w-full mt-2 bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-xl text-sm transition">🔄 Полный сброс данных (очистить всё)</button>
-                </div>
-            </div>
-
-            <!-- ВКЛАДКА АНАЛИТИКА -->
-            <div id="analytics-tab" class="tab-content space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-1">📈 Связь симптомов с фазой цикла</h2>
-                    <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-1">📊 Визуальный календарь нагрузки</h2>
-                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-1">🔍 Анализ совпадений (48ч) — продукты и лекарства</h2>
-                    <button onclick="runAdvancedAnalytics()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md">Найти скрытые триггеры</button>
-                    <div id="analytics-results" class="mt-4 space-y-2"><p class="text-xs text-slate-400 text-center py-4">Нажмите кнопку для расчёта.</p></div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-2">📎 Экспорт данных</h2>
-                    <button onclick="exportToCSV()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md">Скачать отчёт (CSV)</button>
-                    <button onclick="exportToPDF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md mt-2">📄 Скачать отчёт для врача (PDF)</button>
-                    <p class="text-[10px] text-slate-400 mt-2">*PDF с таблицей, статистикой и графиком</p>
-                </div>
-            </div>
-
-            <!-- ===== ВКЛАДКА РЕЦЕПТЫ ===== -->
-            <div id="recipes-tab" class="tab-content space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-3 text-slate-800">🍳 Рецепты</h2>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <button class="recipe-filter-btn active" data-category="all">Все</button>
-                        <button class="recipe-filter-btn" data-category="завтрак">Завтрак</button>
-                        <button class="recipe-filter-btn" data-category="обед">Обед</button>
-                        <button class="recipe-filter-btn" data-category="ужин">Ужин</button>
-                        <button class="recipe-filter-btn" data-category="перекус">Перекус</button>
-                    </div>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <button class="level-filter-btn active" data-level="all">Все уровни</button>
-                        <button class="level-filter-btn" data-level="низкий">🟢 Низкий</button>
-                        <button class="level-filter-btn" data-level="средний">🟡 Средний</button>
-                        <button class="level-filter-btn" data-level="высокий">🔴 Высокий</button>
-                    </div>
-                    <div class="flex flex-wrap gap-4 mb-4">
-                        <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-gluten-free" onchange="renderRecipes()"> 🌾 Без глютена
-                        </label>
-                        <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-lactose-free" onchange="renderRecipes()"> 🥛 Без лактозы
-                        </label>
-                        <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> 🧈 Без молочных продуктов
-                        </label>
-                    </div>
-                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Сюда будут загружаться рецепты -->
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- НАВИГАЦИЯ -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl flex overflow-x-auto p-2 z-40 space-x-1">
-            <button data-tab="today" class="tab-button flex flex-col items-center p-1.5 text-emerald-600 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📊</span><span>Сегодня</span></button>
-            <button data-tab="diary" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📝</span><span>Дневник</span></button>
-            <button data-tab="products" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🔍</span><span>Продукты</span></button>
-            <button data-tab="safe" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📋</span><span>База</span></button>
-            <button data-tab="calendar" id="calendar-nav-btn" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🌸</span><span>Календарь</span></button>
-            <button data-tab="analytics" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📊</span><span>Анализ</span></button>
-            <button data-tab="recipes" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🍳</span><span>Рецепты</span></button>
-        </nav>
-
-        <!-- ФУТЕР -->
-        <footer class="text-center text-[10px] text-slate-400 py-4 border-t border-slate-100 mt-4 max-w-md mx-auto">
-            <p>© 2026 ГистЛайт — дневник самонаблюдения</p>
-            <p>Разработчик: самозанятая | ИНН: 123456789012</p>
-            <p>По вопросам: ваш.email@example.com</p>
-            <p class="mt-2">Данные хранятся локально на вашем устройстве.</p>
-        </footer>
-    </div>
-
-    <!-- МОДАЛЬНЫЕ ОКНА -->
-    <div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-            <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
-            <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
-            <div class="space-y-2">
-                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Первый день цикла</button>
-                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
-                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
-                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
-                <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
-            </div>
-        </div>
-    </div>
-    <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <h4 class="text-base font-bold text-slate-800 mb-2">День цикла</h4>
-            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
-            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы за этот день</label>
-            <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
-            <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
-            <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
-            <div class="flex gap-2 mt-4">
-                <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-                <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="recipe-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <button onclick="closeRecipeModal()" class="float-right text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
-            <img id="recipe-modal-image" src="" alt="" class="w-full h-48 object-cover rounded-xl mb-4">
-            <h3 id="recipe-modal-name" class="text-xl font-bold text-slate-800 mb-2"></h3>
-            <div class="flex flex-wrap gap-2 text-sm text-slate-500 mb-3">
-                <span id="recipe-modal-category" class="bg-slate-100 px-2 py-1 rounded-full"></span>
-                <span id="recipe-modal-level" class="bg-slate-100 px-2 py-1 rounded-full"></span>
-                <span id="recipe-modal-time" class="bg-slate-100 px-2 py-1 rounded-full">⏱</span>
-                <span id="recipe-modal-servings" class="bg-slate-100 px-2 py-1 rounded-full">🍽</span>
-            </div>
-            <div id="recipe-modal-diets" class="flex flex-wrap gap-1 mb-3"></div>
-            <h4 class="font-bold text-slate-700 mt-3">📝 Описание</h4>
-            <p id="recipe-modal-description" class="text-sm text-slate-600 mb-3 italic"></p>
-            <h4 class="font-bold text-slate-700 mt-3">🥘 Ингредиенты:</h4>
-            <ul id="recipe-modal-ingredients" class="list-disc list-inside text-sm text-slate-600 mb-3"></ul>
-            <h4 class="font-bold text-slate-700 mt-3">👨‍🍳 Приготовление:</h4>
-            <p id="recipe-modal-instructions" class="text-sm text-slate-600 whitespace-pre-line"></p>
-            <div id="recipe-modal-tips" class="mt-3 p-3 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200"></div>
-        </div>
-    </div>
-
-    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-            <p id="custom-modal-message" class="text-center text-sm text-slate-700 mb-4">Сообщение</p>
-            <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">OK</button>
-        </div>
-    </div>
-
-    <script>
-        // ================================================================
-        // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-        // ================================================================
-        let userLogs = JSON.parse(localStorage.getItem('histolite_logs')) || [];
-        let safeProducts = JSON.parse(localStorage.getItem('histolite_safe_products') || '{}');
-        let selectedProducts = [];
-        let safeFilter = 'all';
-        let userGender = localStorage.getItem('histolite_gender') || 'female';
-        let savedLastPeriodStart = localStorage.getItem('histolite_last_period_start') || '';
-        let savedCycleLength = parseInt(localStorage.getItem('histolite_cycle_length')) || 28;
-        let savedPmsStartDays = parseInt(localStorage.getItem('histolite_pms_start_days')) || 7;
-        let savedPeriodDays = parseInt(localStorage.getItem('histolite_period_days')) || 5;
-        let myHistamineDB = [];
-        let recipesDB = [];
-        let userRecipes = JSON.parse(localStorage.getItem('histolite_user_recipes')) || [];
-        let expectedStartDate = null;
-        let cycleMarks = JSON.parse(localStorage.getItem('histolite_cycle_marks')) || {};
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-        let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
-        let selectedCycleDayDate = null;
-        // === ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА РЕЦЕПТОВ ИЗ ФАЙЛА recipes.js ===
-// Проверяем, загружен ли массив recipes (из подключенного скрипта)
-if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length > 0) {
-    window.recipesDB = recipes;  // делаем глобальным для всего приложения
-    recipesDB = recipes; // сразу присваиваем в основную переменную
-    console.log('✅ Рецепты загружены из recipes.js, количество:', recipes.length);
-} else {
-    // Если recipes не определён, оставляем как есть (может, будет загружен позже)
-    console.warn('⚠️ Массив recipes не найден, проверьте подключение recipes.js');
-}
-
-        // ================================================================
-        // 2. ФУНКЦИИ ДАТ И ЦИКЛА
-        // ================================================================
-        function formatDate(year, month, day) {
-            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        }
-        function parseLocalDate(dateStr) {
-            if (!dateStr) return null;
-            const parts = dateStr.split('-');
-            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-        }
-        function getCurrentCycleDay() {
-            if (!savedLastPeriodStart) return null;
-            const start = parseLocalDate(savedLastPeriodStart);
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            start.setHours(0,0,0,0);
-            const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
-            return diff > 0 ? diff : 1;
-        }
-        function getNextPeriodDate() {
-            if (!savedLastPeriodStart) return null;
-            const start = parseLocalDate(savedLastPeriodStart);
-            const next = new Date(start);
-            next.setDate(start.getDate() + savedCycleLength);
-            return next;
-        }
-        function getOvulationDate() {
-            if (!savedLastPeriodStart) return null;
-            const start = parseLocalDate(savedLastPeriodStart);
-            const ovulationDay = savedCycleLength - 14;
-            const ov = new Date(start);
-            ov.setDate(start.getDate() + ovulationDay - 1);
-            return ov;
-        }
-        function getFertileRange() {
-            const ovulation = getOvulationDate();
-            if (!ovulation) return null;
-            const from = new Date(ovulation);
-            from.setDate(ovulation.getDate() - 5);
-            const to = new Date(ovulation);
-            to.setDate(ovulation.getDate() + 1);
-            return { from, to, ovulation };
-        }
-        function getDelayDays() {
-            const next = getNextPeriodDate();
-            if (!next) return 0;
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            next.setHours(0,0,0,0);
-            const diff = Math.floor((today - next) / (1000 * 60 * 60 * 24));
-            return diff > 0 ? diff : 0;
-        }
-        function getCyclePhaseName(day) {
-            if (!day) return 'Не определена';
-            if (day <= savedPeriodDays) return 'Менструация';
-            const ovulationDay = savedCycleLength - 14;
-            if (day === ovulationDay) return 'Овуляция';
-            if (day >= ovulationDay - 5 && day <= ovulationDay + 1) return 'Фертильное окно';
-            if (day > ovulationDay + 1 && day < savedCycleLength) return 'Лютеиновая';
-            if (day >= savedCycleLength) return 'Задержка';
-            return 'Начало цикла';
-        }
-
-        // ================================================================
-        // 3. ОБНОВЛЕНИЕ UI ЦИКЛА
-        // ================================================================
-        function updateCycleUI() {
-            const day = getCurrentCycleDay();
-            const dayBox = document.getElementById('cycle-day-display');
-            const phaseBox = document.getElementById('phase-badge');
-            if (!day || !savedLastPeriodStart) {
-                if (dayBox) dayBox.textContent = '—';
-                if (phaseBox) {
-                    phaseBox.textContent = 'Не определена';
-                    phaseBox.style.color = '#64748b';
-                    phaseBox.style.background = 'transparent';
-                }
-                return;
-            }
-            const ovulationDay = savedCycleLength - 14;
-            const delayDays = getDelayDays();
-            let phaseText = 'Стабильная';
-            let phaseColor = '#10b981';
-            if (day <= savedPeriodDays) {
-                phaseText = 'Менструация';
-                phaseColor = '#e74c3c';
-            } else if (day === ovulationDay) {
-                phaseText = 'Овуляция';
-                phaseColor = '#f39c12';
-            } else if (day >= ovulationDay - 5 && day <= ovulationDay + 1) {
-                phaseText = 'Фертильное окно';
-                phaseColor = '#27ae60';
-            } else if (delayDays > 0) {
-                phaseText = 'Задержка';
-                phaseColor = '#8e44ad';
-            }
-            if (dayBox) dayBox.textContent = day;
-            if (phaseBox) {
-                phaseBox.textContent = phaseText;
-                phaseBox.style.color = phaseColor;
-                phaseBox.style.background = 'transparent';
-            }
-        }
-
-        // ================================================================
-        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
-        // ================================================================
-        function saveCycleSettings() {
-            const dateInput = document.getElementById('last-period-start');
-            const lengthInput = document.getElementById('cycle-length');
-            const periodDaysInput = document.getElementById('period-days');
-            if (dateInput) savedLastPeriodStart = dateInput.value;
-            if (lengthInput) savedCycleLength = parseInt(lengthInput.value) || 28;
-            if (periodDaysInput) savedPeriodDays = parseInt(periodDaysInput.value) || 5;
-            localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-            localStorage.setItem('histolite_cycle_length', savedCycleLength);
-            localStorage.setItem('histolite_period_days', savedPeriodDays);
-            renderCycleCalendar();
-            updateCycleUI();
-            renderTodayDashboard();
-        }
-
-        // ================================================================
-        // 5. МОДАЛЬНОЕ ОКНО ДНЯ ЦИКЛА
-        // ================================================================
-        function openDayModal(dateStr) {
-            selectedCycleDayDate = dateStr;
-            const dateObj = parseLocalDate(dateStr);
-            const cycleDay = getCurrentCycleDayForDate(dateStr);
-            const existing = cycleDayNotes[dateStr] || { symptoms: '', comment: '' };
-            document.getElementById('cycle-day-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
-            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
-            document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
-            document.getElementById('cycle-day-comment').value = existing.comment || '';
-            document.getElementById('cycle-day-modal').style.display = 'flex';
-        }
-        function getCurrentCycleDayForDate(dateStr) {
-            if (!savedLastPeriodStart) return null;
-            const start = parseLocalDate(savedLastPeriodStart);
-            const date = parseLocalDate(dateStr);
-            if (!start || !date) return null;
-            const diff = Math.floor((date - start) / (1000 * 60 * 60 * 24)) + 1;
-            return diff > 0 ? diff : null;
-        }
-        function closeCycleDayModal() {
-            document.getElementById('cycle-day-modal').style.display = 'none';
-            selectedCycleDayDate = null;
-        }
-        window.saveCycleDay = function() {
-            if (!selectedCycleDayDate) return;
-            cycleDayNotes[selectedCycleDayDate] = {
-                symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
-                comment: document.getElementById('cycle-day-comment').value.trim()
-            };
-            localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
-            closeCycleDayModal();
-            renderCycleCalendar();
-            showModal('Данные дня сохранены');
-        };
-
-        // ================================================================
-        // 6. НАВИГАЦИЯ КАЛЕНДАРЯ
-        // ================================================================
-        window.changeMonth = function(delta) {
-            currentMonth += delta;
-            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-            else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-            renderCycleCalendar();
-        };
-        window.goToToday = function() {
-            const today = new Date();
-            currentMonth = today.getMonth();
-            currentYear = today.getFullYear();
-            renderCycleCalendar();
-        };
-
-        // ================================================================
-        // 7. ОТРИСОВКА КАЛЕНДАРЯ
-        // ================================================================
-        function renderCycleCalendar() {
-            const container = document.getElementById('cycle-load-calendar');
-            if (!container) return;
-            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-            document.getElementById('calendar-month-label').textContent = `${monthNames[currentMonth]} ${currentYear}`;
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const daysInMonth = lastDay.getDate();
-            const startDayOfWeek = firstDay.getDay();
-            let offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
-            const today = new Date();
-            const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
-            const start = savedLastPeriodStart ? parseLocalDate(savedLastPeriodStart) : null;
-            const ovulation = getOvulationDate();
-            const fertile = getFertileRange();
-            const nextPeriod = getNextPeriodDate();
-            const delayDays = getDelayDays();
-            let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
-            const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-            html += weekDays.map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
-            for (let i = 0; i < offset; i++) {
-                html += '<div></div>';
-            }
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = formatDate(currentYear, currentMonth, d);
-                const dateObj = parseLocalDate(dateStr);
-                const isToday = dateStr === todayStr;
-                const hasNote = !!cycleDayNotes[dateStr];
-                let bg = 'bg-slate-100';
-                let text = 'text-slate-600';
-                let extra = '';
-                let label = String(d);
-                const diffDays = start ? Math.floor((dateObj - start) / (1000 * 60 * 60 * 24)) + 1 : null;
-                const isPeriod = diffDays !== null && diffDays >= 1 && diffDays <= savedPeriodDays;
-                const isOvulation = ovulation && dateStr === formatDate(ovulation.getFullYear(), ovulation.getMonth(), ovulation.getDate());
-                const isFertile = fertile && dateObj >= fertile.from && dateObj <= fertile.to;
-                const isNextPeriod = nextPeriod && dateStr === formatDate(nextPeriod.getFullYear(), nextPeriod.getMonth(), nextPeriod.getDate());
-                let isDelay = false;
-                if (delayDays > 0 && nextPeriod && dateObj > nextPeriod && !isPeriod && !isNextPeriod) {
-                    isDelay = true;
-                }
-                if (isPeriod) {
-                    bg = 'bg-red-200';
-                    text = 'text-red-800';
-                    extra += ' period-day';
-                } else if (isOvulation) {
-                    bg = 'bg-amber-200';
-                    text = 'text-amber-800';
-                    extra += ' ovulation-day';
-                } else if (isFertile) {
-                    bg = 'bg-green-200';
-                    text = 'text-green-800';
-                    extra += ' fertile-day';
-                } else if (isNextPeriod) {
-                    bg = 'bg-violet-200';
-                    text = 'text-violet-800';
-                    extra += ' next-period-day';
-                } else if (isDelay) {
-                    bg = 'bg-violet-100';
-                    text = 'text-violet-700';
-                    extra += ' delay-day';
-                    const diffFromNext = Math.floor((dateObj - nextPeriod) / (1000 * 60 * 60 * 24));
-                    label = `+${diffFromNext}`;
-                }
-                if (isToday) {
-                    extra += ' today';
-                    if (!isPeriod && !isOvulation && !isFertile && !isNextPeriod && !isDelay) {
-                        bg = 'bg-blue-300';
-                        text = 'text-white font-bold';
-                    }
-                }
-                if (hasNote) {
-                    extra += ' has-note';
-                }
-                html += `
-                    <div class="cycle-day-cell ${bg} ${text} ${extra}"
-                         data-date="${dateStr}"
-                         onclick="openDayModal('${dateStr}')">
-                        <div>${label}</div>
-                        ${hasNote ? '<div class="text-[10px] leading-none mt-0.5">📝</div>' : ''}
-                    </div>
-                `;
-            }
-            html += '</div>';
-            container.innerHTML = html;
-            updateCycleUI();
-        }
-
-        // ================================================================
-        // 8. ФУНКЦИЯ confirmEvent (для модалки event-modal)
-        // ================================================================
-        let selectedDate = null;
-        function openEventModal(year, month, day) {
-            selectedDate = formatDate(year, month, day);
-            const dateObj = new Date(year, month, day);
-            document.getElementById('event-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
-            document.getElementById('event-modal').style.display = 'flex';
-        }
-        function closeEventModal() {
-            document.getElementById('event-modal').style.display = 'none';
-            selectedDate = null;
-        }
-        window.confirmEvent = function(type) {
-            if (!selectedDate) {
-                showModal('Ошибка: дата не выбрана');
-                return;
-            }
-            if (type === 'clear') {
-                delete cycleMarks[selectedDate];
-                if (selectedDate === savedLastPeriodStart) {
-                    savedLastPeriodStart = '';
-                    localStorage.setItem('histolite_last_period_start', '');
-                }
-                localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-                closeEventModal();
-                renderCycleCalendar();
-                renderTodayDashboard();
-                showModal('Отметка снята');
-                return;
-            }
-            if (type === 'first_day') {
-                for (let key in cycleMarks) {
-                    if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
-                }
-                savedLastPeriodStart = selectedDate;
-                localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-                cycleMarks[selectedDate] = 'first_day';
-                localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-                closeEventModal();
-                renderCycleCalendar();
-                renderTodayDashboard();
-                showModal(`Первый день цикла установлен на ${new Date(selectedDate).toLocaleDateString('ru-RU')}`);
-                return;
-            }
-            if (cycleMarks[selectedDate] === type) {
-                delete cycleMarks[selectedDate];
-            } else {
-                cycleMarks[selectedDate] = type;
-            }
-            localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-            closeEventModal();
-            renderCycleCalendar();
-            renderTodayDashboard();
-            const label = type === 'ovulation' ? 'Овуляция' : 'Последний день менструации';
-            showModal(`Отмечено: ${label}`);
-        };
-
-        // ================================================================
-        // 9. ИНИЦИАЛИЗАЦИЯ КАЛЕНДАРЯ
-        // ================================================================
-        function initCycleModule() {
-            const dateInput = document.getElementById('last-period-start');
-            const lengthInput = document.getElementById('cycle-length');
-            const periodDaysInput = document.getElementById('period-days');
-            if (dateInput) {
-                dateInput.value = savedLastPeriodStart;
-                dateInput.addEventListener('change', saveCycleSettings);
-            }
-            if (lengthInput) {
-                lengthInput.value = savedCycleLength;
-                lengthInput.addEventListener('change', saveCycleSettings);
-            }
-            if (periodDaysInput) {
-                periodDaysInput.value = savedPeriodDays;
-                periodDaysInput.addEventListener('change', saveCycleSettings);
-            }
-            renderCycleCalendar();
-            updateCycleUI();
-        }
-
-        // ================================================================
-        // 10. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
-        // ================================================================
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            const tab = document.getElementById(tabId + '-tab');
-            if (tab) tab.classList.add('active');
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('text-emerald-600', 'text-slate-400');
-                if (btn.dataset.tab === tabId) btn.classList.add('text-emerald-600');
-                else btn.classList.add('text-slate-400');
-            });
-        };
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tab = this.dataset.tab;
-                if (tab) switchTab(tab);
-            });
-        });
-
-        // ================================================================
-        // 11. ЧИПСЫ (ПРОДУКТЫ)
-        // ================================================================
-        function normalizeProductName(name) {
-            return String(name).trim().toLowerCase().replace(/\s+/g, ' ');
-        }
-        function getProductStatus(name) {
-            return safeProducts[normalizeProductName(name)] || 'none';
-        }
-        function getChipClass(status) {
-            if (status === 'safe') return 'chip-safe';
-            if (status === 'unsafe') return 'chip-unsafe';
-            if (status === 'question') return 'chip-question';
-            return 'chip-unknown';
-        }
-        function renderChips() {
-            const wrapper = document.getElementById('chips-wrapper');
-            if (!wrapper) return;
-            wrapper.innerHTML = selectedProducts.map((p, index) => {
-                const chipClass = getChipClass(p.status || 'none');
-                return `<span class="chip ${chipClass}">${p.name}<span class="chip-remove" onclick="removeChip(${index})" title="Удалить">✕</span></span>`;
-            }).join('');
-        }
-        function addChip(productName) {
-            const name = normalizeProductName(productName);
-            if (!name) return;
-            if (selectedProducts.some(p => p.name === name)) {
-                showModal(`"${name}" уже добавлен`);
-                return;
-            }
-            const status = getProductStatus(name);
-            selectedProducts.push({ name, status });
-            renderChips();
-            document.getElementById('chip-input').value = '';
-        }
-        function removeChip(index) {
-            selectedProducts.splice(index, 1);
-            renderChips();
-        }
-        function splitProducts(text) {
-            text = String(text).toLowerCase().trim();
-            text = text.replace(/^добавьте продукты\s*/i, '');
-            text = text.replace(/^добавь продукты\s*/i, '');
-            text = text.replace(/\s+и\s+/g, ', ');
-            text = text.replace(/\s+или\s+/g, ', ');
-            return text.split(/[,.]/).map(p => p.trim()).filter(Boolean);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const chipInput = document.getElementById('chip-input');
-            if (chipInput) {
-                chipInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ',') {
-                        e.preventDefault();
-                        const val = this.value.trim();
-                        if (val) {
-                            const products = splitProducts(val);
-                            products.forEach(function(product) {
-                                if (product.trim()) addChip(product.trim());
-                            });
-                            this.value = '';
-                        }
-                    }
-                });
-                chipInput.addEventListener('blur', function() {
-                    const val = this.value.trim();
-                    if (val) {
-                        const products = splitProducts(val);
-                        products.forEach(function(product) {
-                            if (product.trim()) addChip(product.trim());
-                        });
-                        this.value = '';
-                    }
-                });
-            }
-            initCycleModule();
-            // Если пользователь уже авторизован, загружаем рецепты сразу
-            if (localStorage.getItem('histolite_legal_accepted') === 'true') {
-                loadRecipes();
-            }
-        });
-
-        // ================================================================
-        // 12. ЗАГРУЗКА ПРОДУКТОВ И БАЗА
-        // ================================================================
-        async function loadProducts() {
-            try {
-                const resp = await fetch('products.json');
-                if (!resp.ok) throw new Error('Не удалось загрузить базу продуктов');
-                myHistamineDB = await resp.json();
-                renderSafeProducts();
-            } catch (error) {
-                console.error('Ошибка загрузки продуктов:', error);
-                showModal('❌ Не удалось загрузить базу продуктов. Проверьте файл products.json.');
-            }
-        }
-        window.renderSafeProducts = function() {
-            const list = document.getElementById('safe-products-list');
-            if (!list) return;
-            const search = document.getElementById('safe-search-input')?.value.toLowerCase() || '';
-            let filtered = myHistamineDB.filter(p => p.name.toLowerCase().includes(search));
-            if (safeFilter !== 'all') {
-                filtered = filtered.filter(p => safeProducts[normalizeProductName(p.name)] === safeFilter);
-            }
-            list.innerHTML = filtered.map(p => {
-                const status = safeProducts[normalizeProductName(p.name)] || 'none';
-                const safeClass = status === 'safe' ? 'active-safe' : '';
-                const unsafeClass = status === 'unsafe' ? 'active-unsafe' : '';
-                const questionClass = status === 'question' ? 'active-question' : '';
-                return `
-                    <div class="flex items-center justify-between py-1 border-b border-slate-100">
-                        <span class="text-xs font-medium">${p.name}</span>
-                        <div class="flex gap-1">
-                            <button class="product-status-btn ${safeClass}" onclick="setProductStatus('${p.name}','safe')" title="Можно">✅</button>
-                            <button class="product-status-btn ${unsafeClass}" onclick="setProductStatus('${p.name}','unsafe')" title="Нельзя">❌</button>
-                            <button class="product-status-btn ${questionClass}" onclick="setProductStatus('${p.name}','question')" title="Под вопросом">❓</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-        window.setProductStatus = function(name, status) {
-            const key = normalizeProductName(name);
-            if (status === 'none') delete safeProducts[key];
-            else safeProducts[key] = status;
-            localStorage.setItem('histolite_safe_products', JSON.stringify(safeProducts));
-            renderSafeProducts();
-            renderChips();
-        };
-        window.setSafeFilter = function(filter) {
-            safeFilter = filter;
-            document.querySelectorAll('.safe-filter-btn').forEach(b => {
-                b.classList.remove('active', 'unsafe-active', 'question-active');
-                if (b.dataset.filter === filter) {
-                    if (filter === 'safe') b.classList.add('active');
-                    else if (filter === 'unsafe') b.classList.add('unsafe-active');
-                    else if (filter === 'question') b.classList.add('question-active');
-                    else b.classList.add('active');
-                }
-            });
-            renderSafeProducts();
-        };
-
-        // ================================================================
-        // 13. ПОИСК ПРОДУКТА
-        // ================================================================
-        window.searchProductByName = function() {
-            const input = document.getElementById('product-search-input');
-            const resultDiv = document.getElementById('product-search-result');
-            const name = input.value.trim().toLowerCase();
-            if (!name) { resultDiv.classList.add('hidden'); return; }
-            const found = myHistamineDB.find(p => p.name.toLowerCase() === name);
-            if (!found) {
-                resultDiv.innerHTML = `<div class="product-result unknown"><strong>❓ Не найдено</strong><br>Продукт "${name}" отсутствует в базе.</div>`;
-                resultDiv.classList.remove('hidden');
-                return;
-            }
-            let level = found.level || 'unknown';
-            let levelText = { low: 'Низкий', medium: 'Средний', high: 'Высокий', unknown: 'Неизвестно' }[level] || 'Неизвестно';
-            let cls = level;
-            resultDiv.innerHTML = `
-                <div class="product-result ${cls}">
-                    <strong>${found.name}</strong><br>
-                    Уровень гистамина: <strong>${levelText}</strong>
-                    ${found.info ? `<br><span class="text-xs text-slate-500">${found.info}</span>` : ''}
-                </div>
-            `;
-            resultDiv.classList.remove('hidden');
-        };
-
-        // ================================================================
-        // 14. СКАНЕР ШТРИХ-КОДА
-        // ================================================================
-        let html5QrCode = null;
-        window.scanBarcode = function() {
-            const container = document.getElementById('scanner-container');
-            container.style.display = 'block';
-            if (html5QrCode) {
-                html5QrCode.clear();
-                html5QrCode = null;
-            }
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess,
-                onScanError
-            );
-        };
-        function onScanSuccess(decodedText, decodedResult) {
-            stopScanner();
-            const productName = decodedText.trim().toLowerCase();
-            document.getElementById('product-search-input').value = productName;
-            searchProductByName();
-        }
-        function onScanError(error) { /* игнорируем */ }
-        window.stopScanner = function() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode.clear();
-                    html5QrCode = null;
-                    document.getElementById('scanner-container').style.display = 'none';
-                }).catch(err => console.warn(err));
-            } else {
-                document.getElementById('scanner-container').style.display = 'none';
-            }
-        };
-        window.uploadBarcodeImage = function() {
-            document.getElementById('barcode-image-input').click();
-        };
-        window.decodeBarcodeFromImage = function(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, canvas.width, canvas.height);
-                    if (code && code.data) {
-                        const productName = code.data.trim().toLowerCase();
-                        document.getElementById('product-search-input').value = productName;
-                        searchProductByName();
-                    } else {
-                        showModal('Не удалось распознать штрих-код.');
-                    }
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-            input.value = '';
-        };
-
-        // ================================================================
-        // 15. ГОЛОСОВОЙ ВВОД
-        // ================================================================
-        let recognition = null;
-        document.addEventListener('DOMContentLoaded', function() {
-            const micBtn = document.getElementById('mic-button');
-            if (micBtn) {
-                micBtn.addEventListener('click', function() {
-                    startVoiceInput('symptoms-text-input');
-                });
-            }
-        });
-        function startVoiceInput(inputId) {
-            const micBtn = document.getElementById('mic-button');
-            if (recognition) {
-                recognition.stop();
-                recognition = null;
-                micBtn.classList.remove('mic-active');
-                micBtn.textContent = '🎤';
-                return;
-            }
-            try {
-                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                recognition.lang = 'ru-RU';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
-                micBtn.classList.add('mic-active');
-                micBtn.textContent = '⏺';
-                recognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    const input = document.getElementById(inputId);
-                    input.value += (input.value ? ', ' : '') + transcript;
-                    recognition.stop();
-                    recognition = null;
-                    micBtn.classList.remove('mic-active');
-                    micBtn.textContent = '🎤';
-                };
-                recognition.onerror = function(event) {
-                    console.error('Ошибка распознавания:', event.error);
-                    micBtn.classList.remove('mic-active');
-                    micBtn.textContent = '🎤';
-                    if (event.error === 'not-allowed') {
-                        showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
-                    } else {
-                        showModal('Ошибка распознавания: ' + event.error);
-                    }
-                    recognition = null;
-                };
-                recognition.onend = function() {
-                    if (recognition) {
-                        recognition = null;
-                        micBtn.classList.remove('mic-active');
-                        micBtn.textContent = '🎤';
-                    }
-                };
-                recognition.start();
-            } catch (e) {
-                console.error('Ошибка запуска распознавания:', e);
-                showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
-                micBtn.classList.remove('mic-active');
-                micBtn.textContent = '🎤';
-            }
-        }
-
-        // ================================================================
-        // 16. ГОЛОСОВОЙ ВВОД ДЛЯ ПРОДУКТОВ
-        // ================================================================
-        let productRecognition = null;
-        document.addEventListener('DOMContentLoaded', function() {
-            const micBtn = document.getElementById('mic-products-btn');
-            if (micBtn) {
-                micBtn.addEventListener('click', function() {
-                    startVoiceInputForProducts();
-                });
-            }
-        });
-        window.startVoiceInputForProducts = function() {
-            const micBtn = document.getElementById('mic-products-btn');
-            if (productRecognition) {
-                productRecognition.stop();
-                productRecognition = null;
-                micBtn.classList.remove('mic-active');
-                micBtn.textContent = '🎤';
-                return;
-            }
-            try {
-                productRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                productRecognition.lang = 'ru-RU';
-                productRecognition.interimResults = false;
-                productRecognition.maxAlternatives = 1;
-                micBtn.classList.add('mic-active');
-                micBtn.textContent = '⏹';
-                productRecognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript.trim();
-                    const products = splitProducts(transcript);
-                    products.forEach(function(product) {
-                        if (product.trim()) addChip(product.trim());
-                    });
-                    productRecognition.stop();
-                    productRecognition = null;
-                    micBtn.classList.remove('mic-active');
-                    micBtn.textContent = '🎤';
-                };
-                productRecognition.onerror = function(event) {
-                    micBtn.classList.remove('mic-active');
-                    micBtn.textContent = '🎤';
-                    if (event.error === 'not-allowed') showModal('Разрешите доступ к микрофону.');
-                    else showModal(`Ошибка распознавания: ${event.error}`);
-                    productRecognition = null;
-                };
-                productRecognition.onend = function() {
-                    if (productRecognition) {
-                        productRecognition = null;
-                        micBtn.classList.remove('mic-active');
-                        micBtn.textContent = '🎤';
-                    }
-                };
-                productRecognition.start();
-            } catch (e) {
-                showModal('Голосовой ввод не поддерживается в этом браузере.');
-                micBtn.classList.remove('mic-active');
-                micBtn.textContent = '🎤';
-            }
-        };
-
-        // ================================================================
-        // 17. СОХРАНЕНИЕ ЗАПИСИ
-        // ================================================================
-        window.saveLog = function() {
-            const date = document.getElementById('log-date').value;
-            const time = document.getElementById('log-time').value;
-            if (!date) { showModal('Укажите дату'); return; }
-            if (userGender !== 'male') {
-                const cycleDay = getCurrentCycleDay();
-                if (cycleDay === null && !savedLastPeriodStart) {
-                    showModal('Сначала отметьте первый день цикла в календаре.');
-                    return;
-                }
-            }
-            if (selectedProducts.length === 0) { showModal('Добавьте хотя бы один продукт'); return; }
-            const products = selectedProducts.map(p => p.name);
-            const medsRaw = document.getElementById('medications').value;
-            let medications = medsRaw.trim() ? medsRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
-            const symptomsText = document.getElementById('symptoms-text-input').value.trim();
-            const cycleDay = (userGender === 'male') ? 0 : getCurrentCycleDay();
-            userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
-            userLogs.push({ date, time, cycleDay, products, medications, symptomsText });
-            localStorage.setItem('histolite_logs', JSON.stringify(userLogs));
-            selectedProducts = [];
-            renderChips();
-            document.getElementById('medications').value = '';
-            document.getElementById('symptoms-text-input').value = '';
-            renderHistory();
-            renderTodayDashboard();
-            showModal('Запись сохранена');
-        };
-
-        // ================================================================
-        // 18. ИСТОРИЯ
-        // ================================================================
-        window.renderHistory = function() {
-            const container = document.getElementById('history-container');
-            if (!container) return;
-            if (userLogs.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 text-xs py-2">Записей пока нет</p>';
-                return;
-            }
-            const sorted = userLogs.slice().sort((a,b) => (a.date + a.time) > (b.date + b.time) ? -1 : 1);
-            const html = sorted.slice(0, 20).map(log => `
-                <div class="flex justify-between items-start border-b border-slate-100 pb-1">
-                    <div>
-                        <span class="font-medium">${log.date} ${log.time || ''}</span>
-                        <span class="text-xs text-slate-400">• ${log.products.join(', ')}</span>
-                        ${log.symptomsText ? `<span class="text-xs text-rose-400">• симптомы: ${log.symptomsText}</span>` : ''}
-                        ${log.medications && log.medications.length ? `<span class="text-xs text-blue-400">• 💊 ${log.medications.join(', ')}</span>` : ''}
-                    </div>
-                    <button onclick="deleteLog('${log.date}','${log.time}')" class="text-red-400 hover:text-red-600 text-xs">✕</button>
-                </div>
-            `).join('');
-            container.innerHTML = html;
-        };
-        window.deleteLog = function(date, time) {
-            userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
-            localStorage.setItem('histolite_logs', JSON.stringify(userLogs));
-            renderHistory();
-            renderTodayDashboard();
-            showModal('Запись удалена');
-        };
-        window.clearAllLogs = function() {
-            if (confirm('Очистить все записи?')) {
-                userLogs = [];
-                localStorage.removeItem('histolite_logs');
-                renderHistory();
-                renderTodayDashboard();
-                showModal('Все записи удалены');
-            }
-        };
-
-        // ================================================================
-        // 19. ДАШБОРД (СЕГОДНЯ)
-        // ================================================================
-        function renderTodayDashboard() {
-            const cycleDay = getCurrentCycleDay();
-            let riskLevel = 'Низкий';
-            let riskClass = 'risk-low';
-            let riskReason = 'Фаза цикла: стабильная';
-            let tip = 'Сегодня хороший день, чтобы попробовать новые продукты.';
-            let delayDays = 0;
-            if (savedLastPeriodStart && cycleDay !== null) {
-                if (cycleDay > savedCycleLength) {
-                    delayDays = cycleDay - savedCycleLength;
-                }
-            }
-            if (delayDays > 0) {
-                riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
-                riskClass = 'risk-high';
-                riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
-                tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
-            } else if (userGender !== 'male' && cycleDay !== null) {
-                const phase = getCyclePhaseName(cycleDay);
-                if (phase === 'Овуляция' || phase === 'ПМС') {
-                    riskLevel = 'Высокий';
-                    riskClass = 'risk-high';
-                    riskReason = `Фаза цикла: ${phase} (чувствительность повышена)`;
-                    tip = '⚠️ Сегодня повышенная чувствительность. Выбирайте зелёные продукты, избегайте сыра и шоколада.';
-                } else if (phase === 'Начало цикла' || phase === 'Лютеиновая') {
-                    riskLevel = 'Средний';
-                    riskClass = 'risk-medium';
-                    riskReason = `Фаза цикла: ${phase} (умеренная чувствительность)`;
-                    tip = '🟡 Умеренная чувствительность. Следите за реакциями, но можно пробовать новое.';
-                } else {
-                    riskLevel = 'Низкий';
-                    riskClass = 'risk-low';
-                    riskReason = `Фаза цикла: ${phase} (стабильная)`;
-                    tip = '✅ Организм стабилен. Можно пробовать новые продукты и экспериментировать.';
-                }
-            } else if (userGender === 'male') {
-                riskLevel = 'Низкий';
-                riskClass = 'risk-low';
-                riskReason = 'Мужчина, цикл не учитывается';
-                tip = '✅ Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
-            } else {
-                riskReason = 'Цикл не настроен';
-                tip = 'Отметьте первый день цикла в календаре.';
-            }
-            const riskCard = document.getElementById('risk-card');
-            riskCard.className = `risk-card ${riskClass}`;
-            document.getElementById('risk-level').textContent = riskLevel;
-            document.getElementById('risk-reason').textContent = riskReason;
-            document.getElementById('today-tip').textContent = tip;
-            const now = new Date();
-            const sevenDaysAgo = new Date(now);
-            sevenDaysAgo.setDate(now.getDate() - 7);
-            const weekLogs = userLogs.filter(log => new Date(log.date) >= sevenDaysAgo && new Date(log.date) <= now);
-            document.getElementById('week-logs').textContent = weekLogs.length;
-            let streak = 0;
-            if (userLogs.length > 0) {
-                const dates = userLogs.map(log => log.date).sort();
-                const uniqueDates = [...new Set(dates)];
-                const todayStr = now.toISOString().split('T')[0];
-                let currentDate = new Date(todayStr);
-                if (uniqueDates.includes(todayStr)) {
-                    streak = 1;
-                    let testDate = new Date(currentDate);
-                    testDate.setDate(testDate.getDate() - 1);
-                    while (uniqueDates.includes(testDate.toISOString().split('T')[0])) {
-                        streak++;
-                        testDate.setDate(testDate.getDate() - 1);
-                    }
-                } else {
-                    let testDate = new Date(currentDate);
-                    testDate.setDate(testDate.getDate() - 1);
-                    while (uniqueDates.includes(testDate.toISOString().split('T')[0])) {
-                        streak++;
-                        testDate.setDate(testDate.getDate() - 1);
-                    }
-                }
-            }
-            document.getElementById('streak').textContent = streak;
-            const lastTriggers = JSON.parse(localStorage.getItem('histolite_last_triggers')) || [];
-            document.getElementById('triggers-count').textContent = lastTriggers.length;
-            const weekGoal = 5;
-            const progressPercent = Math.min(100, Math.round((weekLogs.length / weekGoal) * 100));
-            const goalMessage = (weekLogs.length >= weekGoal) ? '🎉 Цель недели выполнена!' : `📝 Осталось ${weekGoal - weekLogs.length} записей до цели`;
-            const badges = [];
-            if (userLogs.length >= 1) badges.push('🎉 Первая запись');
-            if (streak >= 7) badges.push('🔥 7 дней подряд');
-            if (streak >= 30) badges.push('💎 30 дней подряд');
-            if (userLogs.length >= 10) badges.push('🔍 10 продуктов проверено');
-            if (lastTriggers.length >= 3) badges.push('🧠 Найдено 3 триггера');
-            document.getElementById('progress-container').innerHTML = `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mt-4">
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">🎯 Ваш прогресс</div>
-                    <div class="flex items-center gap-2">
-                        <div class="flex-1 bg-slate-200 rounded-full h-2.5">
-                            <div class="bg-emerald-500 h-2.5 rounded-full" style="width: ${progressPercent}%;"></div>
-                        </div>
-                        <span class="text-xs font-bold text-slate-600">${progressPercent}%</span>
-                    </div>
-                    <div class="text-xs text-slate-600 mt-1">${goalMessage}</div>
-                    ${badges.length > 0 ? `<div class="flex flex-wrap gap-1 mt-2">${badges.map(b => `<span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">${b}</span>`).join('')}</div>` : '<div class="text-xs text-slate-400 mt-1">Продолжайте вести дневник, чтобы открывать достижения! 🌟</div>'}
-                </div>
-            `;
-        }
-
-        // ================================================================
-        // 20. УВЕДОМЛЕНИЯ
-        // ================================================================
-        function checkNotifications() {
-            const lastVisit = localStorage.getItem('histolite_last_visit');
-            const now = new Date();
-            if (lastVisit) {
-                const daysDiff = Math.floor((now - new Date(lastVisit)) / (1000 * 60 * 60 * 24));
-                if (daysDiff >= 2) {
-                    showModal(`📢 Вы не записывали дневник уже ${daysDiff} дня. Как ваше самочувствие?`);
-                }
-            }
-            localStorage.setItem('histolite_last_visit', now.toISOString());
-        }
-
-        // ================================================================
-        // 21. АНАЛИТИКА (заглушка)
-        // ================================================================
-        window.runAdvancedAnalytics = function() {
-            showModal('Анализ триггеров пока в разработке. Скоро появится!');
-        };
-
-        // ================================================================
-        // 22. ЭКСПОРТ (заглушки)
-        // ================================================================
-        window.exportToCSV = function() {
-            showModal('Экспорт CSV – будет реализован в следующей версии.');
-        };
-        window.exportToPDF = function() {
-            showModal('Экспорт PDF – будет реализован в следующей версии.');
-        };
-
-        // ================================================================
-        // 23. МОДАЛЬНЫЕ ОКНА
-        // ================================================================
-        window.showModal = function(msg) {
-            document.getElementById('custom-modal-message').textContent = msg;
-            document.getElementById('custom-modal').style.display = 'flex';
-        };
-        window.closeModal = function() {
-            document.getElementById('custom-modal').style.display = 'none';
-        };
-
-        // ================================================================
-        // 24. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
-        // ================================================================
-        function toggleLegalButton() {
-            const chk = document.getElementById('legal-checkbox');
-            const btn = document.getElementById('legal-submit-btn');
-            if (!chk || !btn) return;
-            btn.disabled = !chk.checked;
-            btn.className = chk.checked
-                ? "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md"
-                : "w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed";
-        }
-
-        window.acceptLegal = function() {
-            const chk = document.getElementById('legal-checkbox');
-            if (!chk || !chk.checked) {
-                showModal('Поставьте галочку, чтобы войти в приложение.');
-                return;
-            }
-            const genderRadio = document.querySelector('input[name="gender"]:checked');
-            userGender = genderRadio ? genderRadio.value : 'female';
-            localStorage.setItem('histolite_gender', userGender);
-            localStorage.setItem('histolite_legal_accepted', 'true');
-            document.getElementById('legal-modal').style.display = 'none';
-            document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-
-            renderHistory();
-            loadProducts();
-            renderTodayDashboard();
-            checkNotifications();
-            loadRecipes();
-            renderCycleCalendar();
-            updateCycleUI();
-        };
-
-        // ================================================================
-        // 25. РАБОТА С РЕЦЕПТАМИ (ЗАГРУЗКА ИЗ ФАЙЛА + ЗАПАСНОЙ ВАРИАНТ)
-        // ================================================================
-        // Тестовые рецепты (используются, если recipes.json не загружен)
-        const defaultRecipes = [
-            {
-                id: 1,
-                name: 'Овсяная каша на воде',
-                category: 'завтрак',
-                histamine_level: 'низкий',
-                prep_time: 10,
-                servings: 1,
-                description: 'Лёгкий и безопасный завтрак при гистаминовой непереносимости.',
-                ingredients: ['овсяные хлопья 50 г', 'вода 200 мл', 'соль по вкусу', 'банан 1 шт (по желанию)'],
-                instructions: 'Залейте хлопья водой, доведите до кипения, варите 5 минут. Подавайте с бананом.',
-                tips: 'Можно добавить немного мёда, если переносится.',
-                gluten_free: true,
-                lactose_free: true,
-                dairy_free: true,
-                image: ''
-            },
-            {
-                id: 2,
-                name: 'Запечённая куриная грудка с овощами',
-                category: 'обед',
-                histamine_level: 'средний',
-                prep_time: 30,
-                servings: 2,
-                description: 'Сытное блюдо с низким содержанием гистамина при правильном приготовлении.',
-                ingredients: ['куриная грудка 300 г', 'цукини 1 шт', 'перец болгарский 1 шт', 'оливковое масло 1 ст.л.', 'специи (без острых)'],
-                instructions: 'Нарежьте овощи и грудку, смешайте с маслом и специями, запекайте при 180°C 25 минут.',
-                tips: 'Не используйте томаты или сыр — они могут повысить уровень гистамина.',
-                gluten_free: true,
-                lactose_free: true,
-                dairy_free: true,
-                image: ''
-            }
-        ];
-
-        function loadRecipes() {
-    const container = document.getElementById('recipes-container');
+// ================================================================
+// АНАЛИТИКА: СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА
+// ================================================================
+function renderCycleSymptomAnalysis() {
+    const container = document.getElementById('cycle-symptom-analysis');
     if (!container) return;
 
-    // Используем уже загруженные данные, если они есть
-    if (window.recipesDB && window.recipesDB.length > 0) {
-        recipesDB = window.recipesDB;
-        container.innerHTML = `<p class="text-center text-green-600 col-span-full py-2">✅ Загружено рецептов: ${recipesDB.length}</p>`;
-        if (typeof renderRecipes === 'function') {
-            renderRecipes();
-        } else {
-            container.innerHTML += recipesDB.map(r => `<div class="border p-2 my-2 rounded">${r.name}</div>`).join('');
-        }
-    } else {
-        container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
+    if (!userLogs || userLogs.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-center py-4">Нет записей для анализа.</p>';
+        return;
     }
+
+    // Группируем записи по фазам цикла
+    const phases = {
+        'Менструация': { days: [], symptoms: {} },
+        'Фолликулярная': { days: [], symptoms: {} },
+        'Овуляция': { days: [], symptoms: {} },
+        'Лютеиновая': { days: [], symptoms: {} },
+        'Стабильная': { days: [], symptoms: {} }
+    };
+
+    // Определяем фазу по дню цикла
+    function getPhase(day) {
+        if (!day) return 'Стабильная';
+        if (day <= savedPeriodDays) return 'Менструация';
+        const ovulationDay = savedCycleLength - 14;
+        if (day === ovulationDay) return 'Овуляция';
+        if (day >= ovulationDay - 5 && day <= ovulationDay + 1) return 'Овуляция';
+        if (day > ovulationDay + 1 && day < savedCycleLength) return 'Лютеиновая';
+        if (day >= savedCycleLength) return 'Лютеиновая'; // задержка считаем лютеиновой
+        return 'Фолликулярная';
+    }
+
+    userLogs.forEach(log => {
+        if (!log.symptomsText) return;
+        const phase = getPhase(log.cycleDay);
+        if (phases[phase]) {
+            phases[phase].days.push(log.date);
+            // Разбираем симптомы (разделители: запятая, точка с запятой)
+            const symptomsList = log.symptomsText.split(/[,;]/).map(s => s.trim().toLowerCase()).filter(s => s);
+            symptomsList.forEach(sym => {
+                if (!phases[phase].symptoms[sym]) phases[phase].symptoms[sym] = 0;
+                phases[phase].symptoms[sym]++;
+            });
+        }
+    });
+
+    // Сортируем фазы по порядку
+    const phaseOrder = ['Менструация', 'Фолликулярная', 'Овуляция', 'Лютеиновая', 'Стабильная'];
+    let html = '<div class="space-y-3">';
+    phaseOrder.forEach(phaseName => {
+        const data = phases[phaseName];
+        const totalDays = data.days.length;
+        if (totalDays === 0) {
+            html += `<div><strong>${phaseName}</strong>: <span class="text-slate-400">нет записей</span></div>`;
+            return;
+        }
+        // Берём топ-3 симптома
+        const sortedSymptoms = Object.entries(data.symptoms).sort((a,b) => b[1] - a[1]).slice(0, 3);
+        const symptomText = sortedSymptoms.length ? sortedSymptoms.map(([s, count]) => `${s} (${count})`).join(', ') : 'нет симптомов';
+        html += `
+            <div class="border-b border-slate-100 pb-2">
+                <div class="font-semibold text-sm">${phaseName}</div>
+                <div class="text-xs text-slate-600">Записей: ${totalDays}</div>
+                <div class="text-xs text-rose-600">Частые симптомы: ${symptomText}</div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
 }
-        function renderRecipes() {
-            const container = document.getElementById('recipes-container');
-            if (!container) {
-                console.error('Контейнер recipes-container не найден в renderRecipes');
-                return;
-            }
 
-            // Если по какой-то причине recipesDB пуста, подставляем тестовые
-            if (recipesDB.length === 0) {
-                recipesDB = defaultRecipes;
-            }
+// ================================================================
+// ВИЗУАЛЬНЫЙ КАЛЕНДАРЬ НАГРУЗКИ (симптомы по дням)
+// ================================================================
+function renderCycleLoadCalendar() {
+    const container = document.getElementById('cycle-load-calendar');
+    if (!container) return;
 
-            const allRecipes = [...recipesDB, ...userRecipes];
+    // Используем существующий календарь, но добавляем индикацию симптомов
+    // Для этого возьмём данные из cycleDayNotes и userLogs
+    // Покажем последние 30 дней (или текущий месяц)
+    const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 30);
+    const endDate = new Date(today);
 
-            const categoryFilter = document.querySelector('.recipe-filter-btn.active')?.dataset.category || 'all';
-            const levelFilter = document.querySelector('.level-filter-btn.active')?.dataset.level || 'all';
-            const gf = document.getElementById('filter-gluten-free')?.checked || false;
-            const lf = document.getElementById('filter-lactose-free')?.checked || false;
-            const df = document.getElementById('filter-dairy-free')?.checked || false;
-
-            const filtered = allRecipes.filter(r => {
-                const matchCategory = categoryFilter === 'all' || r.category === categoryFilter;
-                const matchLevel = levelFilter === 'all' || r.histamine_level === levelFilter;
-                let matchDiet = true;
-                if (gf) matchDiet = matchDiet && r.gluten_free === true;
-                if (lf) matchDiet = matchDiet && r.lactose_free === true;
-                if (df) matchDiet = matchDiet && r.dairy_free === true;
-                return matchCategory && matchLevel && matchDiet;
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">По вашему запросу ничего не найдено.</p>';
-                return;
-            }
-
-            container.innerHTML = filtered.map(r => `
-                <div class="border border-slate-200 rounded-xl p-3 bg-white hover:shadow-md transition cursor-pointer" onclick="openRecipeModal(${r.id})">
-                    <img src="${r.image || 'https://via.placeholder.com/300x200?text=Рецепт'}" alt="${r.name}" class="w-full h-32 object-cover rounded-lg mb-2" onerror="this.src='https://via.placeholder.com/300x200?text=Изображение+отсутствует'">
-                    <h4 class="font-bold text-sm text-slate-800">${r.name}</h4>
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>${r.category || ''}</span>
-                        <span>⏱ ${r.prep_time || 0} мин</span>
-                    </div>
-                    <div class="mt-1 flex items-center gap-1 flex-wrap">
-                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100">
-                            ${r.histamine_level === 'низкий' ? '🟢 Низкий' : r.histamine_level === 'средний' ? '🟡 Средний' : '🔴 Высокий'}
-                        </span>
-                        ${r.gluten_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">🌾 БГ</span>' : ''}
-                        ${r.lactose_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">🥛 БЛ</span>' : ''}
-                        ${r.dairy_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">🧈 БМ</span>' : ''}
-                    </div>
-                </div>
-            `).join('');
+    // Собираем дни с симптомами
+    const symptomDays = {};
+    userLogs.forEach(log => {
+        if (log.symptomsText) {
+            symptomDays[log.date] = (symptomDays[log.date] || 0) + 1;
         }
-
-        function openRecipeModal(id) {
-            const allRecipes = [...recipesDB, ...userRecipes];
-            const recipe = allRecipes.find(r => r.id === id);
-            if (!recipe) return;
-
-            document.getElementById('recipe-modal-image').src = recipe.image || 'https://via.placeholder.com/400x300?text=Рецепт';
-            document.getElementById('recipe-modal-name').textContent = recipe.name || '';
-            document.getElementById('recipe-modal-category').textContent = recipe.category || '';
-            document.getElementById('recipe-modal-level').textContent =
-                recipe.histamine_level === 'низкий' ? '🟢 Низкий' :
-                recipe.histamine_level === 'средний' ? '🟡 Средний' : '🔴 Высокий';
-            document.getElementById('recipe-modal-time').textContent = `⏱ ${recipe.prep_time || 0} мин`;
-            document.getElementById('recipe-modal-servings').textContent = `🍽 ${recipe.servings || 1} порц.`;
-            document.getElementById('recipe-modal-description').textContent = recipe.description || '';
-
-            const ingList = document.getElementById('recipe-modal-ingredients');
-            ingList.innerHTML = Array.isArray(recipe.ingredients)
-                ? recipe.ingredients.map(i => `<li>${i}</li>`).join('')
-                : '';
-
-            document.getElementById('recipe-modal-instructions').textContent = recipe.instructions || '';
-
-            const tipsDiv = document.getElementById('recipe-modal-tips');
-            if (recipe.tips) {
-                tipsDiv.innerHTML = `<strong>💡 Совет:</strong> ${recipe.tips}`;
-                tipsDiv.style.display = 'block';
-            } else {
-                tipsDiv.style.display = 'none';
-            }
-
-            const dietsDiv = document.getElementById('recipe-modal-diets');
-            dietsDiv.innerHTML = '';
-            if (recipe.gluten_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">🌾 Без глютена</span> ';
-            if (recipe.lactose_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">🥛 Без лактозы</span> ';
-            if (recipe.dairy_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">🧈 Без молочных продуктов</span> ';
-            if (!recipe.gluten_free && !recipe.lactose_free && !recipe.dairy_free) {
-                dietsDiv.innerHTML = '<span class="text-xs text-slate-400">Нет специальных маркеров</span>';
-            }
-
-            document.getElementById('recipe-modal').style.display = 'flex';
+    });
+    // Также добавляем заметки из календаря
+    Object.keys(cycleDayNotes).forEach(date => {
+        if (cycleDayNotes[date].symptoms) {
+            symptomDays[date] = (symptomDays[date] || 0) + 1;
         }
+    });
 
-        function closeRecipeModal() {
-            document.getElementById('recipe-modal').style.display = 'none';
+    // Строим календарь на 30 дней
+    let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
+    const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    html += weekDays.map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
+
+    // Определяем день недели для startDate
+    let current = new Date(startDate);
+    // Смещаем до понедельника
+    while (current.getDay() !== 1) {
+        current.setDate(current.getDate() - 1);
+    }
+
+    for (let i = 0; i < 42; i++) {
+        const dateStr = formatDate(current.getFullYear(), current.getMonth(), current.getDate());
+        const isInRange = current >= startDate && current <= endDate;
+        const hasSymptom = symptomDays[dateStr] || false;
+        let bg = 'bg-slate-100';
+        let text = 'text-slate-600';
+        let label = current.getDate();
+        if (isInRange && hasSymptom) {
+            bg = 'bg-rose-200';
+            text = 'text-rose-800';
+        } else if (!isInRange) {
+            bg = 'bg-slate-50';
+            text = 'text-slate-300';
         }
+        html += `<div class="aspect-square flex items-center justify-center rounded ${bg} ${text}">${isInRange ? label : ''}</div>`;
+        current.setDate(current.getDate() + 1);
+    }
+    html += '</div>';
+    html += '<div class="text-xs text-slate-500 mt-2">🔴 Розовые дни — были симптомы</div>';
+    container.innerHTML = html;
+}
 
-        // Обработчики фильтров
-        document.querySelectorAll('.recipe-filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.recipe-filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                renderRecipes();
-            });
-        });
+// ================================================================
+// АНАЛИЗ СОВПАДЕНИЙ (48ч) — ПОИСК ТРИГГЕРОВ
+// ================================================================
+function runAdvancedAnalytics() {
+    const container = document.getElementById('analytics-results');
+    if (!container) return;
 
-        document.querySelectorAll('.level-filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.level-filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                renderRecipes();
-            });
-        });
+    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">⏳ Анализ...</p>';
 
-        document.getElementById('recipe-modal')?.addEventListener('click', function(e) {
-            if (e.target === this) closeRecipeModal();
-        });
+    // Собираем все записи, где есть симптомы
+    const symptomLogs = userLogs.filter(log => log.symptomsText && log.symptomsText.trim().length > 0);
+    if (symptomLogs.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Нет записей с симптомами для анализа.</p>';
+        return;
+    }
 
-        // ================================================================
-        // 26. КНОПКИ ОЧИСТКИ
-        // ================================================================
-        window.clearAllMarks = function() {
-            if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
-                localStorage.removeItem('histolite_cycle_marks');
-                localStorage.removeItem('histolite_last_period_start');
-                cycleMarks = {};
-                savedLastPeriodStart = '';
-                renderCycleCalendar();
-                renderTodayDashboard();
-                showModal('Все отметки удалены. Теперь отметьте первый день цикла заново.');
+    // Для каждой записи с симптомами смотрим, что было за 48 часов до неё
+    const triggers = {}; // продукт/лекарство -> количество совпадений
+    symptomLogs.forEach(log => {
+        const logDate = new Date(log.date + 'T' + (log.time || '00:00'));
+        // Ищем записи за предыдущие 48 часов (включая текущую, но без симптомов?)
+        const twoDaysBefore = new Date(logDate);
+        twoDaysBefore.setHours(twoDaysBefore.getHours() - 48);
+
+        userLogs.forEach(possibleTrigger => {
+            if (possibleTrigger === log) return; // пропускаем саму запись
+            const triggerDate = new Date(possibleTrigger.date + 'T' + (possibleTrigger.time || '00:00'));
+            if (triggerDate >= twoDaysBefore && triggerDate <= logDate) {
+                // Если в этой записи есть продукты или лекарства
+                const items = [];
+                if (possibleTrigger.products) items.push(...possibleTrigger.products);
+                if (possibleTrigger.medications) items.push(...possibleTrigger.medications);
+                items.forEach(item => {
+                    const key = item.toLowerCase().trim();
+                    if (!triggers[key]) triggers[key] = 0;
+                    triggers[key]++;
+                });
             }
-        };
-        window.fullReset = function() {
-            if (confirm('Это удалит ВСЕ данные: записи, продукты, настройки цикла, отметки. Продолжить?')) {
-                const keys = [
-                    'histolite_logs',
-                    'histolite_safe_products',
-                    'histolite_gender',
-                    'histolite_last_period_start',
-                    'histolite_cycle_length',
-                    'histolite_pms_start_days',
-                    'histolite_cycle_marks',
-                    'histolite_cycle_day_notes',
-                    'histolite_period_days',
-                    'histolite_user_recipes',
-                    'histolite_last_visit',
-                    'histolite_legal_accepted'
-                ];
-                keys.forEach(key => localStorage.removeItem(key));
-                location.reload();
-            }
-        };
+        });
+    });
 
-        // ================================================================
-        // 27. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
-        // ================================================================
-        if (localStorage.getItem('histolite_legal_accepted') === 'true') {
-            setTimeout(function() {
-                const gender = localStorage.getItem('histolite_gender') || 'female';
-                userGender = gender;
-                document.getElementById('legal-modal').style.display = 'none';
-                document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-                renderHistory();
-                loadProducts();
-                const lengthInput = document.getElementById('cycle-length');
-                const pmsInput = document.getElementById('pms-start-days');
-                const periodDaysInput = document.getElementById('period-days');
-                if (lengthInput) {
-                    lengthInput.value = savedCycleLength;
-                    lengthInput.addEventListener('change', saveCycleSettings);
-                }
-                if (pmsInput) {
-                    pmsInput.value = savedPmsStartDays;
-                    pmsInput.addEventListener('change', saveCycleSettings);
-                }
-                if (periodDaysInput) {
-                    periodDaysInput.value = savedPeriodDays;
-                    periodDaysInput.addEventListener('change', saveCycleSettings);
-                }
-                const dateInput = document.getElementById('last-period-start');
-                if (dateInput) {
-                    dateInput.value = savedLastPeriodStart;
-                    dateInput.addEventListener('change', saveCycleSettings);
-                }
-                if (userGender === 'male') {
-                    document.getElementById('calendar-nav-btn').style.display = 'none';
-                } else {
-                    document.getElementById('calendar-nav-btn').style.display = 'flex';
-                }
-                renderTodayDashboard();
-                checkNotifications();
-                loadRecipes();
-                renderCycleCalendar();
-                updateCycleUI();
+    // Сортируем по частоте
+    const sortedTriggers = Object.entries(triggers)
+        .filter(([item, count]) => count >= 2) // минимум 2 совпадения
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 10);
+
+    if (sortedTriggers.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Не найдено явных совпадений. Попробуйте добавить больше записей.</p>';
+        return;
+    }
+
+    let html = '<div class="space-y-2">';
+    sortedTriggers.forEach(([item, count]) => {
+        html += `<div class="flex justify-between border-b border-slate-100 py-1 text-xs">
+            <span>${item}</span>
+            <span class="font-bold text-rose-600">${count} совпадений</span>
+        </div>`;
+    });
+    html += `<div class="text-[10px] text-slate-400 mt-2">* Совпадения с симптомами в течение 48 часов после употребления.</div>`;
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ================================================================
+// АВТОМАТИЧЕСКИЙ ЗАПУСК ПРИ ЗАГРУЗКЕ ВКЛАДКИ "АНАЛИТИКА"
+// ================================================================
+// Добавляем обработчик переключения вкладок для обновления аналитики
+document.addEventListener('DOMContentLoaded', function() {
+    // При переключении на вкладку analytics обновляем данные
+    const analyticsTabBtn = document.querySelector('[data-tab="analytics"]');
+    if (analyticsTabBtn) {
+        analyticsTabBtn.addEventListener('click', function() {
+            // Даём время на рендер вкладки
+            setTimeout(() => {
+                renderCycleSymptomAnalysis();
+                renderCycleLoadCalendar();
+                // runAdvancedAnalytics() вызывается по кнопке
             }, 100);
-        }
-
-        console.log('✅ Приложение загружено. Рецепты загружаются из файла recipes.json');
-    </script>
-</body>
-</html>
+        });
+    }
+    // Если вкладка уже активна при загрузке (если пользователь авторизован)
+    if (document.getElementById('analytics-tab')?.classList.contains('active')) {
+        setTimeout(() => {
+            renderCycleSymptomAnalysis();
+            renderCycleLoadCalendar();
+        }, 200);
+    }
+});
