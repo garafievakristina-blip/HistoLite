@@ -1916,34 +1916,80 @@
         }
 
         function runAdvancedAnalytics() {
-            const container = document.getElementById('analytics-results');
-            if (!container) return;
-            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">⏳ Анализ...</p>';
-            const symptomLogs = userLogs.filter(l => l.symptomsText && l.symptomsText.trim().length > 0);
-            if (symptomLogs.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Нет записей с симптомами для анализа.</p>';
-                return;
-            }
-            const triggers = {};
-            symptomLogs.forEach(log => {
-                const logDate = new Date(log.date + 'T' + (log.time || '00:00'));
-                const twoDaysBefore = new Date(logDate);
-                twoDaysBefore.setHours(twoDaysBefore.getHours() - 48);
-                userLogs.forEach(possible => {
-                    if (possible === log) return;
-                    const triggerDate = new Date(possible.date + 'T' + (possible.time || '00:00'));
-                    if (triggerDate >= twoDaysBefore && triggerDate <= logDate) {
-                        const items = [];
-                        if (possible.products) items.push(...possible.products);
-                        if (possible.medications) items.push(...possible.medications);
-                        items.forEach(item => {
-                            const key = item.toLowerCase().trim();
-                            if (!triggers[key]) triggers[key] = 0;
-                            triggers[key]++;
-                        });
-                    }
+    const container = document.getElementById('analytics-results');
+    if (!container) {
+        alert('Контейнер analytics-results не найден');
+        return;
+    }
+
+    // Проверяем, есть ли записи с симптомами
+    const symptomLogs = userLogs.filter(l => l.symptomsText && l.symptomsText.trim().length > 0);
+    if (symptomLogs.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Нет записей с симптомами для анализа. Добавьте записи с симптомами.</p>';
+        return;
+    }
+
+    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">⏳ Анализ...</p>';
+
+    // Собираем все продукты и лекарства за 48 часов до симптомов
+    const triggers = {};
+    let totalMatches = 0;
+
+    symptomLogs.forEach(log => {
+        const logDate = new Date(log.date + 'T' + (log.time || '00:00'));
+        const twoDaysBefore = new Date(logDate);
+        twoDaysBefore.setHours(twoDaysBefore.getHours() - 48);
+
+        // Ищем записи за предыдущие 48 часов
+        userLogs.forEach(possible => {
+            // Пропускаем саму запись с симптомами, чтобы не считать её
+            if (possible === log) return;
+            const triggerDate = new Date(possible.date + 'T' + (possible.time || '00:00'));
+            if (triggerDate >= twoDaysBefore && triggerDate <= logDate) {
+                // Собираем продукты и лекарства из этой записи
+                const items = [];
+                if (possible.products && possible.products.length) items.push(...possible.products);
+                if (possible.medications && possible.medications.length) items.push(...possible.medications);
+                items.forEach(item => {
+                    const key = item.toLowerCase().trim();
+                    if (!triggers[key]) triggers[key] = 0;
+                    triggers[key]++;
+                    totalMatches++;
                 });
-            });
+            }
+        });
+    });
+
+    // Если совпадений нет
+    if (totalMatches === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Не найдено совпадений. Возможно, вы не записывали продукты или лекарства перед симптомами.</p>';
+        return;
+    }
+
+    // Сортируем по частоте и показываем только те, у которых >= 2 совпадения
+    const sorted = Object.entries(triggers)
+        .filter(([item, count]) => count >= 2)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
+
+    if (sorted.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Найдено совпадений, но все с частотой 1. Добавьте больше записей для выявления устойчивых триггеров.</p>';
+        return;
+    }
+
+    // Показываем результат
+    let html = '<div class="space-y-2">';
+    sorted.forEach(([item, count]) => {
+        const percentage = Math.round((count / symptomLogs.length) * 100);
+        html += `<div class="flex justify-between items-center border-b border-slate-100 py-1 text-xs">
+            <span>${item}</span>
+            <span class="font-bold text-rose-600">${count} раз (${percentage}% записей)</span>
+        </div>`;
+    });
+    html += `<div class="text-[10px] text-slate-400 mt-2">* Совпадения с симптомами в течение 48 часов после употребления. Показаны только частые совпадения (>=2).</div>`;
+    html += `<div class="text-[10px] text-slate-400 mt-1">Всего записей с симптомами: ${symptomLogs.length}</div>`;
+    container.innerHTML = html;
+}
             const sorted = Object.entries(triggers).filter(([_,c]) => c >= 2).sort((a,b) => b[1]-a[1]).slice(0,10);
             if (sorted.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Не найдено явных совпадений.</p>';
