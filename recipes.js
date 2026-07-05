@@ -1,4 +1,4 @@
-const recipes = [
+window.recipes = [
 {
 "id": 1,
 "name": "Золотистые овсяные блины с яблочным муссом",
