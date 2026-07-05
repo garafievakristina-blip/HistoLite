@@ -573,10 +573,10 @@
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
         // === ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА РЕЦЕПТОВ ИЗ ФАЙЛА recipes.js ===
-        if (Array.isArray(window.recipes) && window.recipes.length > 0) {
-    window.recipesDB = window.recipes;
-    recipesDB = window.recipes;
-    console.log('✅ Рецепты загружены из recipes.js, количество:', window.recipes.length);
+       window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
+if (window.recipesDB.length > 0) {
+    recipesDB = window.recipesDB;
+    console.log('✅ Рецепты загружены из recipes.js, количество:', window.recipesDB.length);
 } else {
     console.warn('⚠️ Массив recipes не найден, проверьте подключение recipes.js');
 }
@@ -1599,9 +1599,14 @@
             }
         ];
 
-        function loadRecipes() {
+       function loadRecipes() {
     const container = document.getElementById('recipes-container');
     if (!container) return;
+
+    console.log('loadRecipes:', {
+        recipes: Array.isArray(window.recipes) ? window.recipes.length : 'нет',
+        recipesDB: Array.isArray(window.recipesDB) ? window.recipesDB.length : 'нет'
+    });
 
     if (Array.isArray(window.recipesDB) && window.recipesDB.length > 0) {
         renderRecipes();
