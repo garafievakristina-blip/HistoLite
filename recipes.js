@@ -16,4 +16,12 @@ window.recipes = [
     image: ''
   }
 ];
-console.log('recipes.js loaded', window.recipes.length);
+
+document.addEventListener('DOMContentLoaded', function() {
+  const el = document.getElementById('recipes-indicator');
+  if (el) {
+    el.textContent = '✅ recipes.js загружен: ' + window.recipes.length;
+    el.style.background = '#bbf7d0';
+    el.style.color = '#166534';
+  }
+});
