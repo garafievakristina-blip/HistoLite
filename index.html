@@ -213,7 +213,7 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
-    <div id="recipes-indicator" style="position:fixed; top:10px; right:10px; padding:10px; background:yellow; z-index:9999; border-radius:8px;"></div>
+    <div id="recipes-indicator" style="position:fixed; top:10px; right:10px; padding:10px; background:yellow; z-index:9999; border-radius:8px;">Проверка...</div>
 
     <!-- ЮРИДИЧЕСКИЙ ЭКРАН -->
     <div id="legal-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -574,12 +574,12 @@
         let selectedCycleDayDate = null;
         // === ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА РЕЦЕПТОВ ИЗ ФАЙЛА recipes.js ===
        window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
-if (window.recipesDB.length > 0) {
-    recipesDB = window.recipesDB;
-    console.log('✅ Рецепты загружены из recipes.js, количество:', window.recipesDB.length);
-} else {
-    console.warn('⚠️ Массив recipes не найден, проверьте подключение recipes.js');
-}
+recipesDB = window.recipesDB;
+
+console.log('recipes debug', {
+    hasWindowRecipes: Array.isArray(window.recipes),
+    recipesLength: window.recipesDB.length
+});
 
         // ================================================================
         // 2. ФУНКЦИИ ДАТ И ЦИКЛА
