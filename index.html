@@ -7,12 +7,15 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="recipes.js"></script>
-    <div id="recipes-indicator" style="position:fixed; top:10px; right:10px; padding:10px; background:yellow; z-index:9999; border-radius:8px;"></div>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var el = document.getElementById('recipes-indicator');
-            if (typeof recipes !== 'undefined' && recipes.length > 0) {
-                el.textContent = '✅ Рецепты загружены: ' + recipes.length;
+        <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var el = document.getElementById('recipes-indicator');
+        var list = window.recipes || window.recipesDB || [];
+        if (el) {
+            if (Array.isArray(list) && list.length > 0) {
+                el.textContent = '✅ Рецепты загружены: ' + list.length;
                 el.style.background = '#bbf7d0';
                 el.style.color = '#166534';
             } else {
@@ -20,8 +23,9 @@
                 el.style.background = '#fecaca';
                 el.style.color = '#991b1b';
             }
-        });
-    </script>
+        }
+    });
+</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
@@ -209,6 +213,7 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
+    <div id="recipes-indicator" style="position:fixed; top:10px; right:10px; padding:10px; background:yellow; z-index:9999; border-radius:8px;"></div>
 
     <!-- ЮРИДИЧЕСКИЙ ЭКРАН -->
     <div id="legal-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -568,13 +573,13 @@
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
         // === ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА РЕЦЕПТОВ ИЗ ФАЙЛА recipes.js ===
-        if (typeof recipes !== 'undefined' && Array.isArray(recipes) && recipes.length > 0) {
-            window.recipesDB = recipes;
-            recipesDB = recipes;
-            console.log('✅ Рецепты загружены из recipes.js, количество:', recipes.length);
-        } else {
-            console.warn('⚠️ Массив recipes не найден, проверьте подключение recipes.js');
-        }
+        if (Array.isArray(window.recipes) && window.recipes.length > 0) {
+    window.recipesDB = window.recipes;
+    recipesDB = window.recipes;
+    console.log('✅ Рецепты загружены из recipes.js, количество:', window.recipes.length);
+} else {
+    console.warn('⚠️ Массив recipes не найден, проверьте подключение recipes.js');
+}
 
         // ================================================================
         // 2. ФУНКЦИИ ДАТ И ЦИКЛА
@@ -1595,20 +1600,15 @@
         ];
 
         function loadRecipes() {
-            const container = document.getElementById('recipes-container');
-            if (!container) return;
-            if (window.recipesDB && window.recipesDB.length > 0) {
-                recipesDB = window.recipesDB;
-                container.innerHTML = `<p class="text-center text-green-600 col-span-full py-2">✅ Загружено рецептов: ${recipesDB.length}</p>`;
-                if (typeof renderRecipes === 'function') {
-                    renderRecipes();
-                } else {
-                    container.innerHTML += recipesDB.map(r => `<div class="border p-2 my-2 rounded">${r.name}</div>`).join('');
-                }
-            } else {
-                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
-            }
-        }
+    const container = document.getElementById('recipes-container');
+    if (!container) return;
+
+    if (Array.isArray(window.recipesDB) && window.recipesDB.length > 0) {
+        renderRecipes();
+    } else {
+        container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
+    }
+}
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) return;
