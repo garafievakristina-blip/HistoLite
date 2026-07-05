@@ -239,7 +239,8 @@
                     <input type="checkbox" id="legal-checkbox" onchange="toggleLegalButton()" class="w-5 h-5 mt-0.5 accent-emerald-600 rounded shrink-0">
                     <span class="text-[11px] text-slate-600 leading-tight">Я подтверждаю, что платформа <strong>не является медицинской</strong>.</span>
                 </label>
-                <button id="legal-submit-btn" onclick="acceptLegal()" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed">Войти в приложение</button>
+                <!-- Кнопка входа теперь всегда активна (убрал disabled) -->
+                <button id="legal-submit-btn" onclick="acceptLegal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md">Войти в приложение</button>
             </div>
         </div>
     </div>
@@ -1527,21 +1528,18 @@
         // 24. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
         function toggleLegalButton() {
-            const chk = document.getElementById('legal-checkbox');
-            const btn = document.getElementById('legal-submit-btn');
-            if (!chk || !btn) return;
-            btn.disabled = !chk.checked;
-            btn.className = chk.checked
-                ? "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md"
-                : "w-full bg-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs transition cursor-not-allowed";
+            // Функция больше не нужна, но оставляем для совместимости
         }
 
         window.acceptLegal = function() {
+            // Вход без проверки галочки (закомментировано)
+            /*
             const chk = document.getElementById('legal-checkbox');
             if (!chk || !chk.checked) {
                 showModal('Поставьте галочку, чтобы войти в приложение.');
                 return;
             }
+            */
             const genderRadio = document.querySelector('input[name="gender"]:checked');
             userGender = genderRadio ? genderRadio.value : 'female';
             localStorage.setItem('histolite_gender', userGender);
@@ -1835,12 +1833,10 @@
             const container = document.getElementById('load-graph-container');
             if (!container) return;
 
-            // Собираем все симптомы за последние 30 дней
             const today = new Date();
             const start = new Date(today);
             start.setDate(today.getDate() - 29);
 
-            // Массив дней (строки дат)
             const days = [];
             let cur = new Date(start);
             while (cur <= today) {
@@ -1848,7 +1844,6 @@
                 cur.setDate(cur.getDate() + 1);
             }
 
-            // Собираем симптомы из записей
             const symptomMap = {};
             userLogs.forEach(log => {
                 if (!log.symptomsText || !log.date) return;
@@ -1858,7 +1853,6 @@
                     symptomMap[date].add(sym);
                 });
             });
-            // Добавляем симптомы из заметок календаря
             Object.keys(cycleDayNotes).forEach(date => {
                 if (cycleDayNotes[date].symptoms) {
                     if (!symptomMap[date]) symptomMap[date] = new Set();
@@ -1868,14 +1862,12 @@
                 }
             });
 
-            // Считаем частоту симптомов за все дни
             const symptomFreq = {};
             Object.values(symptomMap).forEach(set => {
                 set.forEach(sym => {
                     symptomFreq[sym] = (symptomFreq[sym] || 0) + 1;
                 });
             });
-            // Берём топ-10 симптомов
             const topSymptoms = Object.entries(symptomFreq).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([s]) => s);
 
             if (topSymptoms.length === 0) {
@@ -1883,9 +1875,7 @@
                 return;
             }
 
-            // Строим таблицу
             let html = '<div style="overflow-x: auto;"><table class="load-graph-table">';
-            // Заголовок: даты
             html += '<tr><th style="min-width:80px;">Симптомы</th>';
             days.forEach(d => {
                 const dateObj = parseLocalDate(d);
@@ -1894,7 +1884,6 @@
             });
             html += '</tr>';
 
-            // Строки: симптомы
             topSymptoms.forEach(sym => {
                 html += `<tr><td style="font-weight:500; font-size:9px; white-space:nowrap;">${sym}</td>`;
                 days.forEach(d => {
@@ -1906,8 +1895,6 @@
             });
 
             html += '</table></div>';
-
-            // Легенда
             html += `<div class="load-graph-legend">
                 <span><span class="legend-color" style="background:#ef4444;"></span> Был симптом</span>
                 <span><span class="legend-color" style="background:#bbf7d0;"></span> Не было</span>
@@ -1915,93 +1902,74 @@
             container.innerHTML = html;
         }
 
-        function runAdvancedAnalytics() {
-    const container = document.getElementById('analytics-results');
-    if (!container) {
-        alert('Контейнер analytics-results не найден');
-        return;
-    }
-
-    // Проверяем, есть ли записи с симптомами
-    const symptomLogs = userLogs.filter(l => l.symptomsText && l.symptomsText.trim().length > 0);
-    if (symptomLogs.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Нет записей с симптомами для анализа. Добавьте записи с симптомами.</p>';
-        return;
-    }
-
-    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">⏳ Анализ...</p>';
-
-    // Собираем все продукты и лекарства за 48 часов до симптомов
-    const triggers = {};
-    let totalMatches = 0;
-
-    symptomLogs.forEach(log => {
-        const logDate = new Date(log.date + 'T' + (log.time || '00:00'));
-        const twoDaysBefore = new Date(logDate);
-        twoDaysBefore.setHours(twoDaysBefore.getHours() - 48);
-
-        // Ищем записи за предыдущие 48 часов
-        userLogs.forEach(possible => {
-            // Пропускаем саму запись с симптомами, чтобы не считать её
-            if (possible === log) return;
-            const triggerDate = new Date(possible.date + 'T' + (possible.time || '00:00'));
-            if (triggerDate >= twoDaysBefore && triggerDate <= logDate) {
-                // Собираем продукты и лекарства из этой записи
-                const items = [];
-                if (possible.products && possible.products.length) items.push(...possible.products);
-                if (possible.medications && possible.medications.length) items.push(...possible.medications);
-                items.forEach(item => {
-                    const key = item.toLowerCase().trim();
-                    if (!triggers[key]) triggers[key] = 0;
-                    triggers[key]++;
-                    totalMatches++;
-                });
-            }
-        });
-    });
-
-    // Если совпадений нет
-    if (totalMatches === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Не найдено совпадений. Возможно, вы не записывали продукты или лекарства перед симптомами.</p>';
-        return;
-    }
-
-    // Сортируем по частоте и показываем только те, у которых >= 2 совпадения
-    const sorted = Object.entries(triggers)
-        .filter(([item, count]) => count >= 2)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 15);
-
-    if (sorted.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Найдено совпадений, но все с частотой 1. Добавьте больше записей для выявления устойчивых триггеров.</p>';
-        return;
-    }
-
-    // Показываем результат
-    let html = '<div class="space-y-2">';
-    sorted.forEach(([item, count]) => {
-        const percentage = Math.round((count / symptomLogs.length) * 100);
-        html += `<div class="flex justify-between items-center border-b border-slate-100 py-1 text-xs">
-            <span>${item}</span>
-            <span class="font-bold text-rose-600">${count} раз (${percentage}% записей)</span>
-        </div>`;
-    });
-    html += `<div class="text-[10px] text-slate-400 mt-2">* Совпадения с симптомами в течение 48 часов после употребления. Показаны только частые совпадения (>=2).</div>`;
-    html += `<div class="text-[10px] text-slate-400 mt-1">Всего записей с симптомами: ${symptomLogs.length}</div>`;
-    container.innerHTML = html;
-}
-            const sorted = Object.entries(triggers).filter(([_,c]) => c >= 2).sort((a,b) => b[1]-a[1]).slice(0,10);
-            if (sorted.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Не найдено явных совпадений.</p>';
+        // НОВАЯ УЛУЧШЕННАЯ ВЕРСИЯ АНАЛИЗА СОВПАДЕНИЙ
+        window.runAdvancedAnalytics = function() {
+            const container = document.getElementById('analytics-results');
+            if (!container) {
+                alert('Контейнер analytics-results не найден');
                 return;
             }
-            let html = '<div class="space-y-2">';
-            sorted.forEach(([item,count]) => {
-                html += `<div class="flex justify-between border-b border-slate-100 py-1 text-xs"><span>${item}</span><span class="font-bold text-rose-600">${count} совпадений</span></div>`;
+
+            const symptomLogs = userLogs.filter(l => l.symptomsText && l.symptomsText.trim().length > 0);
+            if (symptomLogs.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Нет записей с симптомами для анализа. Добавьте записи с симптомами.</p>';
+                return;
+            }
+
+            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">⏳ Анализ...</p>';
+
+            const triggers = {};
+            let totalMatches = 0;
+
+            symptomLogs.forEach(log => {
+                const logDate = new Date(log.date + 'T' + (log.time || '00:00'));
+                const twoDaysBefore = new Date(logDate);
+                twoDaysBefore.setHours(twoDaysBefore.getHours() - 48);
+
+                userLogs.forEach(possible => {
+                    if (possible === log) return;
+                    const triggerDate = new Date(possible.date + 'T' + (possible.time || '00:00'));
+                    if (triggerDate >= twoDaysBefore && triggerDate <= logDate) {
+                        const items = [];
+                        if (possible.products && possible.products.length) items.push(...possible.products);
+                        if (possible.medications && possible.medications.length) items.push(...possible.medications);
+                        items.forEach(item => {
+                            const key = item.toLowerCase().trim();
+                            if (!triggers[key]) triggers[key] = 0;
+                            triggers[key]++;
+                            totalMatches++;
+                        });
+                    }
+                });
             });
-            html += '<div class="text-[10px] text-slate-400 mt-2">* Совпадения с симптомами в течение 48 часов после употребления.</div></div>';
+
+            if (totalMatches === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Не найдено совпадений. Возможно, вы не записывали продукты или лекарства перед симптомами.</p>';
+                return;
+            }
+
+            const sorted = Object.entries(triggers)
+                .filter(([item, count]) => count >= 2)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15);
+
+            if (sorted.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Найдено совпадений, но все с частотой 1. Добавьте больше записей для выявления устойчивых триггеров.</p>';
+                return;
+            }
+
+            let html = '<div class="space-y-2">';
+            sorted.forEach(([item, count]) => {
+                const percentage = Math.round((count / symptomLogs.length) * 100);
+                html += `<div class="flex justify-between items-center border-b border-slate-100 py-1 text-xs">
+                    <span>${item}</span>
+                    <span class="font-bold text-rose-600">${count} раз (${percentage}% записей)</span>
+                </div>`;
+            });
+            html += `<div class="text-[10px] text-slate-400 mt-2">* Совпадения с симптомами в течение 48 часов после употребления. Показаны только частые совпадения (>=2).</div>`;
+            html += `<div class="text-[10px] text-slate-400 mt-1">Всего записей с симптомами: ${symptomLogs.length}</div>`;
             container.innerHTML = html;
-        }
+        };
 
         // Автозапуск при переключении на вкладку "Анализ"
         document.addEventListener('DOMContentLoaded', function() {
@@ -2016,7 +1984,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено.');
+        console.log('✅ Приложение загружено. Кнопка входа активна, анализ совпадений улучшен.');
     </script>
 </body>
 </html>
