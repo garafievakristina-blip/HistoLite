@@ -386,9 +386,7 @@
                             <input type="number" id="period-days" min="1" max="10" value="5" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                         </div>
                     </div>
-                    <button onclick="openNewPeriodModal()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm transition">
-  📅 Установить новую дату
-</button>
+                   
                     <div class="cycle-info-grid" id="cycle-info-grid">
                         <div class="cycle-info-item">
                             <div class="label">День цикла</div>
@@ -504,7 +502,7 @@
             <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
             <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
             <div class="space-y-2">
-                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Первый день цикла</button>
+                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
                 <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
                 <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
                 <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
@@ -556,7 +554,6 @@
             <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">OK</button>
         </div>
     </div>
-    <div id="new-period-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
     <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
         <h4 class="text-base font-bold text-slate-800 mb-2">Новая дата начала цикла</h4>
         <p class="text-sm text-slate-600 mb-3">Выберите первый день новой менструации.</p>
@@ -900,19 +897,25 @@ console.log('recipes debug', {
                 return;
             }
             if (type === 'first_day') {
-                for (let key in cycleMarks) {
-                    if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
-                }
-                savedLastPeriodStart = selectedDate;
-                localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-                cycleMarks[selectedDate] = 'first_day';
-                localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-                closeEventModal();
-                renderCycleCalendar();
-                renderTodayDashboard();
-                showModal(`Первый день цикла установлен на ${new Date(selectedDate).toLocaleDateString('ru-RU')}`);
-                return;
-            }
+    for (let key in cycleMarks) {
+        if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
+    }
+
+    savedLastPeriodStart = selectedDate;
+    delayStartDate = null;
+    localStorage.removeItem('histolite_delay_start');
+
+    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+    cycleMarks[selectedDate] = 'first_day';
+    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+
+    closeEventModal();
+    renderCycleCalendar();
+    renderTodayDashboard();
+    updateCycleUI();
+    showModal(`Первый день цикла установлен на ${new Date(selectedDate).toLocaleDateString('ru-RU')}`);
+    return;
+}
             if (cycleMarks[selectedDate] === type) {
                 delete cycleMarks[selectedDate];
             } else {
@@ -1546,14 +1549,6 @@ console.log('recipes debug', {
         window.closeModal = function() {
             document.getElementById('custom-modal').style.display = 'none';
         };
-        let manualPeriodDate = localStorage.getItem('histolite_manual_period_date') || '';
-
-window.openNewPeriodModal = function() {
-    const modal = document.getElementById('new-period-modal');
-    const input = document.getElementById('new-period-date');
-    if (input) input.value = new Date().toISOString().split('T')[0];
-    if (modal) modal.style.display = 'flex';
-};
 
 window.closeNewPeriodModal = function() {
     const modal = document.getElementById('new-period-modal');
@@ -1570,7 +1565,6 @@ window.saveNewPeriodDate = function() {
     manualPeriodDate = input.value;
     savedLastPeriodStart = manualPeriodDate;
 
-    localStorage.setItem('histolite_manual_period_date', manualPeriodDate);
     localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
 
     delayStartDate = null;
