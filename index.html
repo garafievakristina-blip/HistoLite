@@ -319,6 +319,35 @@
     </div>
 </div>
                 
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label><input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
+                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label><input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
+                        <div class="flex items-center gap-2">
+                            <div class="chip-container" id="chip-container">
+                                <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
+                                <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
+                            </div>
+                            <button id="mic-products-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm flex-shrink-0" title="Голосовой ввод продуктов">🎤</button>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
+                        <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                    </div>
+                    <div class="space-y-2 border-t border-slate-100 pt-3">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                            <button id="mic-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Нажмите на микрофон и скажите текст. Кнопка подсветится во время записи.</p>
+                    </div>
+                    <button onclick="saveLog()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">Сохранить запись</button>
+                </div>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Последние записи</h3>
@@ -457,37 +486,31 @@
 
     <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-            <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
-            <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
-            <div class="space-y-2">
-                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
-                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
-                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
-                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
-                <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
-            </div>
-        </div>
-    </div>
-
+       
     <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
-            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
-            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
 
-            <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы</label>
-            <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
+        <label class="block text-xs font-bold text-slate-600 mb-1">Продукты</label>
+        <input type="text" id="cycle-day-products" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Например: рис, банан, курица">
 
-            <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
-            <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Лекарства</label>
+        <input type="text" id="cycle-day-meds" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Например: цетиризин, дао-форте">
 
-            <div class="flex gap-2 mt-3">
-                <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-                <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
-            </div>
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Симптомы</label>
+        <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
+
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
+        <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
+
+        <div class="flex gap-2 mt-3">
+            <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
+            <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
         </div>
     </div>
+</div>
 
     <div id="recipe-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
@@ -1296,7 +1319,29 @@ window.saveCycleDay = function() {
         };
 
         // ================================================================
-        // 17. ИСТОРИЯ
+        // 17. СОХРАНЕНИЕ ЗАПИСИ
+        // ================================================================
+       
+            
+            const products = selectedProducts.map(p => p.name);
+            const medsRaw = document.getElementById('medications').value;
+            let medications = medsRaw.trim() ? medsRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
+            const symptomsText = document.getElementById('symptoms-text-input').value.trim();
+            const cycleDay = (userGender === 'male') ? 0 : getCurrentCycleDay();
+            userLogs = userLogs.filter(l => !(l.date === date && l.time === time));
+            userLogs.push({ date, time, cycleDay, products, medications, symptomsText });
+            localStorage.setItem('histolite_logs', JSON.stringify(userLogs));
+            selectedProducts = [];
+            renderChips();
+            document.getElementById('medications').value = '';
+            document.getElementById('symptoms-text-input').value = '';
+            renderHistory();
+            renderTodayDashboard();
+            showModal('Запись сохранена');
+        };
+
+        // ================================================================
+        // 18. ИСТОРИЯ
         // ================================================================
         window.renderHistory = function() {
             const container = document.getElementById('history-container');
@@ -1337,7 +1382,7 @@ window.saveCycleDay = function() {
         };
 
         // ================================================================
-        // 18. ДАШБОРД (СЕГОДНЯ)
+        // 19. ДАШБОРД (СЕГОДНЯ)
         // ================================================================
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
@@ -1434,7 +1479,7 @@ window.saveCycleDay = function() {
         }
 
         // ================================================================
-        // 19. УВЕДОМЛЕНИЯ
+        // 20. УВЕДОМЛЕНИЯ
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1449,7 +1494,7 @@ window.saveCycleDay = function() {
         }
 
         // ================================================================
-        // 20. ЭКСПОРТ (заглушки)
+        // 22. ЭКСПОРТ (заглушки)
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1459,7 +1504,41 @@ window.saveCycleDay = function() {
         };
 
         // ================================================================
-        // 21. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
+        <!-- МОДАЛЬНЫЕ ОКНА -->
+<div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+        <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
+        <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
+        <div class="space-y-2">
+            <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
+            <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
+            <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
+            <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
+            <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
+
+        <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы</label>
+        <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
+
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
+        <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
+
+        <div class="flex gap-2 mt-3">
+            <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
+            <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
+        </div>
+    </div>
+</div>
+        // ================================================================
+        // 24. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
         function toggleLegalButton() {
             // Функция больше не нужна, но оставляем для совместимости
@@ -1491,7 +1570,7 @@ window.saveCycleDay = function() {
         };
 
         // ================================================================
-        // 22. РАБОТА С РЕЦЕПТАМИ
+        // 25. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         const defaultRecipes = [
             {
@@ -1640,7 +1719,7 @@ window.saveCycleDay = function() {
         });
 
         // ================================================================
-        // 23. КНОПКИ ОЧИСТКИ
+        // 26. КНОПКИ ОЧИСТКИ
         // ================================================================
         window.clearAllMarks = function() {
             if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
@@ -1667,7 +1746,7 @@ window.saveCycleDay = function() {
         };
 
         // ================================================================
-        // 24. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 27. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(function() {
@@ -1707,7 +1786,7 @@ window.saveCycleDay = function() {
         }
 
         // ================================================================
-        // 25. АНАЛИТИКА – РАБОЧАЯ ВЕРСИЯ
+        // 28. АНАЛИТИКА – РАБОЧАЯ ВЕРСИЯ
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
