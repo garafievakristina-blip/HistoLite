@@ -266,22 +266,58 @@
                         <div class="text-2xl font-bold" id="risk-level">Низкий</div>
                         <div class="text-xs text-slate-500" id="risk-reason">Фаза цикла: стабильная</div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">💡 Совет дня</div>
-                        <div id="today-tip" class="text-sm text-slate-700">Сегодня хороший день, чтобы попробовать новые продукты.</div>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="stat-card"><div class="text-xs text-slate-400">Записей за 7 дней</div><div class="stat-number text-emerald-600" id="week-logs">0</div></div>
-                        <div class="stat-card"><div class="text-xs text-slate-400">Дней подряд</div><div class="stat-number text-amber-600" id="streak">0</div></div>
-                        <div class="stat-card"><div class="text-xs text-slate-400">Найдено триггеров</div><div class="stat-number text-rose-600" id="triggers-count">0</div></div>
-                    </div>
-                    <div id="progress-container"></div>
-                    <button onclick="switchTab('diary'); document.querySelector('.bg-white.p-4.rounded-2xl.shadow-sm.border').scrollIntoView({ behavior: 'smooth' });" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-sm shadow-md">➕ Добавить запись</button>
-                </div>
-            </div>
+                   
 
             <!-- ВКЛАДКА ДНЕВНИК -->
             <div id="diary-tab" class="tab-content space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+    <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
+
+    <div class="grid grid-cols-3 gap-2 mb-4">
+        <div>
+            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день</label>
+            <input type="date" id="last-period-start" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+        </div>
+        <div>
+            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Длина цикла</label>
+            <input type="number" id="cycle-length" min="20" max="45" value="28" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+        </div>
+        <div>
+            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Дней менструации</label>
+            <input type="number" id="period-days" min="1" max="10" value="5" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+        </div>
+    </div>
+
+    <div class="cycle-info-grid" id="cycle-info-grid">
+        <div class="cycle-info-item">
+            <div class="label">День цикла</div>
+            <div class="value" id="cycle-day-display">—</div>
+        </div>
+        <div class="cycle-info-item">
+            <div class="label">Фаза</div>
+            <div class="value" id="phase-badge" style="font-size:14px;">Не определена</div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between mb-3">
+        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
+        <span class="calendar-month-label" id="calendar-month-label">Январь 2025</span>
+        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
+        <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
+    </div>
+
+    <div id="cycle-load-calendar" class="cycle-calendar"></div>
+
+    <div class="flex flex-wrap gap-3 mt-2 text-xs">
+        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FADBD8; border:2px solid #E74C3C; border-radius:4px;"></span> Менструация</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FCF3CF; border:2px solid #F39C12; border-radius:4px;"></span> Овуляция</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D5F5E3; border:2px solid #27AE60; border-radius:4px;"></span> Фертильное окно</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#E8DAEF; border:2px dashed #8E44AD; border-radius:4px;"></span> Ожидаемый день</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D6EAF8; border:2px solid #2980B9; border-radius:4px;"></span> Сегодня</span>
+        <span class="flex items-center gap-1">📝 Заметка</span>
+    </div>
+</div>
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-3 text-slate-800">📝 Новая запись</h2>
                     <div class="grid grid-cols-2 gap-2 mb-3">
@@ -369,54 +405,7 @@
 </div> 
 
             <!-- ВКЛАДКА КАЛЕНДАРЬ -->
-            <div id="calendar-tab" class="tab-content space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Женский календарь</h3>
-                    <div class="grid grid-cols-3 gap-2 mb-4">
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день</label>
-                            <input type="date" id="last-period-start" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Длина цикла</label>
-                            <input type="number" id="cycle-length" min="20" max="45" value="28" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Дней менструации</label>
-                            <input type="number" id="period-days" min="1" max="10" value="5" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                        </div>
-                    </div>
-                   
-                    <div class="cycle-info-grid" id="cycle-info-grid">
-                        <div class="cycle-info-item">
-                            <div class="label">День цикла</div>
-                            <div class="value" id="cycle-day-display">—</div>
-                        </div>
-                        <div class="cycle-info-item">
-                            <div class="label">Фаза</div>
-                            <div class="value" id="phase-badge" style="font-size:14px;">Не определена</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between mb-3">
-                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
-                        <span class="calendar-month-label" id="calendar-month-label">Январь 2025</span>
-                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
-                        <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
-                    </div>
-                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
-                    <div class="flex flex-wrap gap-3 mt-2 text-xs">
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FADBD8; border:2px solid #E74C3C; border-radius:4px;"></span> Менструация</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FCF3CF; border:2px solid #F39C12; border-radius:4px;"></span> Овуляция</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D5F5E3; border:2px solid #27AE60; border-radius:4px;"></span> Фертильное окно</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#E8DAEF; border:2px dashed #8E44AD; border-radius:4px;"></span> Ожидаемый день</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D6EAF8; border:2px solid #2980B9; border-radius:4px;"></span> Сегодня</span>
-                        <span class="flex items-center gap-1">📝 Заметка</span>
-                    </div>
-                    <button onclick="clearAllMarks()" class="w-full mt-3 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl text-sm transition">🗑️ Очистить все отметки цикла</button>
-                    <button onclick="fullReset()" class="w-full mt-2 bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-xl text-sm transition">🔄 Полный сброс данных (очистить всё)</button>
-                </div>
-            </div>
+            
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
@@ -482,7 +471,7 @@
             <button data-tab="diary" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📝</span><span>Дневник</span></button>
             <button data-tab="products" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🔍</span><span>Продукты</span></button>
             
-            <button data-tab="calendar" id="calendar-nav-btn" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🌸</span><span>Календарь</span></button>
+            
             <button data-tab="analytics" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📊</span><span>Анализ</span></button>
             <button data-tab="recipes" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🍳</span><span>Рецепты</span></button>
         </nav>
@@ -511,20 +500,33 @@
         </div>
     </div>
     <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <h4 class="text-base font-bold text-slate-800 mb-2">День цикла</h4>
-            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
-            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы за этот день</label>
-            <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
-            <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
-            <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
-            <div class="flex gap-2 mt-4">
-                <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-                <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
-            </div>
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
+
+        <label class="block text-xs font-bold text-slate-600 mb-1">Продукты</label>
+        <input type="text" id="cycle-day-products" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Например: рис, банан, курица">
+
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Лекарства</label>
+        <input type="text" id="cycle-day-meds" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Например: цетиризин, дао-форте">
+
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Симптомы</label>
+        <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
+
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
+        <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
+
+        <div class="mt-4 flex gap-2">
+            <button onclick="confirmEvent('first_day')" class="flex-1 bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">Сегодня началась менструация</button>
+        </div>
+
+        <div class="flex gap-2 mt-3">
+            <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
+            <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
         </div>
     </div>
+</div>
 
     <div id="recipe-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
@@ -726,13 +728,11 @@ console.log('recipes debug', {
             selectedCycleDayDate = dateStr;
             const dateObj = parseLocalDate(dateStr);
             const cycleDay = getCurrentCycleDayForDate(dateStr);
-            const existing = cycleDayNotes[dateStr] || { symptoms: '', comment: '' };
-            document.getElementById('cycle-day-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
-            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
-            document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
-            document.getElementById('cycle-day-comment').value = existing.comment || '';
-            document.getElementById('cycle-day-modal').style.display = 'flex';
-        }
+           const existing = cycleDayNotes[dateStr] || { products: '', medications: '', symptoms: '', comment: '' };
+document.getElementById('cycle-day-products').value = existing.products || '';
+document.getElementById('cycle-day-meds').value = existing.medications || '';
+document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
+document.getElementById('cycle-day-comment').value = existing.comment || '';
         function getCurrentCycleDayForDate(dateStr) {
             if (!savedLastPeriodStart) return null;
             const start = parseLocalDate(savedLastPeriodStart);
@@ -746,16 +746,22 @@ console.log('recipes debug', {
             selectedCycleDayDate = null;
         }
         window.saveCycleDay = function() {
-            if (!selectedCycleDayDate) return;
-            cycleDayNotes[selectedCycleDayDate] = {
-                symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
-                comment: document.getElementById('cycle-day-comment').value.trim()
-            };
-            localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
-            closeCycleDayModal();
-            renderCycleCalendar();
-            showModal('Данные дня сохранены');
-        };
+    if (!selectedCycleDayDate) return;
+
+    cycleDayNotes[selectedCycleDayDate] = {
+        products: document.getElementById('cycle-day-products').value.trim(),
+        medications: document.getElementById('cycle-day-meds').value.trim(),
+        symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
+        comment: document.getElementById('cycle-day-comment').value.trim()
+    };
+
+    localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+    closeCycleDayModal();
+    renderCycleCalendar();
+    renderHistory();
+    renderTodayDashboard();
+    showModal('Данные дня сохранены');
+};
 
         // ================================================================
         // 6. НАВИГАЦИЯ КАЛЕНДАРЯ
