@@ -318,8 +318,7 @@
         <span class="flex items-center gap-1">📝 Заметка</span>
     </div>
 </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-3 text-slate-800">📝 Новая запись</h2>
+                
                     <div class="grid grid-cols-2 gap-2 mb-3">
                         <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label><input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
                         <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label><input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
@@ -541,17 +540,7 @@
             <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">OK</button>
         </div>
     </div>
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-        <h4 class="text-base font-bold text-slate-800 mb-2">Новая дата начала цикла</h4>
-        <p class="text-sm text-slate-600 mb-3">Выберите первый день новой менструации.</p>
-        <input type="date" id="new-period-date" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-        <div class="flex gap-2 mt-4">
-            <button onclick="saveNewPeriodDate()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-            <button onclick="closeNewPeriodModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
-        </div>
-    </div>
-</div>
-
+   
     <script>
         // ================================================================
         // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -709,34 +698,40 @@ console.log('recipes debug', {
         // ================================================================
         // 5. МОДАЛЬНОЕ ОКНО ДНЯ ЦИКЛА
         // ================================================================
-        function openDayModal(dateStr) {
-            selectedCycleDayDate = dateStr;
-            const dateObj = parseLocalDate(dateStr);
-            const cycleDay = getCurrentCycleDayForDate(dateStr);
-           const existing = cycleDayNotes[dateStr] || { symptoms: '', comment: '' };
-document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
-document.getElementById('cycle-day-comment').value = existing.comment || '';
-document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
-document.getElementById('cycle-day-comment').value = existing.comment || '';
-        function getCurrentCycleDayForDate(dateStr) {
-            if (!savedLastPeriodStart) return null;
-            const start = parseLocalDate(savedLastPeriodStart);
-            const date = parseLocalDate(dateStr);
-            if (!start || !date) return null;
-            const diff = Math.floor((date - start) / (1000 * 60 * 60 * 24)) + 1;
-            return diff > 0 ? diff : null;
-        }
-        function closeCycleDayModal() {
-            document.getElementById('cycle-day-modal').style.display = 'none';
-            selectedCycleDayDate = null;
-        }
-        window.saveCycleDay = function() {
+       function openDayModal(dateStr) {
+    selectedCycleDayDate = dateStr;
+    const dateObj = parseLocalDate(dateStr);
+    const cycleDay = getCurrentCycleDayForDate(dateStr);
+    const existing = cycleDayNotes[dateStr] || { symptoms: '', comment: '' };
+
+    document.getElementById('cycle-day-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
+    document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+    document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
+    document.getElementById('cycle-day-comment').value = existing.comment || '';
+    document.getElementById('cycle-day-modal').style.display = 'flex';
+}
+
+function getCurrentCycleDayForDate(dateStr) {
+    if (!savedLastPeriodStart) return null;
+    const start = parseLocalDate(savedLastPeriodStart);
+    const date = parseLocalDate(dateStr);
+    if (!start || !date) return null;
+    const diff = Math.floor((date - start) / (1000 * 60 * 60 * 24)) + 1;
+    return diff > 0 ? diff : null;
+}
+
+function closeCycleDayModal() {
+    document.getElementById('cycle-day-modal').style.display = 'none';
+    selectedCycleDayDate = null;
+}
+
+window.saveCycleDay = function() {
     if (!selectedCycleDayDate) return;
 
     cycleDayNotes[selectedCycleDayDate] = {
-    symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
-    comment: document.getElementById('cycle-day-comment').value.trim()
-};
+        symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
+        comment: document.getElementById('cycle-day-comment').value.trim()
+    };
 
     localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
     closeCycleDayModal();
@@ -1327,7 +1322,7 @@ document.getElementById('cycle-day-comment').value = existing.comment || '';
         // 17. СОХРАНЕНИЕ ЗАПИСИ
         // ================================================================
        
-            if (selectedProducts.length === 0) { showModal('Добавьте хотя бы один продукт'); return; }
+            
             const products = selectedProducts.map(p => p.name);
             const medsRaw = document.getElementById('medications').value;
             let medications = medsRaw.trim() ? medsRaw.split(',').map(s=>s.trim()).filter(s=>s) : [];
@@ -1509,40 +1504,39 @@ document.getElementById('cycle-day-comment').value = existing.comment || '';
         };
 
         // ================================================================
-        // 23. МОДАЛЬНЫЕ ОКНА
-        // ================================================================
-        window.showModal = function(msg) {
-            document.getElementById('custom-modal-message').textContent = msg;
-            document.getElementById('custom-modal').style.display = 'flex';
-        };
-        window.closeModal = function() {
-            document.getElementById('custom-modal').style.display = 'none';
-        };
+        <!-- МОДАЛЬНЫЕ ОКНА -->
+<div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+        <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
+        <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
+        <div class="space-y-2">
+            <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
+            <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
+            <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
+            <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
+            <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
+        </div>
+    </div>
+</div>
 
+<div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
+        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
 
+        <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы</label>
+        <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
 
-    manualPeriodDate = input.value;
-    savedLastPeriodStart = manualPeriodDate;
+        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
+        <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
 
-    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-
-    delayStartDate = null;
-    localStorage.removeItem('histolite_delay_start');
-
-    if (!cycleMarks) cycleMarks = {};
-    for (let key in cycleMarks) {
-        if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
-    }
-    cycleMarks[manualPeriodDate] = 'first_day';
-    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
-
-    closeNewPeriodModal();
-    renderCycleCalendar();
-    updateCycleUI();
-    renderTodayDashboard();
-    showModal('Новая дата начала цикла сохранена.');
-};
-
+        <div class="flex gap-2 mt-3">
+            <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
+            <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
+        </div>
+    </div>
+</div>
         // ================================================================
         // 24. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
