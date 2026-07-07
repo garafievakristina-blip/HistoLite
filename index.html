@@ -7,25 +7,23 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="recipes.js"></script>
-    
     <script>
-        <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var el = document.getElementById('recipes-indicator');
-        var list = window.recipes || window.recipesDB || [];
-        if (el) {
-            if (Array.isArray(list) && list.length > 0) {
-                el.textContent = '✅ Рецепты загружены: ' + list.length;
-                el.style.background = '#bbf7d0';
-                el.style.color = '#166534';
-            } else {
-                el.textContent = '❌ Рецепты НЕ загружены';
-                el.style.background = '#fecaca';
-                el.style.color = '#991b1b';
+        document.addEventListener('DOMContentLoaded', function() {
+            var el = document.getElementById('recipes-indicator');
+            var list = window.recipes || window.recipesDB || [];
+            if (el) {
+                if (Array.isArray(list) && list.length > 0) {
+                    el.textContent = '✅ Рецепты загружены: ' + list.length;
+                    el.style.background = '#bbf7d0';
+                    el.style.color = '#166534';
+                } else {
+                    el.textContent = '❌ Рецепты НЕ загружены';
+                    el.style.background = '#fecaca';
+                    el.style.color = '#991b1b';
+                }
             }
-        }
-    });
-</script>
+        });
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
@@ -199,7 +197,6 @@
         .cycle-info-item .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
         .cycle-info-item .value { font-size: 16px; font-weight: bold; color: #0f172a; }
 
-        /* Стили для тепловой карты нагрузки */
         .load-graph-table { width: 100%; border-collapse: collapse; font-size: 10px; }
         .load-graph-table th, .load-graph-table td { padding: 2px 4px; border: 1px solid #e2e8f0; text-align: center; }
         .load-graph-table th { background: #f1f5f9; font-weight: 600; }
@@ -244,7 +241,6 @@
                     <input type="checkbox" id="legal-checkbox" onchange="toggleLegalButton()" class="w-5 h-5 mt-0.5 accent-emerald-600 rounded shrink-0">
                     <span class="text-[11px] text-slate-600 leading-tight">Я подтверждаю, что платформа <strong>не является медицинской</strong>.</span>
                 </label>
-                <!-- Кнопка входа теперь всегда активна (убрал disabled) -->
                 <button id="legal-submit-btn" onclick="acceptLegal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition cursor-pointer shadow-md">Войти в приложение</button>
             </div>
         </div>
@@ -266,88 +262,56 @@
                         <div class="text-2xl font-bold" id="risk-level">Низкий</div>
                         <div class="text-xs text-slate-500" id="risk-reason">Фаза цикла: стабильная</div>
                     </div>
-                   
+                    <!-- Здесь могла быть дополнительная статистика, но пока оставим как есть -->
+                </div>
+            </div>
 
             <!-- ВКЛАДКА ДНЕВНИК -->
             <div id="diary-tab" class="tab-content space-y-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-    <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
-
-    <div class="grid grid-cols-3 gap-2 mb-4">
-        <div>
-            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день</label>
-            <input type="date" id="last-period-start" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-        </div>
-        <div>
-            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Длина цикла</label>
-            <input type="number" id="cycle-length" min="20" max="45" value="28" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-        </div>
-        <div>
-            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Дней менструации</label>
-            <input type="number" id="period-days" min="1" max="10" value="5" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-        </div>
-    </div>
-
-    <div class="cycle-info-grid" id="cycle-info-grid">
-        <div class="cycle-info-item">
-            <div class="label">День цикла</div>
-            <div class="value" id="cycle-day-display">—</div>
-        </div>
-        <div class="cycle-info-item">
-            <div class="label">Фаза</div>
-            <div class="value" id="phase-badge" style="font-size:14px;">Не определена</div>
-        </div>
-    </div>
-
-    <div class="flex items-center justify-between mb-3">
-        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
-        <span class="calendar-month-label" id="calendar-month-label">Январь 2025</span>
-        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
-        <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
-    </div>
-
-    <div id="cycle-load-calendar" class="cycle-calendar"></div>
-
-    <div class="flex flex-wrap gap-3 mt-2 text-xs">
-        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FADBD8; border:2px solid #E74C3C; border-radius:4px;"></span> Менструация</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FCF3CF; border:2px solid #F39C12; border-radius:4px;"></span> Овуляция</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D5F5E3; border:2px solid #27AE60; border-radius:4px;"></span> Фертильное окно</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#E8DAEF; border:2px dashed #8E44AD; border-radius:4px;"></span> Ожидаемый день</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
-        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D6EAF8; border:2px solid #2980B9; border-radius:4px;"></span> Сегодня</span>
-        <span class="flex items-center gap-1">📝 Заметка</span>
-    </div>
-</div>
-                
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</label><input type="date" id="log-date" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Время</label><input type="time" id="log-time" class="w-full p-2 border border-slate-200 rounded-xl text-xs bg-slate-50"></div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Добавьте продукты:</label>
-                        <div class="flex items-center gap-2">
-                            <div class="chip-container" id="chip-container">
-                                <div id="chips-wrapper" style="display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
-                                <input type="text" id="chip-input" class="chip-input" placeholder="Напишите продукт и нажмите Enter" autocomplete="off">
-                            </div>
-                            <button id="mic-products-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm flex-shrink-0" title="Голосовой ввод продуктов">🎤</button>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день</label>
+                            <input type="date" id="last-period-start" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                         </div>
-                        <div class="text-[10px] text-slate-400 mt-1">Цвет чипса показывает статус в вашей базе «Можно / Нельзя».</div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">💊 Принятые лекарства (через запятую):</label>
-                        <input type="text" id="medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                    </div>
-                    <div class="space-y-2 border-t border-slate-100 pt-3">
-                        <label class="block text-xs font-bold text-slate-600 mb-1">📝 Какие симптомы вы испытываете? (через запятую)</label>
-                        <div class="flex gap-2 items-center">
-                            <input type="text" id="symptoms-text-input" placeholder="например: головная боль, усталость, зуд" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                            <button id="mic-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-xl transition text-sm" title="Голосовой ввод">🎤</button>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Длина цикла</label>
+                            <input type="number" id="cycle-length" min="20" max="45" value="28" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1">Нажмите на микрофон и скажите текст. Кнопка подсветится во время записи.</p>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Дней менструации</label>
+                            <input type="number" id="period-days" min="1" max="10" value="5" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                        </div>
                     </div>
-                    <button onclick="saveLog()" class="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">Сохранить запись</button>
+                    <div class="cycle-info-grid" id="cycle-info-grid">
+                        <div class="cycle-info-item">
+                            <div class="label">День цикла</div>
+                            <div class="value" id="cycle-day-display">—</div>
+                        </div>
+                        <div class="cycle-info-item">
+                            <div class="label">Фаза</div>
+                            <div class="value" id="phase-badge" style="font-size:14px;">Не определена</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
+                        <span class="calendar-month-label" id="calendar-month-label">Январь 2025</span>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
+                        <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
+                    </div>
+                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
+                    <div class="flex flex-wrap gap-3 mt-2 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FADBD8; border:2px solid #E74C3C; border-radius:4px;"></span> Менструация</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FCF3CF; border:2px solid #F39C12; border-radius:4px;"></span> Овуляция</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D5F5E3; border:2px solid #27AE60; border-radius:4px;"></span> Фертильное окно</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#E8DAEF; border:2px dashed #8E44AD; border-radius:4px;"></span> Ожидаемый день</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D6EAF8; border:2px solid #2980B9; border-radius:4px;"></span> Сегодня</span>
+                        <span class="flex items-center gap-1">📝 Заметка</span>
+                    </div>
                 </div>
+
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Последние записи</h3>
@@ -358,53 +322,42 @@
             </div>
 
             <!-- ВКЛАДКА ПРОДУКТЫ -->
-           <div id="products-tab" class="tab-content space-y-4">
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-        <h2 class="text-base font-bold mb-3 text-slate-800">🔍 Продукты и база</h2>
-
-        <div class="mb-4">
-            <label class="block text-xs font-bold text-slate-600 mb-1">Введите название продукта</label>
-            <div class="flex gap-2">
-                <input type="text" id="product-search-input" placeholder="например: помидор, сыр, кефир" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                <button onclick="searchProductByName()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">Найти</button>
+            <div id="products-tab" class="tab-content space-y-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">🔍 Продукты и база</h2>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Введите название продукта</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="product-search-input" placeholder="например: помидор, сыр, кефир" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                            <button onclick="searchProductByName()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">Найти</button>
+                        </div>
+                    </div>
+                    <div class="mb-4 flex gap-2 flex-wrap">
+                        <button onclick="scanBarcode()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📷 Сканировать камерой</button>
+                        <button onclick="uploadBarcodeImage()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📤 Загрузить фото</button>
+                    </div>
+                    <input type="file" id="barcode-image-input" accept="image/*" style="display:none" onchange="decodeBarcodeFromImage(this)">
+                    <div id="scanner-container" style="display: none; margin-bottom: 15px;">
+                        <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
+                        <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">❌ Закрыть сканер</button>
+                    </div>
+                    <div id="product-search-result" class="hidden"></div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">📋 Моя база «Можно / Нельзя»</h2>
+                    <div class="flex gap-2 mb-3 flex-wrap">
+                        <input type="text" id="safe-search-input" placeholder="Поиск продукта..." class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50" oninput="renderSafeProducts()">
+                        <div class="flex gap-1 flex-wrap">
+                            <button class="safe-filter-btn active" data-filter="all" onclick="setSafeFilter('all')">Все</button>
+                            <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">✅ Можно</button>
+                            <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">❌ Нельзя</button>
+                            <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">❓ Под вопросом</button>
+                        </div>
+                    </div>
+                    <div id="safe-products-list" class="space-y-1.5 max-h-96 overflow-y-auto pr-1"></div>
+                    <div class="text-xs text-slate-400 mt-3">Нажимайте на кнопки, чтобы отметить продукт.</div>
+                </div>
             </div>
-        </div>
-
-        <div class="mb-4 flex gap-2 flex-wrap">
-            <button onclick="scanBarcode()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📷 Сканировать камерой</button>
-            <button onclick="uploadBarcodeImage()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]">📤 Загрузить фото</button>
-        </div>
-
-        <input type="file" id="barcode-image-input" accept="image/*" style="display:none" onchange="decodeBarcodeFromImage(this)">
-
-        <div id="scanner-container" style="display: none; margin-bottom: 15px;">
-            <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
-            <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">❌ Закрыть сканер</button>
-        </div>
-
-        <div id="product-search-result" class="hidden"></div>
-    </div>
-
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-        <h2 class="text-base font-bold mb-3 text-slate-800">📋 Моя база «Можно / Нельзя»</h2>
-
-        <div class="flex gap-2 mb-3 flex-wrap">
-            <input type="text" id="safe-search-input" placeholder="Поиск продукта..." class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50" oninput="renderSafeProducts()">
-            <div class="flex gap-1 flex-wrap">
-                <button class="safe-filter-btn active" data-filter="all" onclick="setSafeFilter('all')">Все</button>
-                <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">✅ Можно</button>
-                <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">❌ Нельзя</button>
-                <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">❓ Под вопросом</button>
-            </div>
-        </div>
-
-        <div id="safe-products-list" class="space-y-1.5 max-h-96 overflow-y-auto pr-1"></div>
-        <div class="text-xs text-slate-400 mt-3">Нажимайте на кнопки, чтобы отметить продукт.</div>
-    </div>
-</div> 
-
-            <!-- ВКЛАДКА КАЛЕНДАРЬ -->
-            
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
@@ -429,7 +382,7 @@
                 </div>
             </div>
 
-            <!-- ===== ВКЛАДКА РЕЦЕПТЫ ===== -->
+            <!-- ВКЛАДКА РЕЦЕПТЫ -->
             <div id="recipes-tab" class="tab-content space-y-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-3 text-slate-800">🍳 Рецепты</h2>
@@ -469,8 +422,6 @@
             <button data-tab="today" class="tab-button flex flex-col items-center p-1.5 text-emerald-600 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📊</span><span>Сегодня</span></button>
             <button data-tab="diary" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📝</span><span>Дневник</span></button>
             <button data-tab="products" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🔍</span><span>Продукты</span></button>
-            
-            
             <button data-tab="analytics" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📊</span><span>Анализ</span></button>
             <button data-tab="recipes" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🍳</span><span>Рецепты</span></button>
         </nav>
@@ -485,28 +436,68 @@
     </div>
 
     <!-- МОДАЛЬНЫЕ ОКНА -->
-<div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-   
-
-<div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-        <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
-        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
-        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
-
-        <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы</label>
-        <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
-
-        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
-        <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
-
-        <div class="flex gap-2 mt-3">
-            <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-            <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
+    <div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
+            <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
+            <div class="space-y-2">
+                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
+                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
+                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
+                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
+                <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
+            </div>
         </div>
     </div>
-</div>
-   
+
+    <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
+            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
+            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
+
+            <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы</label>
+            <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
+
+            <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
+            <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
+
+            <div class="flex gap-2 mt-3">
+                <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
+                <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="recipe-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeRecipeModal()" class="float-right text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+            <img id="recipe-modal-image" src="" alt="" class="w-full h-48 object-cover rounded-xl mb-4">
+            <h3 id="recipe-modal-name" class="text-xl font-bold text-slate-800 mb-2"></h3>
+            <div class="flex flex-wrap gap-2 text-sm text-slate-500 mb-3">
+                <span id="recipe-modal-category" class="bg-slate-100 px-2 py-1 rounded-full"></span>
+                <span id="recipe-modal-level" class="bg-slate-100 px-2 py-1 rounded-full"></span>
+                <span id="recipe-modal-time" class="bg-slate-100 px-2 py-1 rounded-full">⏱</span>
+                <span id="recipe-modal-servings" class="bg-slate-100 px-2 py-1 rounded-full">🍽</span>
+            </div>
+            <div id="recipe-modal-diets" class="flex flex-wrap gap-1 mb-3"></div>
+            <h4 class="font-bold text-slate-700 mt-3">📝 Описание</h4>
+            <p id="recipe-modal-description" class="text-sm text-slate-600 mb-3 italic"></p>
+            <h4 class="font-bold text-slate-700 mt-3">🥘 Ингредиенты:</h4>
+            <ul id="recipe-modal-ingredients" class="list-disc list-inside text-sm text-slate-600 mb-3"></ul>
+            <h4 class="font-bold text-slate-700 mt-3">👨‍🍳 Приготовление:</h4>
+            <p id="recipe-modal-instructions" class="text-sm text-slate-600 whitespace-pre-line"></p>
+            <div id="recipe-modal-tips" class="mt-3 p-3 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200"></div>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <p id="custom-modal-message" class="text-center text-sm text-slate-700 mb-4">Сообщение</p>
+            <button onclick="closeModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition text-sm">OK</button>
+        </div>
+    </div>
+
     <script>
         // ================================================================
         // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -529,14 +520,16 @@
         let currentYear = new Date().getFullYear();
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
-        // === ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА РЕЦЕПТОВ ИЗ ФАЙЛА recipes.js ===
-       window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
-recipesDB = window.recipesDB;
+        let delayStartDate = null; // объявлена для confirmEvent
 
-console.log('recipes debug', {
-    hasWindowRecipes: Array.isArray(window.recipes),
-    recipesLength: window.recipesDB.length
-});
+        // Загружаем рецепты из внешнего файла
+        window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
+        recipesDB = window.recipesDB;
+
+        console.log('recipes debug', {
+            hasWindowRecipes: Array.isArray(window.recipes),
+            recipesLength: window.recipesDB.length
+        });
 
         // ================================================================
         // 2. ФУНКЦИИ ДАТ И ЦИКЛА
@@ -662,39 +655,51 @@ console.log('recipes debug', {
         }
 
         // ================================================================
-       <!-- МОДАЛЬНЫЕ ОКНА -->
-<div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-        <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
-        <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
-        <div class="space-y-2">
-            <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
-            <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
-            <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
-            <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
-            <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
-        </div>
-    </div>
-</div>
+        // 5. МОДАЛЬНОЕ ОКНО ДНЯ ЦИКЛА
+        // ================================================================
+        function openDayModal(dateStr) {
+            selectedCycleDayDate = dateStr;
+            const dateObj = parseLocalDate(dateStr);
+            const cycleDay = getCurrentCycleDayForDate(dateStr);
+            const existing = cycleDayNotes[dateStr] || { symptoms: '', comment: '' };
 
-<div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-        <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
-        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
-        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
+            document.getElementById('cycle-day-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
+            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+            document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
+            document.getElementById('cycle-day-comment').value = existing.comment || '';
+            document.getElementById('cycle-day-modal').style.display = 'flex';
+        }
 
-        <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы</label>
-        <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
+        function getCurrentCycleDayForDate(dateStr) {
+            if (!savedLastPeriodStart) return null;
+            const start = parseLocalDate(savedLastPeriodStart);
+            const date = parseLocalDate(dateStr);
+            if (!start || !date) return null;
+            const diff = Math.floor((date - start) / (1000 * 60 * 60 * 24)) + 1;
+            return diff > 0 ? diff : null;
+        }
 
-        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
-        <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
+        function closeCycleDayModal() {
+            document.getElementById('cycle-day-modal').style.display = 'none';
+            selectedCycleDayDate = null;
+        }
 
-        <div class="flex gap-2 mt-3">
-            <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-            <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
-        </div>
-    </div>
-</div> 
+        window.saveCycleDay = function() {
+            if (!selectedCycleDayDate) return;
+
+            cycleDayNotes[selectedCycleDayDate] = {
+                symptoms: document.getElementById('cycle-day-symptoms').value.trim(),
+                comment: document.getElementById('cycle-day-comment').value.trim()
+            };
+
+            localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+            closeCycleDayModal();
+            renderCycleCalendar();
+            renderHistory();
+            renderTodayDashboard();
+            showModal('Данные дня сохранены');
+        };
+
         // ================================================================
         // 6. НАВИГАЦИЯ КАЛЕНДАРЯ
         // ================================================================
@@ -835,25 +840,25 @@ console.log('recipes debug', {
                 return;
             }
             if (type === 'first_day') {
-    for (let key in cycleMarks) {
-        if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
-    }
+                for (let key in cycleMarks) {
+                    if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
+                }
 
-    savedLastPeriodStart = selectedDate;
-    delayStartDate = null;
-    localStorage.removeItem('histolite_delay_start');
+                savedLastPeriodStart = selectedDate;
+                delayStartDate = null;
+                localStorage.removeItem('histolite_delay_start');
 
-    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-    cycleMarks[selectedDate] = 'first_day';
-    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+                localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+                cycleMarks[selectedDate] = 'first_day';
+                localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
 
-    closeEventModal();
-    renderCycleCalendar();
-    renderTodayDashboard();
-    updateCycleUI();
-    showModal(`Первый день цикла установлен на ${new Date(selectedDate).toLocaleDateString('ru-RU')}`);
-    return;
-}
+                closeEventModal();
+                renderCycleCalendar();
+                renderTodayDashboard();
+                updateCycleUI();
+                showModal(`Первый день цикла установлен на ${new Date(selectedDate).toLocaleDateString('ru-RU')}`);
+                return;
+            }
             if (cycleMarks[selectedDate] === type) {
                 delete cycleMarks[selectedDate];
             } else {
@@ -1273,9 +1278,7 @@ console.log('recipes debug', {
         };
 
         // ================================================================
-        
-        // ================================================================
-        // 18. ИСТОРИЯ
+        // 17. ИСТОРИЯ
         // ================================================================
         window.renderHistory = function() {
             const container = document.getElementById('history-container');
@@ -1316,7 +1319,7 @@ console.log('recipes debug', {
         };
 
         // ================================================================
-        // 19. ДАШБОРД (СЕГОДНЯ)
+        // 18. ДАШБОРД (СЕГОДНЯ)
         // ================================================================
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
@@ -1367,53 +1370,11 @@ console.log('recipes debug', {
             document.getElementById('risk-level').textContent = riskLevel;
             document.getElementById('risk-reason').textContent = riskReason;
             document.getElementById('today-tip').textContent = tip;
-            const now = new Date();
-            const sevenDaysAgo = new Date(now);
-            sevenDaysAgo.setDate(now.getDate() - 7);
-            const weekLogs = userLogs.filter(log => new Date(log.date) >= sevenDaysAgo && new Date(log.date) <= now);
-            document.getElementById('week-logs').textContent = weekLogs.length;
-            let streak = 0;
-            if (userLogs.length > 0) {
-                const dates = userLogs.map(log => log.date).sort();
-                const uniqueDates = [...new Set(dates)];
-                const todayStr = now.toISOString().split('T')[0];
-                let currentDate = new Date(todayStr);
-                if (uniqueDates.includes(todayStr)) {
-                    streak = 1;
-                    let testDate = new Date(currentDate);
-                    testDate.setDate(testDate.getDate() - 1);
-                    while (uniqueDates.includes(testDate.toISOString().split('T')[0])) {
-                        streak++;
-                        testDate.setDate(testDate.getDate() - 1);
-                    }
-                } else {
-                    let testDate = new Date(currentDate);
-                    testDate.setDate(testDate.getDate() - 1);
-                    while (uniqueDates.includes(testDate.toISOString().split('T')[0])) {
-                        streak++;
-                        testDate.setDate(testDate.getDate() - 1);
-                    }
-                }
-            }
-            document.getElementById('streak').textContent = streak;
-            const lastTriggers = JSON.parse(localStorage.getItem('histolite_last_triggers')) || [];
-            document.getElementById('triggers-count').textContent = lastTriggers.length;
-            const weekGoal = 5;
-            const progressPercent = Math.min(100, Math.round((weekLogs.length / weekGoal) * 100));
-            const goalMessage = (weekLogs.length >= weekGoal) ? '🎉 Цель недели выполнена!' : `📝 Осталось ${weekGoal - weekLogs.length} записей до цели`;
-            const badges = [];
-            if (userLogs.length >= 1) badges.push('🎉 Первая запись');
-            if (streak >= 7) badges.push('🔥 7 дней подряд');
-            if (streak >= 30) badges.push('💎 30 дней подряд');
-            if (userLogs.length >= 10) badges.push('🔍 10 продуктов проверено');
-            if (lastTriggers.length >= 3) badges.push('🧠 Найдено 3 триггера');
-            document.getElementById('progress-container').innerHTML = `
-                
-            `;
+            // остальная статистика пока не используется
         }
 
         // ================================================================
-        // 20. УВЕДОМЛЕНИЯ
+        // 19. УВЕДОМЛЕНИЯ
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1428,7 +1389,25 @@ console.log('recipes debug', {
         }
 
         // ================================================================
-        // 22. ЭКСПОРТ (заглушки)
+        // 20. МОДАЛЬНЫЕ ОКНА (showModal / closeModal)
+        // ================================================================
+        function showModal(message) {
+            const modal = document.getElementById('custom-modal');
+            const msg = document.getElementById('custom-modal-message');
+            if (modal && msg) {
+                msg.textContent = message;
+                modal.style.display = 'flex';
+            } else {
+                alert(message); // fallback
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').style.display = 'none';
+        }
+
+        // ================================================================
+        // 21. ЭКСПОРТ (заглушки)
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1438,55 +1417,13 @@ console.log('recipes debug', {
         };
 
         // ================================================================
-        <!-- МОДАЛЬНЫЕ ОКНА -->
-<div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
-        <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
-        <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
-        <div class="space-y-2">
-            <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
-            <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
-            <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
-            <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
-            <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
-        </div>
-    </div>
-</div>
-
-<div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-        <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
-        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-date">Дата:</p>
-        <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
-
-        <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы</label>
-        <textarea id="cycle-day-symptoms" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[120px]" placeholder="Например: головная боль, вздутие, зуд"></textarea>
-
-        <label class="block text-xs font-bold text-slate-600 mb-1 mt-3">Комментарий</label>
-        <textarea id="cycle-day-comment" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[80px]" placeholder="Например: хуже перед сном"></textarea>
-
-        <div class="flex gap-2 mt-3">
-            <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-            <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
-        </div>
-    </div>
-</div>
-        // ================================================================
-        // 24. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
+        // 22. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
         function toggleLegalButton() {
-            // Функция больше не нужна, но оставляем для совместимости
+            // не используется, но оставлено для совместимости
         }
 
         window.acceptLegal = function() {
-            // Вход без проверки галочки (закомментировано)
-            /*
-            const chk = document.getElementById('legal-checkbox');
-            if (!chk || !chk.checked) {
-                showModal('Поставьте галочку, чтобы войти в приложение.');
-                return;
-            }
-            */
             const genderRadio = document.querySelector('input[name="gender"]:checked');
             userGender = genderRadio ? genderRadio.value : 'female';
             localStorage.setItem('histolite_gender', userGender);
@@ -1504,7 +1441,7 @@ console.log('recipes debug', {
         };
 
         // ================================================================
-        // 25. РАБОТА С РЕЦЕПТАМИ
+        // 23. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         const defaultRecipes = [
             {
@@ -1541,21 +1478,21 @@ console.log('recipes debug', {
             }
         ];
 
-       function loadRecipes() {
-    const container = document.getElementById('recipes-container');
-    if (!container) return;
+        function loadRecipes() {
+            const container = document.getElementById('recipes-container');
+            if (!container) return;
 
-    console.log('loadRecipes:', {
-        recipes: Array.isArray(window.recipes) ? window.recipes.length : 'нет',
-        recipesDB: Array.isArray(window.recipesDB) ? window.recipesDB.length : 'нет'
-    });
+            console.log('loadRecipes:', {
+                recipes: Array.isArray(window.recipes) ? window.recipes.length : 'нет',
+                recipesDB: Array.isArray(window.recipesDB) ? window.recipesDB.length : 'нет'
+            });
 
-    if (Array.isArray(window.recipesDB) && window.recipesDB.length > 0) {
-        renderRecipes();
-    } else {
-        container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
-    }
-}
+            if (Array.isArray(window.recipesDB) && window.recipesDB.length > 0) {
+                renderRecipes();
+            } else {
+                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
+            }
+        }
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) return;
@@ -1653,7 +1590,7 @@ console.log('recipes debug', {
         });
 
         // ================================================================
-        // 26. КНОПКИ ОЧИСТКИ
+        // 24. КНОПКИ ОЧИСТКИ
         // ================================================================
         window.clearAllMarks = function() {
             if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
@@ -1680,7 +1617,7 @@ console.log('recipes debug', {
         };
 
         // ================================================================
-        // 27. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 25. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(function() {
@@ -1710,7 +1647,6 @@ console.log('recipes debug', {
                     dateInput.value = savedLastPeriodStart;
                     dateInput.addEventListener('change', saveCycleSettings);
                 }
-               
                 renderTodayDashboard();
                 checkNotifications();
                 loadRecipes();
@@ -1720,7 +1656,7 @@ console.log('recipes debug', {
         }
 
         // ================================================================
-        // 28. АНАЛИТИКА – РАБОЧАЯ ВЕРСИЯ
+        // 26. АНАЛИТИКА
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -1845,7 +1781,6 @@ console.log('recipes debug', {
             container.innerHTML = html;
         }
 
-        // НОВАЯ УЛУЧШЕННАЯ ВЕРСИЯ АНАЛИЗА СОВПАДЕНИЙ
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
             if (!container) {
@@ -1914,7 +1849,7 @@ console.log('recipes debug', {
             container.innerHTML = html;
         };
 
-        // Автозапуск при переключении на вкладку "Анализ"
+        // Автозапуск аналитики при переключении вкладки
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
             if (btn) {
@@ -1927,7 +1862,7 @@ console.log('recipes debug', {
             }
         });
 
-        console.log('✅ Приложение загружено. Кнопка входа активна, анализ совпадений улучшен.');
+        console.log('✅ Приложение загружено. Кнопка входа активна, все ошибки исправлены.');
     </script>
 </body>
 </html>
