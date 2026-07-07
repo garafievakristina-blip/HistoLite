@@ -197,16 +197,8 @@
         .cycle-info-item .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
         .cycle-info-item .value { font-size: 16px; font-weight: bold; color: #0f172a; }
 
-        .load-graph-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        .load-graph-table th, .load-graph-table td { padding: 2px 4px; border: 1px solid #e2e8f0; text-align: center; }
-        .load-graph-table th { background: #f1f5f9; font-weight: 600; }
-        .load-graph-cell { width: 20px; height: 20px; border-radius: 4px; }
-        .load-graph-cell.present { background: #ef4444; }
-        .load-graph-cell.absent { background: #bbf7d0; }
-        .load-graph-cell.no-data { background: #e2e8f0; }
-        .load-graph-legend { display: flex; gap: 16px; justify-content: center; margin-top: 8px; font-size: 10px; }
-        .load-graph-legend span { display: inline-flex; align-items: center; gap: 4px; }
-        .legend-color { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+        /* Стили для тепловой карты удалены, оставляем только если нужны, но они не мешают */
+        .load-graph-table, .load-graph-cell, .load-graph-legend, .legend-color { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -405,16 +397,13 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА АНАЛИТИКА -->
+            <!-- ВКЛАДКА АНАЛИТИКА (без тепловой карты) -->
             <div id="analytics-tab" class="tab-content space-y-4">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">📈 Связь симптомов с фазой цикла</h2>
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
                 </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-1">📊 Тепловая карта симптомов (последние 30 дней)</h2>
-                    <div id="load-graph-container"></div>
-                </div>
+                <!-- Блок тепловой карты УДАЛЁН -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">🔍 Анализ совпадений (48ч) — продукты и лекарства</h2>
                     <button onclick="runAdvancedAnalytics()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-xl transition text-xs shadow-md">Найти скрытые триггеры</button>
@@ -1732,7 +1721,7 @@
         }
 
         // ================================================================
-        // 27. АНАЛИТИКА
+        // 27. АНАЛИТИКА (без тепловой карты)
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -1784,78 +1773,7 @@
             container.innerHTML = html;
         }
 
-        function renderLoadGraph() {
-            const container = document.getElementById('load-graph-container');
-            if (!container) return;
-
-            const today = new Date();
-            const start = new Date(today);
-            start.setDate(today.getDate() - 29);
-
-            const days = [];
-            let cur = new Date(start);
-            while (cur <= today) {
-                days.push(formatDate(cur.getFullYear(), cur.getMonth(), cur.getDate()));
-                cur.setDate(cur.getDate() + 1);
-            }
-
-            const symptomMap = {};
-            userLogs.forEach(log => {
-                if (!log.symptomsText || !log.date) return;
-                const date = log.date;
-                if (!symptomMap[date]) symptomMap[date] = new Set();
-                log.symptomsText.split(/[,;]/).map(s => s.trim().toLowerCase()).filter(Boolean).forEach(sym => {
-                    symptomMap[date].add(sym);
-                });
-            });
-            Object.keys(cycleDayNotes).forEach(date => {
-                if (cycleDayNotes[date].symptoms) {
-                    if (!symptomMap[date]) symptomMap[date] = new Set();
-                    cycleDayNotes[date].symptoms.split(/[,;]/).map(s => s.trim().toLowerCase()).filter(Boolean).forEach(sym => {
-                        symptomMap[date].add(sym);
-                    });
-                }
-            });
-
-            const symptomFreq = {};
-            Object.values(symptomMap).forEach(set => {
-                set.forEach(sym => {
-                    symptomFreq[sym] = (symptomFreq[sym] || 0) + 1;
-                });
-            });
-            const topSymptoms = Object.entries(symptomFreq).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([s]) => s);
-
-            if (topSymptoms.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-center py-4">Нет данных о симптомах.</p>';
-                return;
-            }
-
-            let html = '<div style="overflow-x: auto;"><table class="load-graph-table">';
-            html += '<tr><th style="min-width:80px;">Симптомы</th>';
-            days.forEach(d => {
-                const dateObj = parseLocalDate(d);
-                const day = dateObj ? dateObj.getDate() : '';
-                html += `<th style="font-weight:400; font-size:9px;">${day}</th>`;
-            });
-            html += '</tr>';
-
-            topSymptoms.forEach(sym => {
-                html += `<tr><td style="font-weight:500; font-size:9px; white-space:nowrap;">${sym}</td>`;
-                days.forEach(d => {
-                    const has = symptomMap[d] && symptomMap[d].has(sym);
-                    const cls = has ? 'present' : 'absent';
-                    html += `<td><div class="load-graph-cell ${cls}" title="${has ? 'Был симптом' : 'Не было симптома'}"></div></td>`;
-                });
-                html += '</tr>';
-            });
-
-            html += '</table></div>';
-            html += `<div class="load-graph-legend">
-                <span><span class="legend-color" style="background:#ef4444;"></span> Был симптом</span>
-                <span><span class="legend-color" style="background:#bbf7d0;"></span> Не было</span>
-            </div>`;
-            container.innerHTML = html;
-        }
+        // Функция renderLoadGraph УДАЛЕНА
 
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -1925,20 +1843,20 @@
             container.innerHTML = html;
         };
 
-        // Автозапуск аналитики при переключении вкладки
+        // Автозапуск аналитики при переключении вкладки (без renderLoadGraph)
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
             if (btn) {
                 btn.addEventListener('click', function() {
-                    setTimeout(() => { renderCycleSymptomAnalysis(); renderLoadGraph(); }, 100);
+                    setTimeout(() => { renderCycleSymptomAnalysis(); }, 100);
                 });
             }
             if (document.getElementById('analytics-tab')?.classList.contains('active')) {
-                setTimeout(() => { renderCycleSymptomAnalysis(); renderLoadGraph(); }, 200);
+                setTimeout(() => { renderCycleSymptomAnalysis(); }, 200);
             }
         });
 
-        console.log('✅ Приложение загружено. Кнопка входа активна, все ошибки исправлены.');
+        console.log('✅ Приложение загружено. Тепловая карта симптомов удалена.');
     </script>
 </body>
 </html>
