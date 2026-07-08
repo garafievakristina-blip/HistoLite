@@ -199,6 +199,77 @@
 
         /* Стили для тепловой карты удалены, оставляем только если нужны, но они не мешают */
         .load-graph-table, .load-graph-cell, .load-graph-legend, .legend-color { display: none; }
+
+        /* ===== НОВЫЕ СТИЛИ ДЛЯ КАРТОЧЕК ДНЕЙ ===== */
+        .card-strip {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 8px 2px 12px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .card-day {
+            flex: 0 0 82%;
+            scroll-snap-align: center;
+            border-radius: 24px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            padding: 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+        }
+        .card-day.active {
+            transform: scale(1.02);
+            border-color: #10b981;
+            box-shadow: 0 16px 32px rgba(16, 185, 129, 0.12);
+        }
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .card-subtitle {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .card-row {
+            padding: 10px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .card-row:last-child {
+            border-bottom: none;
+        }
+        .card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .card-value {
+            font-size: 14px;
+            color: #0f172a;
+            min-height: 20px;
+        }
+        .inline-edit {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            font-size: 14px;
+            outline: none;
+        }
+        /* ===== КОНЕЦ НОВЫХ СТИЛЕЙ ===== */
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -253,8 +324,9 @@
                         <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
                         <div class="text-2xl font-bold" id="risk-level">Низкий</div>
                         <div class="text-xs text-slate-500" id="risk-reason">Фаза цикла: стабильная</div>
+                        <!-- Добавлен элемент для подсказки -->
+                        <div class="text-xs text-slate-600 mt-2" id="today-tip"></div>
                     </div>
-                    <!-- Здесь могла быть дополнительная статистика, но пока оставим как есть -->
                 </div>
             </div>
 
@@ -304,6 +376,18 @@
                         <span class="flex items-center gap-1">📝 Заметка</span>
                     </div>
                 </div>
+
+                <!-- НОВЫЙ БЛОК: КАРТОЧКИ ДНЕЙ -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-base font-bold text-slate-800">🗂 Карточки дней</h2>
+                        <span class="text-[10px] text-slate-400">листайте влево/вправо</span>
+                    </div>
+                    <div id="card-strip" class="card-strip"></div>
+                </div>
+
+                <!-- Редактор карточки (скрыт по умолчанию) -->
+                <div id="card-editor" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mt-4 hidden"></div>
 
                 <!-- НОВЫЙ БЛОК: ЗАПИСЬ ДНЯ -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
@@ -556,6 +640,10 @@
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
         let delayStartDate = null; // объявлена для confirmEvent
+
+        // ===== НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ КАРТОЧЕК =====
+        let diaryCards = JSON.parse(localStorage.getItem('histolite_diary_cards')) || {};
+        let activeDiaryDate = null;
 
         // Загружаем рецепты из внешнего файла
         window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
@@ -1503,6 +1591,7 @@
             loadRecipes();
             renderCycleCalendar();
             updateCycleUI();
+            renderDiaryCards(); // <-- добавлен рендер карточек
         };
 
         // ================================================================
@@ -1682,7 +1771,132 @@
         };
 
         // ================================================================
-        // 26. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 26. НОВЫЙ МОДУЛЬ: КАРТОЧКИ ДНЕЙ
+        // ================================================================
+        function getDiaryDates() {
+            const dates = [];
+            const today = new Date();
+            for (let i = -3; i <= 3; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                dates.push(formatDate(d.getFullYear(), d.getMonth(), d.getDate()));
+            }
+            return dates;
+        }
+
+        function renderDiaryCards() {
+            const strip = document.getElementById('card-strip');
+            if (!strip) return;
+
+            const dates = getDiaryDates();
+            const today = new Date();
+            const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+            const selected = activeDiaryDate || todayStr;
+
+            strip.innerHTML = dates.map(dateStr => {
+                const entry = diaryCards[dateStr] || {};
+                const isActive = dateStr === selected;
+
+                return `
+                    <div class="card-day ${isActive ? 'active' : ''}" onclick="openDiaryCard('${dateStr}')">
+                        <div class="card-head">
+                            <div>
+                                <div class="card-title">${dateStr === todayStr ? 'Сегодня' : dateStr}</div>
+                                <div class="card-subtitle">${dateStr === todayStr ? 'Текущий день' : 'Карточка дня'}</div>
+                            </div>
+                            <div class="text-xs text-slate-400">☁︎</div>
+                        </div>
+
+                        <div class="space-y-1 text-[13px]">
+                            <div><span class="font-semibold">Время:</span> ${entry.time || '—'}</div>
+                            <div><span class="font-semibold">Еда:</span> ${entry.products || '—'}</div>
+                            <div><span class="font-semibold">Симптомы:</span> ${entry.symptoms || '—'}</div>
+                            <div><span class="font-semibold">Цикл:</span> ${entry.cycleSymptoms || '—'}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            openDiaryCard(selected);
+        }
+
+        function openDiaryCard(dateStr) {
+            activeDiaryDate = dateStr;
+            const entry = diaryCards[dateStr] || {};
+            const editor = document.getElementById('card-editor');
+            if (!editor) return;
+
+            editor.classList.remove('hidden');
+            editor.innerHTML = `
+                <div class="text-sm font-bold text-slate-500 mb-3">${dateStr}</div>
+
+                <div class="card-day active">
+                    ${renderEditableField('Время приёма пищи', 'time', entry.time || '', dateStr, false)}
+                    ${renderEditableField('Продукты', 'products', entry.products || '', dateStr, true)}
+                    ${renderEditableField('Лекарства', 'medications', entry.medications || '', dateStr, true)}
+                    ${renderEditableField('Симптомы', 'symptoms', entry.symptoms || '', dateStr, true)}
+                    ${renderEditableField('Симптомы цикла', 'cycleSymptoms', entry.cycleSymptoms || '', dateStr, true)}
+                    ${renderEditableField('Отложенный эффект', 'delay', entry.delay || '', dateStr, false)}
+                </div>
+
+                <button onclick="saveDiaryCard('${dateStr}')" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl">
+                    Сохранить
+                </button>
+            `;
+        }
+
+        function renderEditableField(label, field, value, dateStr, multiline) {
+            const display = value ? value : 'Нажмите, чтобы заполнить';
+            return `
+                <div class="card-row" onclick="editDiaryField(event, '${dateStr}', '${field}', ${multiline})">
+                    <div class="card-label">${label}</div>
+                    <div class="card-value" id="${dateStr}-${field}">${display}</div>
+                </div>
+            `;
+        }
+
+        function editDiaryField(event, dateStr, field, multiline) {
+            if (event) event.stopPropagation();
+            const current = (diaryCards[dateStr] && diaryCards[dateStr][field]) || '';
+            const el = document.getElementById(`${dateStr}-${field}`);
+            if (!el) return;
+
+            const tag = multiline ? 'textarea' : 'input';
+            el.innerHTML = `
+                <${tag} class="inline-edit" id="edit-${dateStr}-${field}" ${multiline ? 'rows="3"' : ''}>${current}</${tag}>
+                <div class="flex gap-2 mt-2">
+                    <button class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg" onclick="saveInlineField(event, '${dateStr}', '${field}')">OK</button>
+                    <button class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg" onclick="cancelInlineField(event, '${dateStr}', '${field}')">Отмена</button>
+                </div>
+            `;
+        }
+
+        function saveInlineField(event, dateStr, field) {
+            if (event) event.stopPropagation();
+            const input = document.getElementById(`edit-${dateStr}-${field}`);
+            if (!input) return;
+
+            if (!diaryCards[dateStr]) diaryCards[dateStr] = {};
+            diaryCards[dateStr][field] = input.value.trim();
+
+            localStorage.setItem('histolite_diary_cards', JSON.stringify(diaryCards));
+            renderDiaryCards();
+        }
+
+        function cancelInlineField(event, dateStr) {
+            if (event) event.stopPropagation();
+            openDiaryCard(dateStr);
+        }
+
+        function saveDiaryCard(dateStr) {
+            if (!diaryCards[dateStr]) diaryCards[dateStr] = {};
+            localStorage.setItem('histolite_diary_cards', JSON.stringify(diaryCards));
+            renderDiaryCards();
+            showModal('Карточка сохранена');
+        }
+
+        // ================================================================
+        // 27. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(function() {
@@ -1717,11 +1931,12 @@
                 loadRecipes();
                 renderCycleCalendar();
                 updateCycleUI();
+                renderDiaryCards(); // <-- добавлен рендер карточек
             }, 100);
         }
 
         // ================================================================
-        // 27. АНАЛИТИКА (без тепловой карты)
+        // 28. АНАЛИТИКА (без тепловой карты)
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -1853,6 +2068,11 @@
             }
             if (document.getElementById('analytics-tab')?.classList.contains('active')) {
                 setTimeout(() => { renderCycleSymptomAnalysis(); }, 200);
+            }
+
+            // Инициализация карточек, если уже принято согласие
+            if (localStorage.getItem('histolite_legal_accepted') === 'true') {
+                renderDiaryCards();
             }
         });
 
