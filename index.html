@@ -166,6 +166,43 @@
         }
         .mic-btn-modal:hover { background: #2563eb; }
         .mic-btn-modal.mic-active { background: #ef4444; transform: scale(1.05); }
+
+        /* Стили для списка записей в модалке */
+        .entry-list-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        .entry-list-item .entry-time {
+            font-weight: bold;
+            font-size: 13px;
+            color: #0f172a;
+        }
+        .entry-list-item .entry-details {
+            font-size: 12px;
+            color: #475569;
+            margin-top: 2px;
+        }
+        .entry-list-item .entry-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+        }
+        .entry-list-item .entry-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 4px;
+            border-radius: 6px;
+        }
+        .entry-list-item .entry-actions .edit-btn:hover { background: #dbeafe; }
+        .entry-list-item .entry-actions .delete-btn:hover { background: #fee2e2; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -406,43 +443,53 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА -->
+    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА (НОВАЯ ВЕРСИЯ) -->
     <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <h4 class="text-base font-bold text-slate-800 mb-2">День дневника</h4>
+            <h4 class="text-base font-bold text-slate-800 mb-2">📅 День дневника</h4>
             <p class="text-sm text-slate-600 mb-1" id="cycle-day-modal-date">Дата:</p>
             <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
 
-            <!-- Время -->
-            <label class="block text-xs font-bold text-slate-600 mb-1">Время</label>
-            <input type="time" id="cycle-day-time" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
+            <!-- Список записей -->
+            <div id="entries-list" class="mb-4"></div>
 
-            <!-- Продукты с микрофоном -->
-            <label class="block text-xs font-bold text-slate-600 mb-1">Продукты (через запятую)</label>
-            <div class="flex gap-2 items-center mb-3">
-                <input type="text" id="cycle-day-products" placeholder="рис, курица, овощи" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
-                <button id="mic-products-modal" class="mic-btn-modal" title="Голосовой ввод продуктов">🎤</button>
+            <!-- Кнопка добавления -->
+            <button onclick="openEntryForm(null)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm mb-3">
+                + Добавить запись
+            </button>
+
+            <!-- Форма добавления/редактирования (скрыта по умолчанию) -->
+            <div id="entry-form" style="display:none;" class="border-t border-slate-200 pt-4 mt-2">
+                <h5 class="font-bold text-slate-700 text-sm mb-3" id="entry-form-title">Новая запись</h5>
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Время</label>
+                <input type="time" id="entry-time" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Продукты (через запятую)</label>
+                <div class="flex gap-2 items-center mb-3">
+                    <input type="text" id="entry-products" placeholder="рис, курица, овощи" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                    <button id="mic-products-entry" class="mic-btn-modal" title="Голосовой ввод продуктов">🎤</button>
+                </div>
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Принятые лекарства (через запятую)</label>
+                <input type="text" id="entry-medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы (через запятую)</label>
+                <div class="flex gap-2 items-center mb-3">
+                    <textarea id="entry-symptoms" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px]" placeholder="головная боль, усталость, зуд"></textarea>
+                    <button id="mic-symptoms-entry" class="mic-btn-modal" title="Голосовой ввод симптомов">🎤</button>
+                </div>
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Комментарий</label>
+                <textarea id="entry-comment" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px] mb-3" placeholder="Дополнительные заметки"></textarea>
+
+                <div class="flex gap-2">
+                    <button onclick="saveEntryForm()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
+                    <button onclick="cancelEntryForm()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
+                </div>
             </div>
 
-            <!-- Лекарства -->
-            <label class="block text-xs font-bold text-slate-600 mb-1">Принятые лекарства (через запятую)</label>
-            <input type="text" id="cycle-day-medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
-
-            <!-- Симптомы с микрофоном -->
-            <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы (через запятую)</label>
-            <div class="flex gap-2 items-center mb-3">
-                <textarea id="cycle-day-symptoms" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px]" placeholder="головная боль, усталость, зуд"></textarea>
-                <button id="mic-symptoms-modal" class="mic-btn-modal" title="Голосовой ввод симптомов">🎤</button>
-            </div>
-
-            <!-- Комментарий -->
-            <label class="block text-xs font-bold text-slate-600 mb-1">Комментарий</label>
-            <textarea id="cycle-day-comment" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px] mb-3" placeholder="Дополнительные заметки"></textarea>
-
-            <div class="flex gap-2 mt-2">
-                <button onclick="saveCycleDay()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl text-sm">Сохранить</button>
-                <button onclick="closeCycleDayModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Отмена</button>
-            </div>
+            <button onclick="closeCycleDayModal()" class="w-full mt-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-sm">Закрыть</button>
         </div>
     </div>
 
@@ -493,18 +540,15 @@
         let cycleMarks = JSON.parse(localStorage.getItem('histolite_cycle_marks')) || {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
+        // НОВАЯ СТРУКТУРА: для каждой даты массив записей
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
+        // Для каждой даты храним массив объектов { id, time, products, medications, symptoms, comment }
         let selectedCycleDayDate = null;
-        let delayStartDate = null;
+        let editingEntryId = null; // id записи, которую редактируем (null = новая)
 
-        // Загружаем рецепты из внешнего файла
+        // Загружаем рецепты
         window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
         recipesDB = window.recipesDB;
-
-        console.log('recipes debug', {
-            hasWindowRecipes: Array.isArray(window.recipes),
-            recipesLength: window.recipesDB.length
-        });
 
         // ================================================================
         // 2. ФУНКЦИИ ДАТ И ЦИКЛА
@@ -630,24 +674,67 @@
         }
 
         // ================================================================
-        // 5. МОДАЛЬНОЕ ОКНО ДНЯ ЦИКЛА
+        // 5. РАБОТА С ЗАПИСЯМИ (НОВАЯ ЛОГИКА)
         // ================================================================
-        function openDayModal(dateStr) {
-            selectedCycleDayDate = dateStr;
-            const dateObj = parseLocalDate(dateStr);
-            const cycleDay = getCurrentCycleDayForDate(dateStr);
-            const existing = cycleDayNotes[dateStr] || {};
+        function getEntriesForDate(dateStr) {
+            if (!cycleDayNotes[dateStr]) return [];
+            // Убедимся, что это массив (миграция со старого формата, если нужно)
+            if (Array.isArray(cycleDayNotes[dateStr])) {
+                return cycleDayNotes[dateStr];
+            } else {
+                // Старый формат (один объект) – конвертируем в массив
+                const old = cycleDayNotes[dateStr];
+                if (old && typeof old === 'object' && !Array.isArray(old)) {
+                    const newEntry = {
+                        id: Date.now(),
+                        time: old.time || '',
+                        products: old.products || '',
+                        medications: old.medications || '',
+                        symptoms: old.symptoms || '',
+                        comment: old.comment || ''
+                    };
+                    cycleDayNotes[dateStr] = [newEntry];
+                    localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+                    return cycleDayNotes[dateStr];
+                }
+                return [];
+            }
+        }
 
-            document.getElementById('cycle-day-modal-date').textContent = `📅 ${dateObj.toLocaleDateString('ru-RU')}`;
-            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+        function setEntriesForDate(dateStr, entries) {
+            cycleDayNotes[dateStr] = entries;
+            localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+        }
 
-            document.getElementById('cycle-day-time').value = existing.time || '';
-            document.getElementById('cycle-day-products').value = existing.products || '';
-            document.getElementById('cycle-day-medications').value = existing.medications || '';
-            document.getElementById('cycle-day-symptoms').value = existing.symptoms || '';
-            document.getElementById('cycle-day-comment').value = existing.comment || '';
+        function addEntry(dateStr, entry) {
+            const entries = getEntriesForDate(dateStr);
+            entries.push(entry);
+            setEntriesForDate(dateStr, entries);
+        }
 
-            document.getElementById('cycle-day-modal').style.display = 'flex';
+        function updateEntry(dateStr, id, updatedEntry) {
+            const entries = getEntriesForDate(dateStr);
+            const index = entries.findIndex(e => e.id === id);
+            if (index !== -1) {
+                entries[index] = { ...entries[index], ...updatedEntry };
+                setEntriesForDate(dateStr, entries);
+            }
+        }
+
+        function deleteEntry(dateStr, id) {
+            let entries = getEntriesForDate(dateStr);
+            entries = entries.filter(e => e.id !== id);
+            if (entries.length === 0) {
+                delete cycleDayNotes[dateStr];
+                localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+            } else {
+                setEntriesForDate(dateStr, entries);
+            }
+        }
+
+        function getEntryById(dateStr, id) {
+            const entries = getEntriesForDate(dateStr);
+            return entries.find(e => e.id === id) || null;
         }
 
         function getCurrentCycleDayForDate(dateStr) {
@@ -659,55 +746,181 @@
             return diff > 0 ? diff : null;
         }
 
+        // ================================================================
+        // 6. ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛКИ ДНЯ
+        // ================================================================
+        function openDayModal(dateStr) {
+            selectedCycleDayDate = dateStr;
+            const dateObj = parseLocalDate(dateStr);
+            const cycleDay = getCurrentCycleDayForDate(dateStr);
+
+            document.getElementById('cycle-day-modal-date').textContent = `📅 ${dateObj.toLocaleDateString('ru-RU')}`;
+            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+
+            // Скрываем форму, сбрасываем редактирование
+            document.getElementById('entry-form').style.display = 'none';
+            editingEntryId = null;
+
+            // Рендерим список записей
+            renderEntriesList(dateStr);
+
+            document.getElementById('cycle-day-modal').style.display = 'flex';
+        }
+
         function closeCycleDayModal() {
             document.getElementById('cycle-day-modal').style.display = 'none';
             selectedCycleDayDate = null;
-            // Останавливаем распознавание, если оно активно
-            if (window.symptomRecognition) {
-                window.symptomRecognition.stop();
-                window.symptomRecognition = null;
-                const btn = document.getElementById('mic-symptoms-modal');
-                if (btn) { btn.classList.remove('mic-active'); btn.textContent = '🎤'; }
+            // Останавливаем микрофоны
+            if (window.symptomRecognitionEntry) {
+                window.symptomRecognitionEntry.stop();
+                window.symptomRecognitionEntry = null;
+                document.getElementById('mic-symptoms-entry').classList.remove('mic-active');
+                document.getElementById('mic-symptoms-entry').textContent = '🎤';
             }
-            if (window.productRecognitionModal) {
-                window.productRecognitionModal.stop();
-                window.productRecognitionModal = null;
-                const btn = document.getElementById('mic-products-modal');
-                if (btn) { btn.classList.remove('mic-active'); btn.textContent = '🎤'; }
+            if (window.productRecognitionEntry) {
+                window.productRecognitionEntry.stop();
+                window.productRecognitionEntry = null;
+                document.getElementById('mic-products-entry').classList.remove('mic-active');
+                document.getElementById('mic-products-entry').textContent = '🎤';
             }
         }
 
-        window.saveCycleDay = function() {
-            if (!selectedCycleDayDate) return;
+        // ================================================================
+        // 7. ОТРИСОВКА СПИСКА ЗАПИСЕЙ В МОДАЛКЕ
+        // ================================================================
+        function renderEntriesList(dateStr) {
+            const container = document.getElementById('entries-list');
+            const entries = getEntriesForDate(dateStr);
 
-            const time = document.getElementById('cycle-day-time').value.trim();
-            const products = document.getElementById('cycle-day-products').value.trim();
-            const medications = document.getElementById('cycle-day-medications').value.trim();
-            const symptoms = document.getElementById('cycle-day-symptoms').value.trim();
-            const comment = document.getElementById('cycle-day-comment').value.trim();
-
-            if (!time && !products && !medications && !symptoms && !comment) {
-                delete cycleDayNotes[selectedCycleDayDate];
-            } else {
-                cycleDayNotes[selectedCycleDayDate] = {
-                    time: time,
-                    products: products,
-                    medications: medications,
-                    symptoms: symptoms,
-                    comment: comment
-                };
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">Нет записей за этот день</p>';
+                return;
             }
 
-            localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
-            closeCycleDayModal();
-            renderCycleCalendar();
-            renderHistory();
-            renderTodayDashboard();
-            showModal('Данные дня сохранены');
-        };
+            // Сортируем по времени (если есть)
+            const sorted = [...entries].sort((a, b) => (a.time || '00:00').localeCompare(b.time || '00:00'));
+
+            container.innerHTML = sorted.map(entry => {
+                const parts = [];
+                if (entry.products) parts.push(`🍽 ${entry.products}`);
+                if (entry.medications) parts.push(`💊 ${entry.medications}`);
+                if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
+                if (entry.comment) parts.push(`📝 ${entry.comment}`);
+                const details = parts.join(' • ') || '—';
+
+                return `
+                    <div class="entry-list-item">
+                        <div class="entry-time">${entry.time || '—'}</div>
+                        <div class="entry-details">${details}</div>
+                        <div class="entry-actions">
+                            <button class="edit-btn" onclick="openEntryForm(${entry.id})" title="Редактировать">✏️</button>
+                            <button class="delete-btn" onclick="deleteEntryConfirm('${dateStr}', ${entry.id})" title="Удалить">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         // ================================================================
-        // 6. НАВИГАЦИЯ КАЛЕНДАРЯ
+        // 8. ФОРМА ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ
+        // ================================================================
+        function openEntryForm(entryId) {
+            editingEntryId = entryId;
+            const form = document.getElementById('entry-form');
+            form.style.display = 'block';
+
+            if (entryId !== null) {
+                // Редактирование
+                document.getElementById('entry-form-title').textContent = 'Редактировать запись';
+                const entry = getEntryById(selectedCycleDayDate, entryId);
+                if (entry) {
+                    document.getElementById('entry-time').value = entry.time || '';
+                    document.getElementById('entry-products').value = entry.products || '';
+                    document.getElementById('entry-medications').value = entry.medications || '';
+                    document.getElementById('entry-symptoms').value = entry.symptoms || '';
+                    document.getElementById('entry-comment').value = entry.comment || '';
+                }
+            } else {
+                // Новая запись
+                document.getElementById('entry-form-title').textContent = 'Новая запись';
+                document.getElementById('entry-time').value = '';
+                document.getElementById('entry-products').value = '';
+                document.getElementById('entry-medications').value = '';
+                document.getElementById('entry-symptoms').value = '';
+                document.getElementById('entry-comment').value = '';
+            }
+        }
+
+        function cancelEntryForm() {
+            document.getElementById('entry-form').style.display = 'none';
+            editingEntryId = null;
+            // Останавливаем микрофоны
+            if (window.symptomRecognitionEntry) {
+                window.symptomRecognitionEntry.stop();
+                window.symptomRecognitionEntry = null;
+                document.getElementById('mic-symptoms-entry').classList.remove('mic-active');
+                document.getElementById('mic-symptoms-entry').textContent = '🎤';
+            }
+            if (window.productRecognitionEntry) {
+                window.productRecognitionEntry.stop();
+                window.productRecognitionEntry = null;
+                document.getElementById('mic-products-entry').classList.remove('mic-active');
+                document.getElementById('mic-products-entry').textContent = '🎤';
+            }
+        }
+
+        function saveEntryForm() {
+            if (!selectedCycleDayDate) return;
+
+            const time = document.getElementById('entry-time').value.trim();
+            const products = document.getElementById('entry-products').value.trim();
+            const medications = document.getElementById('entry-medications').value.trim();
+            const symptoms = document.getElementById('entry-symptoms').value.trim();
+            const comment = document.getElementById('entry-comment').value.trim();
+
+            // Проверяем, есть ли хоть что-то заполненное
+            if (!time && !products && !medications && !symptoms && !comment) {
+                showModal('Заполните хотя бы одно поле');
+                return;
+            }
+
+            const entryData = { time, products, medications, symptoms, comment };
+
+            if (editingEntryId !== null) {
+                // Обновляем существующую запись
+                updateEntry(selectedCycleDayDate, editingEntryId, entryData);
+                showModal('Запись обновлена');
+            } else {
+                // Добавляем новую
+                const newEntry = {
+                    id: Date.now(),
+                    ...entryData
+                };
+                addEntry(selectedCycleDayDate, newEntry);
+                showModal('Запись добавлена');
+            }
+
+            // Обновляем список и скрываем форму
+            renderEntriesList(selectedCycleDayDate);
+            cancelEntryForm();
+            renderCycleCalendar(); // обновляем календарь (значок)
+            renderHistory();
+            renderTodayDashboard();
+        }
+
+        function deleteEntryConfirm(dateStr, id) {
+            if (confirm('Удалить эту запись?')) {
+                deleteEntry(dateStr, id);
+                renderEntriesList(dateStr);
+                renderCycleCalendar();
+                renderHistory();
+                renderTodayDashboard();
+                showModal('Запись удалена');
+            }
+        }
+
+        // ================================================================
+        // 9. НАВИГАЦИЯ КАЛЕНДАРЯ
         // ================================================================
         window.changeMonth = function(delta) {
             currentMonth += delta;
@@ -723,7 +936,7 @@
         };
 
         // ================================================================
-        // 7. ОТРИСОВКА КАЛЕНДАРЯ
+        // 10. ОТРИСОВКА КАЛЕНДАРЯ (С ИСПОЛЬЗОВАНИЕМ МАССИВА)
         // ================================================================
         function renderCycleCalendar() {
             const container = document.getElementById('cycle-load-calendar');
@@ -752,13 +965,10 @@
                 const dateStr = formatDate(currentYear, currentMonth, d);
                 const dateObj = parseLocalDate(dateStr);
                 const isToday = dateStr === todayStr;
-                const hasNote = !!cycleDayNotes[dateStr] && (
-                    cycleDayNotes[dateStr].time ||
-                    cycleDayNotes[dateStr].products ||
-                    cycleDayNotes[dateStr].medications ||
-                    cycleDayNotes[dateStr].symptoms ||
-                    cycleDayNotes[dateStr].comment
-                );
+                // Проверяем, есть ли хоть одна запись
+                const entries = getEntriesForDate(dateStr);
+                const hasNote = entries.length > 0;
+
                 let bg = 'bg-slate-100';
                 let text = 'text-slate-600';
                 let extra = '';
@@ -820,7 +1030,7 @@
         }
 
         // ================================================================
-        // 8. ФУНКЦИЯ confirmEvent (для модалки event-modal)
+        // 11. ФУНКЦИЯ confirmEvent (без изменений)
         // ================================================================
         let selectedDate = null;
         function openEventModal(year, month, day) {
@@ -885,7 +1095,7 @@
         };
 
         // ================================================================
-        // 9. ИНИЦИАЛИЗАЦИЯ КАЛЕНДАРЯ
+        // 12. ИНИЦИАЛИЗАЦИЯ КАЛЕНДАРЯ
         // ================================================================
         function initCycleModule() {
             const dateInput = document.getElementById('last-period-start');
@@ -908,7 +1118,7 @@
         }
 
         // ================================================================
-        // 10. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+        // 13. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
         // ================================================================
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -928,7 +1138,7 @@
         });
 
         // ================================================================
-        // 11. ЗАГРУЗКА ПРОДУКТОВ И БАЗА
+        // 14. ЗАГРУЗКА ПРОДУКТОВ И БАЗА (без изменений)
         // ================================================================
         async function loadProducts() {
             try {
@@ -991,7 +1201,7 @@
         };
 
         // ================================================================
-        // 12. ПОИСК ПРОДУКТА
+        // 15. ПОИСК ПРОДУКТА (без изменений)
         // ================================================================
         window.searchProductByName = function() {
             const input = document.getElementById('product-search-input');
@@ -1018,7 +1228,7 @@
         };
 
         // ================================================================
-        // 13. СКАНЕР ШТРИХ-КОДА
+        // 16. СКАНЕР ШТРИХ-КОДА (без изменений)
         // ================================================================
         let html5QrCode = null;
         window.scanBarcode = function() {
@@ -1086,181 +1296,146 @@
         };
 
         // ================================================================
-        // 14. МИКРОФОН ДЛЯ СИМПТОМОВ В МОДАЛКЕ
+        // 17. МИКРОФОНЫ В ФОРМЕ ЗАПИСИ (НОВЫЕ)
         // ================================================================
-        let symptomRecognition = null;
+        let symptomRecognitionEntry = null;
+        let productRecognitionEntry = null;
+
         document.addEventListener('DOMContentLoaded', function() {
-            const micBtn = document.getElementById('mic-symptoms-modal');
-            if (micBtn) {
-                micBtn.addEventListener('click', function() {
-                    startSymptomVoiceInput();
+            // Микрофон для симптомов в форме
+            const micSymptoms = document.getElementById('mic-symptoms-entry');
+            if (micSymptoms) {
+                micSymptoms.addEventListener('click', function() {
+                    startVoiceInput('entry-symptoms', 'mic-symptoms-entry', 'symptomRecognitionEntry');
+                });
+            }
+            // Микрофон для продуктов в форме
+            const micProducts = document.getElementById('mic-products-entry');
+            if (micProducts) {
+                micProducts.addEventListener('click', function() {
+                    startVoiceInput('entry-products', 'mic-products-entry', 'productRecognitionEntry');
                 });
             }
         });
 
-        function startSymptomVoiceInput() {
-            const micBtn = document.getElementById('mic-symptoms-modal');
-            if (symptomRecognition) {
-                symptomRecognition.stop();
-                symptomRecognition = null;
+        function startVoiceInput(inputId, micId, recognitionVarName) {
+            const micBtn = document.getElementById(micId);
+            let recognition = window[recognitionVarName];
+
+            if (recognition) {
+                recognition.stop();
+                recognition = null;
+                window[recognitionVarName] = null;
                 micBtn.classList.remove('mic-active');
                 micBtn.textContent = '🎤';
                 return;
             }
+
             try {
-                symptomRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                symptomRecognition.lang = 'ru-RU';
-                symptomRecognition.interimResults = false;
-                symptomRecognition.maxAlternatives = 1;
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'ru-RU';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                window[recognitionVarName] = recognition;
+
                 micBtn.classList.add('mic-active');
                 micBtn.textContent = '⏺';
-                symptomRecognition.onresult = function(event) {
+
+                recognition.onresult = function(event) {
                     const transcript = event.results[0][0].transcript;
-                    const input = document.getElementById('cycle-day-symptoms');
+                    const input = document.getElementById(inputId);
                     input.value += (input.value ? ', ' : '') + transcript;
-                    symptomRecognition.stop();
-                    symptomRecognition = null;
+                    recognition.stop();
+                    window[recognitionVarName] = null;
                     micBtn.classList.remove('mic-active');
                     micBtn.textContent = '🎤';
                 };
-                symptomRecognition.onerror = function(event) {
+
+                recognition.onerror = function(event) {
                     console.error('Ошибка распознавания:', event.error);
                     micBtn.classList.remove('mic-active');
                     micBtn.textContent = '🎤';
                     if (event.error === 'not-allowed') {
-                        showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
+                        showModal('⚠️ Доступ к микрофону запрещён.');
                     } else {
                         showModal('Ошибка распознавания: ' + event.error);
                     }
-                    symptomRecognition = null;
+                    window[recognitionVarName] = null;
                 };
-                symptomRecognition.onend = function() {
-                    if (symptomRecognition) {
-                        symptomRecognition = null;
+
+                recognition.onend = function() {
+                    if (window[recognitionVarName]) {
+                        window[recognitionVarName] = null;
                         micBtn.classList.remove('mic-active');
                         micBtn.textContent = '🎤';
                     }
                 };
-                symptomRecognition.start();
+
+                recognition.start();
             } catch (e) {
                 console.error('Ошибка запуска распознавания:', e);
-                showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
+                showModal('Ваш браузер не поддерживает голосовой ввод.');
                 micBtn.classList.remove('mic-active');
                 micBtn.textContent = '🎤';
             }
         }
 
         // ================================================================
-        // 15. МИКРОФОН ДЛЯ ПРОДУКТОВ В МОДАЛКЕ
-        // ================================================================
-        let productRecognitionModal = null;
-        document.addEventListener('DOMContentLoaded', function() {
-            const micBtn = document.getElementById('mic-products-modal');
-            if (micBtn) {
-                micBtn.addEventListener('click', function() {
-                    startProductVoiceInput();
-                });
-            }
-        });
-
-        function startProductVoiceInput() {
-            const micBtn = document.getElementById('mic-products-modal');
-            if (productRecognitionModal) {
-                productRecognitionModal.stop();
-                productRecognitionModal = null;
-                micBtn.classList.remove('mic-active');
-                micBtn.textContent = '🎤';
-                return;
-            }
-            try {
-                productRecognitionModal = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                productRecognitionModal.lang = 'ru-RU';
-                productRecognitionModal.interimResults = false;
-                productRecognitionModal.maxAlternatives = 1;
-                micBtn.classList.add('mic-active');
-                micBtn.textContent = '⏺';
-                productRecognitionModal.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    const input = document.getElementById('cycle-day-products');
-                    // Добавляем через запятую, если поле не пустое
-                    input.value += (input.value ? ', ' : '') + transcript;
-                    productRecognitionModal.stop();
-                    productRecognitionModal = null;
-                    micBtn.classList.remove('mic-active');
-                    micBtn.textContent = '🎤';
-                };
-                productRecognitionModal.onerror = function(event) {
-                    console.error('Ошибка распознавания:', event.error);
-                    micBtn.classList.remove('mic-active');
-                    micBtn.textContent = '🎤';
-                    if (event.error === 'not-allowed') {
-                        showModal('⚠️ Доступ к микрофону запрещён. Разрешите доступ в настройках браузера.');
-                    } else {
-                        showModal('Ошибка распознавания: ' + event.error);
-                    }
-                    productRecognitionModal = null;
-                };
-                productRecognitionModal.onend = function() {
-                    if (productRecognitionModal) {
-                        productRecognitionModal = null;
-                        micBtn.classList.remove('mic-active');
-                        micBtn.textContent = '🎤';
-                    }
-                };
-                productRecognitionModal.start();
-            } catch (e) {
-                console.error('Ошибка запуска распознавания:', e);
-                showModal('Ваш браузер не поддерживает голосовой ввод. Используйте печать.');
-                micBtn.classList.remove('mic-active');
-                micBtn.textContent = '🎤';
-            }
-        }
-
-        // ================================================================
-        // 16. ИСТОРИЯ
+        // 18. ИСТОРИЯ (НОВАЯ, НА ОСНОВЕ МАССИВА)
         // ================================================================
         window.renderHistory = function() {
             const container = document.getElementById('history-container');
             if (!container) return;
 
-            const entries = Object.entries(cycleDayNotes)
-                .filter(([date, data]) => {
-                    return data.time || data.products || data.medications || data.symptoms || data.comment;
-                })
-                .sort((a, b) => a[0] < b[0] ? 1 : -1)
-                .slice(0, 20);
+            // Собираем все записи со всех дат
+            const allEntries = [];
+            Object.keys(cycleDayNotes).forEach(date => {
+                const entries = getEntriesForDate(date);
+                entries.forEach(entry => {
+                    allEntries.push({
+                        date: date,
+                        ...entry
+                    });
+                });
+            });
 
-            if (entries.length === 0) {
+            if (allEntries.length === 0) {
                 container.innerHTML = '<p class="text-center text-slate-400 text-xs py-2">Записей пока нет</p>';
                 return;
             }
 
-            const html = entries.map(([date, data]) => {
+            // Сортируем по дате и времени (сначала свежие)
+            allEntries.sort((a, b) => {
+                const dateCompare = a.date < b.date ? 1 : (a.date > b.date ? -1 : 0);
+                if (dateCompare !== 0) return dateCompare;
+                return (a.time || '00:00') > (b.time || '00:00') ? -1 : 1;
+            });
+
+            const html = allEntries.slice(0, 20).map(entry => {
                 const parts = [];
-                if (data.time) parts.push(`🕒 ${data.time}`);
-                if (data.products) parts.push(`🍽 ${data.products}`);
-                if (data.medications) parts.push(`💊 ${data.medications}`);
-                if (data.symptoms) parts.push(`🤒 ${data.symptoms}`);
-                if (data.comment) parts.push(`📝 ${data.comment}`);
+                if (entry.time) parts.push(`🕒 ${entry.time}`);
+                if (entry.products) parts.push(`🍽 ${entry.products}`);
+                if (entry.medications) parts.push(`💊 ${entry.medications}`);
+                if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
+                if (entry.comment) parts.push(`📝 ${entry.comment}`);
                 const details = parts.join(' • ') || '—';
 
                 return `
                     <div class="flex justify-between items-start border-b border-slate-100 pb-1">
                         <div>
-                            <span class="font-medium">${date}</span>
+                            <span class="font-medium">${entry.date}</span>
                             <span class="text-xs text-slate-600">${details}</span>
                         </div>
-                        <button onclick="deleteDayNote('${date}')" class="text-red-400 hover:text-red-600 text-xs">✕</button>
+                        <button onclick="deleteEntryFromHistory('${entry.date}', ${entry.id})" class="text-red-400 hover:text-red-600 text-xs">✕</button>
                     </div>
                 `;
             }).join('');
             container.innerHTML = html;
         };
 
-        window.deleteDayNote = function(dateStr) {
-            if (confirm(`Удалить запись за ${dateStr}?`)) {
-                delete cycleDayNotes[dateStr];
-                localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+        window.deleteEntryFromHistory = function(dateStr, id) {
+            if (confirm('Удалить эту запись?')) {
+                deleteEntry(dateStr, id);
                 renderCycleCalendar();
                 renderHistory();
                 renderTodayDashboard();
@@ -1280,7 +1455,7 @@
         };
 
         // ================================================================
-        // 17. ДАШБОРД (СЕГОДНЯ)
+        // 19. ДАШБОРД (СЕГОДНЯ) - без изменений
         // ================================================================
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
@@ -1334,7 +1509,7 @@
         }
 
         // ================================================================
-        // 18. УВЕДОМЛЕНИЯ
+        // 20. УВЕДОМЛЕНИЯ (без изменений)
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1349,7 +1524,7 @@
         }
 
         // ================================================================
-        // 19. МОДАЛЬНЫЕ ОКНА (showModal / closeModal)
+        // 21. МОДАЛЬНЫЕ ОКНА (без изменений)
         // ================================================================
         function showModal(message) {
             const modal = document.getElementById('custom-modal');
@@ -1367,7 +1542,7 @@
         }
 
         // ================================================================
-        // 20. ЭКСПОРТ (заглушки)
+        // 22. ЭКСПОРТ (без изменений)
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1377,7 +1552,7 @@
         };
 
         // ================================================================
-        // 21. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
+        // 23. ЮРИДИЧЕСКОЕ СОГЛАСИЕ (без изменений)
         // ================================================================
         function toggleLegalButton() {}
 
@@ -1399,7 +1574,7 @@
         };
 
         // ================================================================
-        // 22. РАБОТА С РЕЦЕПТАМИ
+        // 24. РЕЦЕПТЫ (без изменений)
         // ================================================================
         const defaultRecipes = [
             {
@@ -1542,7 +1717,7 @@
         });
 
         // ================================================================
-        // 23. КНОПКИ ОЧИСТКИ
+        // 25. КНОПКИ ОЧИСТКИ (без изменений)
         // ================================================================
         window.clearAllMarks = function() {
             if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
@@ -1569,7 +1744,7 @@
         };
 
         // ================================================================
-        // 24. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 26. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(function() {
@@ -1603,21 +1778,28 @@
         }
 
         // ================================================================
-        // 25. АНАЛИТИКА
+        // 27. АНАЛИТИКА (НОВАЯ, НА ОСНОВЕ МАССИВА)
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!container) return;
 
-            const entries = Object.entries(cycleDayNotes)
-                .filter(([date, data]) => data.symptoms && data.symptoms.trim().length > 0)
-                .map(([date, data]) => ({
-                    date: date,
-                    symptoms: data.symptoms,
-                    cycleDay: getCurrentCycleDayForDate(date)
-                }));
+            // Собираем все записи с симптомами
+            const allEntries = [];
+            Object.keys(cycleDayNotes).forEach(date => {
+                const entries = getEntriesForDate(date);
+                entries.forEach(entry => {
+                    if (entry.symptoms && entry.symptoms.trim().length > 0) {
+                        allEntries.push({
+                            date: date,
+                            symptoms: entry.symptoms,
+                            cycleDay: getCurrentCycleDayForDate(date)
+                        });
+                    }
+                });
+            });
 
-            if (entries.length === 0) {
+            if (allEntries.length === 0) {
                 container.innerHTML = '<p class="text-slate-400 text-center py-4">Нет записей с симптомами для анализа.</p>';
                 return;
             }
@@ -1639,7 +1821,7 @@
                 return 'Фолликулярная';
             }
 
-            entries.forEach(entry => {
+            allEntries.forEach(entry => {
                 const phase = getPhase(entry.cycleDay);
                 if (phases[phase]) {
                     phases[phase].days.push(entry.date);
@@ -1674,9 +1856,16 @@
                 return;
             }
 
-            const symptomEntries = Object.entries(cycleDayNotes)
-                .filter(([date, data]) => data.symptoms && data.symptoms.trim().length > 0)
-                .map(([date, data]) => ({ date, data }));
+            // Собираем все записи с симптомами
+            const symptomEntries = [];
+            Object.keys(cycleDayNotes).forEach(date => {
+                const entries = getEntriesForDate(date);
+                entries.forEach(entry => {
+                    if (entry.symptoms && entry.symptoms.trim().length > 0) {
+                        symptomEntries.push({ date, data: entry });
+                    }
+                });
+            });
 
             if (symptomEntries.length === 0) {
                 container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Нет записей с симптомами для анализа. Добавьте записи с симптомами.</p>';
@@ -1693,30 +1882,34 @@
                 const twoDaysBefore = new Date(logDate);
                 twoDaysBefore.setHours(twoDaysBefore.getHours() - 48);
 
-                Object.entries(cycleDayNotes).forEach(([otherDate, otherData]) => {
-                    if (otherDate === date) return;
-                    const triggerDate = new Date(otherDate + 'T' + (otherData.time || '00:00'));
-                    if (triggerDate >= twoDaysBefore && triggerDate <= logDate) {
-                        const items = [];
-                        if (otherData.products) {
-                            otherData.products.split(',').forEach(p => {
-                                const trimmed = p.trim();
-                                if (trimmed) items.push(trimmed);
+                // Ищем записи в пределах 48 часов до симптома
+                Object.keys(cycleDayNotes).forEach(otherDate => {
+                    const otherEntries = getEntriesForDate(otherDate);
+                    otherEntries.forEach(otherEntry => {
+                        if (otherDate === date && otherEntry.id === symptomData.id) return;
+                        const triggerDate = new Date(otherDate + 'T' + (otherEntry.time || '00:00'));
+                        if (triggerDate >= twoDaysBefore && triggerDate <= logDate) {
+                            const items = [];
+                            if (otherEntry.products) {
+                                otherEntry.products.split(',').forEach(p => {
+                                    const trimmed = p.trim();
+                                    if (trimmed) items.push(trimmed);
+                                });
+                            }
+                            if (otherEntry.medications) {
+                                otherEntry.medications.split(',').forEach(m => {
+                                    const trimmed = m.trim();
+                                    if (trimmed) items.push(trimmed);
+                                });
+                            }
+                            items.forEach(item => {
+                                const key = item.toLowerCase().trim();
+                                if (!triggers[key]) triggers[key] = 0;
+                                triggers[key]++;
+                                totalMatches++;
                             });
                         }
-                        if (otherData.medications) {
-                            otherData.medications.split(',').forEach(m => {
-                                const trimmed = m.trim();
-                                if (trimmed) items.push(trimmed);
-                            });
-                        }
-                        items.forEach(item => {
-                            const key = item.toLowerCase().trim();
-                            if (!triggers[key]) triggers[key] = 0;
-                            triggers[key]++;
-                            totalMatches++;
-                        });
-                    }
+                    });
                 });
             });
 
@@ -1761,7 +1954,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Все записи теперь в календаре.');
+        console.log('✅ Приложение загружено. Реализованы множественные записи в день.');
     </script>
 </body>
 </html>
