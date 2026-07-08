@@ -133,21 +133,7 @@
         }
         .calendar-nav-btn:hover { background: #f1f5f9; }
         .calendar-month-label { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
-        .cycle-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .cycle-info-item {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 8px 12px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-        }
-        .cycle-info-item .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
-        .cycle-info-item .value { font-size: 16px; font-weight: bold; color: #0f172a; }
+        /* Удалён блок .cycle-info-grid, так как его больше нет */
 
         .mic-btn-modal {
             background: #3b82f6;
@@ -203,7 +189,6 @@
         .entry-list-item .entry-actions .edit-btn:hover { background: #dbeafe; }
         .entry-list-item .entry-actions .delete-btn:hover { background: #fee2e2; }
 
-        /* Стили для выпадающего блока настроек */
         .settings-details summary {
             cursor: pointer;
             font-weight: bold;
@@ -217,6 +202,9 @@
         .settings-details summary:hover { color: #0f172a; }
         .settings-details summary::marker { color: #94a3b8; }
         .settings-details[open] summary { color: #0f172a; }
+
+        /* Убираем блок истории, но оставляем стиль на всякий случай */
+        #history-container { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -263,7 +251,7 @@
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-4">
-            <!-- ВКЛАДКА ДНЕВНИК (теперь основная) -->
+            <!-- ВКЛАДКА ДНЕВНИК (основная) -->
             <div id="diary-tab" class="tab-content active space-y-4">
                 <!-- Блок риск-карты (перенесён из "Сегодня") -->
                 <div id="today-dashboard">
@@ -271,23 +259,15 @@
                         <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
                         <div class="text-2xl font-bold" id="risk-level">Низкий</div>
                         <div class="text-xs text-slate-500" id="risk-reason">Фаза цикла: стабильная</div>
+                        <!-- День цикла мелким шрифтом -->
+                        <div class="text-xs text-slate-500 mt-1" id="cycle-day-small">День цикла: —</div>
                         <div class="text-xs text-slate-600 mt-2" id="today-tip"></div>
                     </div>
                 </div>
 
-                <!-- Календарь (настройки цикла убраны отсюда) -->
+                <!-- Календарь (без блока день/фаза, так как они теперь в риск-карте) -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
-                    <div class="cycle-info-grid" id="cycle-info-grid">
-                        <div class="cycle-info-item">
-                            <div class="label">День цикла</div>
-                            <div class="value" id="cycle-day-display">—</div>
-                        </div>
-                        <div class="cycle-info-item">
-                            <div class="label">Фаза</div>
-                            <div class="value" id="phase-badge" style="font-size:14px;">Не определена</div>
-                        </div>
-                    </div>
                     <div class="flex items-center justify-between mb-3">
                         <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
                         <span class="calendar-month-label" id="calendar-month-label">Январь 2025</span>
@@ -306,16 +286,8 @@
                     </div>
                 </div>
 
-                <!-- Блок истории -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Последние записи</h3>
-                        <button onclick="clearAllNotes()" class="text-[10px] text-red-500 hover:text-red-700 underline">Очистить всё</button>
-                    </div>
-                    <div id="history-container" class="space-y-2 text-xs text-slate-500"></div>
-                </div>
-
-                <!-- Выпадающий блок настроек цикла -->
+                <!-- Блок истории полностью удалён -->
+                <!-- Вместо него вставляем выпадающий блок настроек -->
                 <details class="settings-details bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <summary class="text-sm font-bold text-slate-600">⚙️ Настройки цикла</summary>
                     <div class="mt-3 grid grid-cols-3 gap-2">
@@ -626,48 +598,73 @@
         }
 
         // ================================================================
-        // 3. ОБНОВЛЕНИЕ UI ЦИКЛА (без изменений)
+        // 3. ОБНОВЛЕНИЕ UI ЦИКЛА И РИСК-КАРТЫ
         // ================================================================
         function updateCycleUI() {
             const day = getCurrentCycleDay();
-            const dayBox = document.getElementById('cycle-day-display');
-            const phaseBox = document.getElementById('phase-badge');
-            if (!day || !savedLastPeriodStart) {
-                if (dayBox) dayBox.textContent = '—';
-                if (phaseBox) {
-                    phaseBox.textContent = 'Не определена';
-                    phaseBox.style.color = '#64748b';
-                    phaseBox.style.background = 'transparent';
-                }
-                return;
-            }
-            const ovulationDay = savedCycleLength - 14;
-            const delayDays = getDelayDays();
-            let phaseText = 'Стабильная';
-            let phaseColor = '#10b981';
-            if (day <= savedPeriodDays) {
-                phaseText = 'Менструация';
-                phaseColor = '#e74c3c';
-            } else if (day === ovulationDay) {
-                phaseText = 'Овуляция';
-                phaseColor = '#f39c12';
-            } else if (day >= ovulationDay - 5 && day <= ovulationDay + 1) {
-                phaseText = 'Фертильное окно';
-                phaseColor = '#27ae60';
-            } else if (delayDays > 0) {
-                phaseText = 'Задержка';
-                phaseColor = '#8e44ad';
-            }
-            if (dayBox) dayBox.textContent = day;
-            if (phaseBox) {
-                phaseBox.textContent = phaseText;
-                phaseBox.style.color = phaseColor;
-                phaseBox.style.background = 'transparent';
+            // Обновляем день цикла в риск-карте
+            const cycleDaySmall = document.getElementById('cycle-day-small');
+            if (cycleDaySmall) {
+                cycleDaySmall.textContent = day ? `День цикла: ${day}` : 'День цикла: —';
             }
         }
 
+        // Функция обновления риск-карты (перенесена из "Сегодня")
+        function renderTodayDashboard() {
+            const cycleDay = getCurrentCycleDay();
+            let riskLevel = 'Низкий';
+            let riskClass = 'risk-low';
+            let riskReason = 'Фаза цикла: стабильная';
+            let tip = 'Сегодня хороший день, чтобы попробовать новые продукты.';
+            let delayDays = 0;
+            if (savedLastPeriodStart && cycleDay !== null) {
+                if (cycleDay > savedCycleLength) {
+                    delayDays = cycleDay - savedCycleLength;
+                }
+            }
+            if (delayDays > 0) {
+                riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
+                riskClass = 'risk-high';
+                riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
+                tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
+            } else if (userGender !== 'male' && cycleDay !== null) {
+                const phase = getCyclePhaseName(cycleDay);
+                if (phase === 'Овуляция' || phase === 'ПМС') {
+                    riskLevel = 'Высокий';
+                    riskClass = 'risk-high';
+                    riskReason = `Фаза цикла: ${phase} (чувствительность повышена)`;
+                    tip = '⚠️ Сегодня повышенная чувствительность. Выбирайте зелёные продукты, избегайте сыра и шоколада.';
+                } else if (phase === 'Начало цикла' || phase === 'Лютеиновая') {
+                    riskLevel = 'Средний';
+                    riskClass = 'risk-medium';
+                    riskReason = `Фаза цикла: ${phase} (умеренная чувствительность)`;
+                    tip = '🟡 Умеренная чувствительность. Следите за реакциями, но можно пробовать новое.';
+                } else {
+                    riskLevel = 'Низкий';
+                    riskClass = 'risk-low';
+                    riskReason = `Фаза цикла: ${phase} (стабильная)`;
+                    tip = '✅ Организм стабилен. Можно пробовать новые продукты и экспериментировать.';
+                }
+            } else if (userGender === 'male') {
+                riskLevel = 'Низкий';
+                riskClass = 'risk-low';
+                riskReason = 'Мужчина, цикл не учитывается';
+                tip = '✅ Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
+            } else {
+                riskReason = 'Цикл не настроен';
+                tip = 'Отметьте первый день цикла в календаре.';
+            }
+            const riskCard = document.getElementById('risk-card');
+            riskCard.className = `risk-card ${riskClass}`;
+            document.getElementById('risk-level').textContent = riskLevel;
+            document.getElementById('risk-reason').textContent = riskReason;
+            document.getElementById('today-tip').textContent = tip;
+            // Обновляем день цикла мелким шрифтом
+            updateCycleUI();
+        }
+
         // ================================================================
-        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА (теперь вызывается вручную)
+        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
         // ================================================================
         window.saveCycleSettings = function() {
             const dateInput = document.getElementById('last-period-start');
@@ -680,13 +677,12 @@
             localStorage.setItem('histolite_cycle_length', savedCycleLength);
             localStorage.setItem('histolite_period_days', savedPeriodDays);
             renderCycleCalendar();
-            updateCycleUI();
             renderTodayDashboard();
             showModal('Настройки сохранены');
         };
 
         // ================================================================
-        // 5. РАБОТА С ЗАПИСЯМИ (те же функции, что и ранее)
+        // 5. РАБОТА С ЗАПИСЯМИ (без изменений)
         // ================================================================
         function getEntriesForDate(dateStr) {
             if (!cycleDayNotes[dateStr]) return [];
@@ -873,7 +869,6 @@
             renderEntriesList(selectedCycleDayDate);
             cancelEntryForm();
             renderCycleCalendar();
-            renderHistory();
             renderTodayDashboard();
         }
 
@@ -882,7 +877,6 @@
                 deleteEntry(dateStr, id);
                 renderEntriesList(dateStr);
                 renderCycleCalendar();
-                renderHistory();
                 renderTodayDashboard();
                 showModal('Запись удалена');
             }
@@ -905,7 +899,7 @@
         };
 
         // ================================================================
-        // 8. ОТРИСОВКА КАЛЕНДАРЯ (поля настроек убраны)
+        // 8. ОТРИСОВКА КАЛЕНДАРЯ (без блока день/фаза)
         // ================================================================
         function renderCycleCalendar() {
             const container = document.getElementById('cycle-load-calendar');
@@ -993,6 +987,7 @@
             }
             html += '</div>';
             container.innerHTML = html;
+            // Обновляем день цикла в риск-карте
             updateCycleUI();
         }
 
@@ -1062,20 +1057,18 @@
         // 10. ИНИЦИАЛИЗАЦИЯ КАЛЕНДАРЯ (без полей настроек)
         // ================================================================
         function initCycleModule() {
-            // Поля настроек теперь находятся в выпадающем блоке – их значения инициализируются при загрузке
             const dateInput = document.getElementById('last-period-start');
             const lengthInput = document.getElementById('cycle-length');
             const periodDaysInput = document.getElementById('period-days');
             if (dateInput) dateInput.value = savedLastPeriodStart;
             if (lengthInput) lengthInput.value = savedCycleLength;
             if (periodDaysInput) periodDaysInput.value = savedPeriodDays;
-            // Обработчики событий больше не нужны, так как сохранение теперь по кнопке
             renderCycleCalendar();
-            updateCycleUI();
+            renderTodayDashboard();
         }
 
         // ================================================================
-        // 11. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (теперь без "today")
+        // 11. ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
         // ================================================================
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1095,7 +1088,7 @@
         });
 
         // ================================================================
-        // 12. ЗАГРУЗКА ПРОДУКТОВ И БАЗА (без изменений)
+        // 12. ЗАГРУЗКА ПРОДУКТОВ (без изменений)
         // ================================================================
         async function loadProducts() {
             try {
@@ -1329,125 +1322,7 @@
         }
 
         // ================================================================
-        // 16. ИСТОРИЯ (без изменений)
-        // ================================================================
-        window.renderHistory = function() {
-            const container = document.getElementById('history-container');
-            if (!container) return;
-            const allEntries = [];
-            Object.keys(cycleDayNotes).forEach(date => {
-                const entries = getEntriesForDate(date);
-                entries.forEach(entry => {
-                    allEntries.push({ date, ...entry });
-                });
-            });
-            if (allEntries.length === 0) {
-                container.innerHTML = '<p class="text-center text-slate-400 text-xs py-2">Записей пока нет</p>';
-                return;
-            }
-            allEntries.sort((a, b) => {
-                const dateCompare = a.date < b.date ? 1 : (a.date > b.date ? -1 : 0);
-                if (dateCompare !== 0) return dateCompare;
-                return (a.time || '00:00') > (b.time || '00:00') ? -1 : 1;
-            });
-            const html = allEntries.slice(0, 20).map(entry => {
-                const parts = [];
-                if (entry.time) parts.push(`🕒 ${entry.time}`);
-                if (entry.products) parts.push(`🍽 ${entry.products}`);
-                if (entry.medications) parts.push(`💊 ${entry.medications}`);
-                if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
-                if (entry.comment) parts.push(`📝 ${entry.comment}`);
-                const details = parts.join(' • ') || '—';
-                return `
-                    <div class="flex justify-between items-start border-b border-slate-100 pb-1">
-                        <div>
-                            <span class="font-medium">${entry.date}</span>
-                            <span class="text-xs text-slate-600">${details}</span>
-                        </div>
-                        <button onclick="deleteEntryFromHistory('${entry.date}', ${entry.id})" class="text-red-400 hover:text-red-600 text-xs">✕</button>
-                    </div>
-                `;
-            }).join('');
-            container.innerHTML = html;
-        };
-
-        window.deleteEntryFromHistory = function(dateStr, id) {
-            if (confirm('Удалить эту запись?')) {
-                deleteEntry(dateStr, id);
-                renderCycleCalendar();
-                renderHistory();
-                renderTodayDashboard();
-                showModal('Запись удалена');
-            }
-        };
-
-        window.clearAllNotes = function() {
-            if (confirm('Удалить все записи дневника?')) {
-                cycleDayNotes = {};
-                localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
-                renderCycleCalendar();
-                renderHistory();
-                renderTodayDashboard();
-                showModal('Все записи удалены');
-            }
-        };
-
-        // ================================================================
-        // 17. ДАШБОРД (РИСК-КАРТА) – без изменений
-        // ================================================================
-        function renderTodayDashboard() {
-            const cycleDay = getCurrentCycleDay();
-            let riskLevel = 'Низкий';
-            let riskClass = 'risk-low';
-            let riskReason = 'Фаза цикла: стабильная';
-            let tip = 'Сегодня хороший день, чтобы попробовать новые продукты.';
-            let delayDays = 0;
-            if (savedLastPeriodStart && cycleDay !== null) {
-                if (cycleDay > savedCycleLength) {
-                    delayDays = cycleDay - savedCycleLength;
-                }
-            }
-            if (delayDays > 0) {
-                riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
-                riskClass = 'risk-high';
-                riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
-                tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
-            } else if (userGender !== 'male' && cycleDay !== null) {
-                const phase = getCyclePhaseName(cycleDay);
-                if (phase === 'Овуляция' || phase === 'ПМС') {
-                    riskLevel = 'Высокий';
-                    riskClass = 'risk-high';
-                    riskReason = `Фаза цикла: ${phase} (чувствительность повышена)`;
-                    tip = '⚠️ Сегодня повышенная чувствительность. Выбирайте зелёные продукты, избегайте сыра и шоколада.';
-                } else if (phase === 'Начало цикла' || phase === 'Лютеиновая') {
-                    riskLevel = 'Средний';
-                    riskClass = 'risk-medium';
-                    riskReason = `Фаза цикла: ${phase} (умеренная чувствительность)`;
-                    tip = '🟡 Умеренная чувствительность. Следите за реакциями, но можно пробовать новое.';
-                } else {
-                    riskLevel = 'Низкий';
-                    riskClass = 'risk-low';
-                    riskReason = `Фаза цикла: ${phase} (стабильная)`;
-                    tip = '✅ Организм стабилен. Можно пробовать новые продукты и экспериментировать.';
-                }
-            } else if (userGender === 'male') {
-                riskLevel = 'Низкий';
-                riskClass = 'risk-low';
-                riskReason = 'Мужчина, цикл не учитывается';
-                tip = '✅ Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
-            } else {
-                riskReason = 'Цикл не настроен';
-                tip = 'Отметьте первый день цикла в календаре.';
-            }
-            const riskCard = document.getElementById('risk-card');
-            riskCard.className = `risk-card ${riskClass}`;
-            document.getElementById('risk-level').textContent = riskLevel;
-            document.getElementById('risk-reason').textContent = riskReason;
-            document.getElementById('today-tip').textContent = tip;
-        }
-
-        // ================================================================
-        // 18. УВЕДОМЛЕНИЯ (без изменений)
+        // 16. УВЕДОМЛЕНИЯ (без изменений)
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1462,7 +1337,7 @@
         }
 
         // ================================================================
-        // 19. МОДАЛЬНЫЕ ОКНА (без изменений)
+        // 17. МОДАЛЬНЫЕ ОКНА (без изменений)
         // ================================================================
         function showModal(message) {
             const modal = document.getElementById('custom-modal');
@@ -1479,7 +1354,7 @@
         }
 
         // ================================================================
-        // 20. ЭКСПОРТ (без изменений)
+        // 18. ЭКСПОРТ (без изменений)
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1489,7 +1364,7 @@
         };
 
         // ================================================================
-        // 21. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
+        // 19. ЮРИДИЧЕСКОЕ СОГЛАСИЕ
         // ================================================================
         function toggleLegalButton() {}
 
@@ -1501,22 +1376,17 @@
             document.getElementById('legal-modal').style.display = 'none';
             document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
 
-            // Инициализация всех модулей
-            renderHistory();
+            // Инициализация
             loadProducts();
             renderTodayDashboard();
             checkNotifications();
             loadRecipes();
-            initCycleModule(); // теперь настройки читаются из полей, сохранение по кнопке
-            renderCycleCalendar();
-            updateCycleUI();
-
-            // Активируем вкладку "Дневник" по умолчанию
+            initCycleModule();
             switchTab('diary');
         };
 
         // ================================================================
-        // 22. РАБОТА С РЕЦЕПТАМИ (без изменений)
+        // 20. РАБОТА С РЕЦЕПТАМИ (без изменений)
         // ================================================================
         const defaultRecipes = [
             {
@@ -1659,7 +1529,7 @@
         });
 
         // ================================================================
-        // 23. КНОПКИ ОЧИСТКИ
+        // 21. КНОПКИ ОЧИСТКИ (без изменений)
         // ================================================================
         window.clearAllMarks = function() {
             if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
@@ -1686,7 +1556,7 @@
         };
 
         // ================================================================
-        // 24. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 22. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(function() {
@@ -1694,20 +1564,17 @@
                 userGender = gender;
                 document.getElementById('legal-modal').style.display = 'none';
                 document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-                renderHistory();
                 loadProducts();
                 renderTodayDashboard();
                 checkNotifications();
                 loadRecipes();
                 initCycleModule();
-                renderCycleCalendar();
-                updateCycleUI();
                 switchTab('diary');
             }, 100);
         }
 
         // ================================================================
-        // 25. АНАЛИТИКА (использует новые данные)
+        // 23. АНАЛИТИКА (использует новые данные)
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -1863,7 +1730,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Вкладка "Сегодня" удалена, настройки цикла в выпадающем блоке.');
+        console.log('✅ Приложение загружено. Удалены день/фаза над календарём, убрана история, день цикла добавлен в риск-карту.');
     </script>
 </body>
 </html>
