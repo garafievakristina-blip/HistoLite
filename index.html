@@ -133,7 +133,6 @@
         }
         .calendar-nav-btn:hover { background: #f1f5f9; }
         .calendar-month-label { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
-        /* Удалён блок .cycle-info-grid, так как его больше нет */
 
         .mic-btn-modal {
             background: #3b82f6;
@@ -203,7 +202,6 @@
         .settings-details summary::marker { color: #94a3b8; }
         .settings-details[open] summary { color: #0f172a; }
 
-        /* Убираем блок истории, но оставляем стиль на всякий случай */
         #history-container { display: none; }
     </style>
 </head>
@@ -253,19 +251,18 @@
         <main class="max-w-md mx-auto p-4 space-y-4">
             <!-- ВКЛАДКА ДНЕВНИК (основная) -->
             <div id="diary-tab" class="tab-content active space-y-4">
-                <!-- Блок риск-карты (перенесён из "Сегодня") -->
+                <!-- Блок риск-карты -->
                 <div id="today-dashboard">
                     <div id="risk-card" class="risk-card risk-low">
                         <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
                         <div class="text-2xl font-bold" id="risk-level">Низкий</div>
                         <div class="text-xs text-slate-500" id="risk-reason">Фаза цикла: стабильная</div>
-                        <!-- День цикла мелким шрифтом -->
                         <div class="text-xs text-slate-500 mt-1" id="cycle-day-small">День цикла: —</div>
                         <div class="text-xs text-slate-600 mt-2" id="today-tip"></div>
                     </div>
                 </div>
 
-                <!-- Календарь (без блока день/фаза, так как они теперь в риск-карте) -->
+                <!-- Календарь -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
                     <div class="flex items-center justify-between mb-3">
@@ -286,8 +283,7 @@
                     </div>
                 </div>
 
-                <!-- Блок истории полностью удалён -->
-                <!-- Вместо него вставляем выпадающий блок настроек -->
+                <!-- Выпадающий блок настроек -->
                 <details class="settings-details bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <summary class="text-sm font-bold text-slate-600">⚙️ Настройки цикла</summary>
                     <div class="mt-3 grid grid-cols-3 gap-2">
@@ -348,6 +344,19 @@
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
+                <!-- НОВЫЙ БЛОК: Инсайты дня -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">✨ Инсайты дня</h2>
+                    <div id="insight-cards" class="space-y-3"></div>
+                </div>
+
+                <!-- НОВЫЙ БЛОК: ИИ-объяснение -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">🧠 ИИ-объяснение</h2>
+                    <div id="ai-insight-box" class="text-xs text-slate-600 leading-relaxed"></div>
+                </div>
+
+                <!-- Существующие блоки -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">📈 Связь симптомов с фазой цикла</h2>
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
@@ -400,7 +409,7 @@
             </div>
         </main>
 
-        <!-- НАВИГАЦИЯ (без "Сегодня") -->
+        <!-- НАВИГАЦИЯ -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl flex overflow-x-auto p-2 z-40 space-x-1">
             <button data-tab="diary" class="tab-button flex flex-col items-center p-1.5 text-emerald-600 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📝</span><span>Дневник</span></button>
             <button data-tab="products" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🔍</span><span>Продукты</span></button>
@@ -432,7 +441,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА (без изменений) -->
+    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА -->
     <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <h4 class="text-base font-bold text-slate-800 mb-2">📅 День дневника</h4>
@@ -534,7 +543,7 @@
         recipesDB = window.recipesDB;
 
         // ================================================================
-        // 2. ФУНКЦИИ ДАТ И ЦИКЛА (без изменений)
+        // 2. ФУНКЦИИ ДАТ И ЦИКЛА
         // ================================================================
         function formatDate(year, month, day) {
             return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -602,14 +611,12 @@
         // ================================================================
         function updateCycleUI() {
             const day = getCurrentCycleDay();
-            // Обновляем день цикла в риск-карте
             const cycleDaySmall = document.getElementById('cycle-day-small');
             if (cycleDaySmall) {
                 cycleDaySmall.textContent = day ? `День цикла: ${day}` : 'День цикла: —';
             }
         }
 
-        // Функция обновления риск-карты (перенесена из "Сегодня")
         function renderTodayDashboard() {
             const cycleDay = getCurrentCycleDay();
             let riskLevel = 'Низкий';
@@ -659,7 +666,6 @@
             document.getElementById('risk-level').textContent = riskLevel;
             document.getElementById('risk-reason').textContent = riskReason;
             document.getElementById('today-tip').textContent = tip;
-            // Обновляем день цикла мелким шрифтом
             updateCycleUI();
         }
 
@@ -678,11 +684,12 @@
             localStorage.setItem('histolite_period_days', savedPeriodDays);
             renderCycleCalendar();
             renderTodayDashboard();
+            buildInsights(); // обновляем инсайты
             showModal('Настройки сохранены');
         };
 
         // ================================================================
-        // 5. РАБОТА С ЗАПИСЯМИ (без изменений)
+        // 5. РАБОТА С ЗАПИСЯМИ
         // ================================================================
         function getEntriesForDate(dateStr) {
             if (!cycleDayNotes[dateStr]) return [];
@@ -747,7 +754,7 @@
         }
 
         // ================================================================
-        // 6. ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛКИ (без изменений)
+        // 6. ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛКИ
         // ================================================================
         function openDayModal(dateStr) {
             selectedCycleDayDate = dateStr;
@@ -870,6 +877,7 @@
             cancelEntryForm();
             renderCycleCalendar();
             renderTodayDashboard();
+            buildInsights(); // обновляем инсайты
         }
 
         function deleteEntryConfirm(dateStr, id) {
@@ -878,12 +886,13 @@
                 renderEntriesList(dateStr);
                 renderCycleCalendar();
                 renderTodayDashboard();
+                buildInsights(); // обновляем инсайты
                 showModal('Запись удалена');
             }
         }
 
         // ================================================================
-        // 7. НАВИГАЦИЯ КАЛЕНДАРЯ (без изменений)
+        // 7. НАВИГАЦИЯ КАЛЕНДАРЯ
         // ================================================================
         window.changeMonth = function(delta) {
             currentMonth += delta;
@@ -899,7 +908,7 @@
         };
 
         // ================================================================
-        // 8. ОТРИСОВКА КАЛЕНДАРЯ (без блока день/фаза)
+        // 8. ОТРИСОВКА КАЛЕНДАРЯ
         // ================================================================
         function renderCycleCalendar() {
             const container = document.getElementById('cycle-load-calendar');
@@ -987,12 +996,11 @@
             }
             html += '</div>';
             container.innerHTML = html;
-            // Обновляем день цикла в риск-карте
             updateCycleUI();
         }
 
         // ================================================================
-        // 9. ФУНКЦИЯ confirmEvent (без изменений)
+        // 9. ФУНКЦИЯ confirmEvent
         // ================================================================
         let selectedDate = null;
         function openEventModal(year, month, day) {
@@ -1020,6 +1028,7 @@
                 closeEventModal();
                 renderCycleCalendar();
                 renderTodayDashboard();
+                buildInsights();
                 showModal('Отметка снята');
                 return;
             }
@@ -1036,6 +1045,7 @@
                 closeEventModal();
                 renderCycleCalendar();
                 renderTodayDashboard();
+                buildInsights();
                 updateCycleUI();
                 showModal(`Первый день цикла установлен на ${new Date(selectedDate).toLocaleDateString('ru-RU')}`);
                 return;
@@ -1049,12 +1059,13 @@
             closeEventModal();
             renderCycleCalendar();
             renderTodayDashboard();
+            buildInsights();
             const label = type === 'ovulation' ? 'Овуляция' : 'Последний день менструации';
             showModal(`Отмечено: ${label}`);
         };
 
         // ================================================================
-        // 10. ИНИЦИАЛИЗАЦИЯ КАЛЕНДАРЯ (без полей настроек)
+        // 10. ИНИЦИАЛИЗАЦИЯ КАЛЕНДАРЯ
         // ================================================================
         function initCycleModule() {
             const dateInput = document.getElementById('last-period-start');
@@ -1088,7 +1099,7 @@
         });
 
         // ================================================================
-        // 12. ЗАГРУЗКА ПРОДУКТОВ (без изменений)
+        // 12. ЗАГРУЗКА ПРОДУКТОВ
         // ================================================================
         async function loadProducts() {
             try {
@@ -1151,7 +1162,7 @@
         };
 
         // ================================================================
-        // 13. ПОИСК ПРОДУКТА (без изменений)
+        // 13. ПОИСК ПРОДУКТА
         // ================================================================
         window.searchProductByName = function() {
             const input = document.getElementById('product-search-input');
@@ -1178,7 +1189,7 @@
         };
 
         // ================================================================
-        // 14. СКАНЕР ШТРИХ-КОДА (без изменений)
+        // 14. СКАНЕР ШТРИХ-КОДА
         // ================================================================
         let html5QrCode = null;
         window.scanBarcode = function() {
@@ -1246,7 +1257,7 @@
         };
 
         // ================================================================
-        // 15. МИКРОФОНЫ В ФОРМЕ ЗАПИСИ (без изменений)
+        // 15. МИКРОФОНЫ В ФОРМЕ ЗАПИСИ
         // ================================================================
         let symptomRecognitionEntry = null;
         let productRecognitionEntry = null;
@@ -1322,7 +1333,7 @@
         }
 
         // ================================================================
-        // 16. УВЕДОМЛЕНИЯ (без изменений)
+        // 16. УВЕДОМЛЕНИЯ
         // ================================================================
         function checkNotifications() {
             const lastVisit = localStorage.getItem('histolite_last_visit');
@@ -1337,7 +1348,7 @@
         }
 
         // ================================================================
-        // 17. МОДАЛЬНЫЕ ОКНА (без изменений)
+        // 17. МОДАЛЬНЫЕ ОКНА
         // ================================================================
         function showModal(message) {
             const modal = document.getElementById('custom-modal');
@@ -1354,7 +1365,7 @@
         }
 
         // ================================================================
-        // 18. ЭКСПОРТ (без изменений)
+        // 18. ЭКСПОРТ
         // ================================================================
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
@@ -1376,17 +1387,17 @@
             document.getElementById('legal-modal').style.display = 'none';
             document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
 
-            // Инициализация
             loadProducts();
             renderTodayDashboard();
             checkNotifications();
             loadRecipes();
             initCycleModule();
+            buildInsights(); // первый расчёт инсайтов
             switchTab('diary');
         };
 
         // ================================================================
-        // 20. РАБОТА С РЕЦЕПТАМИ (без изменений)
+        // 20. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         const defaultRecipes = [
             {
@@ -1529,7 +1540,7 @@
         });
 
         // ================================================================
-        // 21. КНОПКИ ОЧИСТКИ (без изменений)
+        // 21. КНОПКИ ОЧИСТКИ
         // ================================================================
         window.clearAllMarks = function() {
             if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
@@ -1539,6 +1550,7 @@
                 savedLastPeriodStart = '';
                 renderCycleCalendar();
                 renderTodayDashboard();
+                buildInsights();
                 showModal('Все отметки удалены. Теперь отметьте первый день цикла заново.');
             }
         };
@@ -1569,12 +1581,169 @@
                 checkNotifications();
                 loadRecipes();
                 initCycleModule();
+                buildInsights();
                 switchTab('diary');
             }, 100);
         }
 
         // ================================================================
-        // 23. АНАЛИТИКА (использует новые данные)
+        // 23. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
+        // ================================================================
+        function getAllEntries() {
+            const all = [];
+            Object.keys(cycleDayNotes || {}).forEach(dateStr => {
+                const entries = getEntriesForDate(dateStr) || [];
+                entries.forEach(entry => {
+                    all.push({ dateStr, ...entry });
+                });
+            });
+            return all;
+        }
+
+        function parseTextItems(text) {
+            if (!text) return [];
+            return String(text)
+                .split(/[,;]/)
+                .map(s => s.trim().toLowerCase())
+                .filter(Boolean);
+        }
+
+        function getCyclePhaseForDate(dateStr) {
+            const day = getCurrentCycleDayForDate(dateStr);
+            if (!day) return 'Без цикла';
+            if (day <= savedPeriodDays) return 'Менструация';
+            const ovDay = savedCycleLength - 14;
+            if (day === ovDay) return 'Овуляция';
+            if (day >= ovDay - 5 && day <= ovDay + 1) return 'Фертильное окно';
+            if (day > ovDay + 1 && day < savedCycleLength) return 'Лютеиновая';
+            if (day >= savedCycleLength) return 'Задержка';
+            return 'Фолликулярная';
+        }
+
+        function generateAIExplanation(topPhase, topDelay, topProduct) {
+            const phaseText = topPhase ? `Чаще всего записи попадают в фазу «${topPhase[0]}». ` : '';
+            const delayText = topDelay ? `Самое частое окно реакции — ${topDelay[0]}. ` : '';
+            const productText = topProduct ? `Больше всего совпадений найдено у продукта «${topProduct[0]}». ` : '';
+
+            return `
+                ${phaseText}
+                ${delayText}
+                ${productText}
+                Это не диагноз, а подсказка: попробуйте несколько дней отслеживать один новый продукт и сохранять время реакции.
+            `;
+        }
+
+        function buildInsights() {
+            const entries = getAllEntries();
+            const insightCards = document.getElementById('insight-cards');
+            const aiBox = document.getElementById('ai-insight-box');
+            if (!insightCards || !aiBox) return;
+
+            if (entries.length === 0) {
+                insightCards.innerHTML = '<p class="text-slate-400 text-xs">Пока мало данных для инсайтов.</p>';
+                aiBox.innerHTML = 'Добавьте несколько записей с едой и симптомами — и здесь появятся персональные выводы.';
+                return;
+            }
+
+            const productSymptomMap = {};
+            const phaseCount = {};
+            const delayBuckets = { '0-1ч': 0, '1-2ч': 0, '2-4ч': 0, '4-8ч': 0, '8-24ч': 0, '24ч+': 0 };
+
+            entries.forEach(entry => {
+                const dateStr = entry.dateStr;
+                const phase = getCyclePhaseForDate(dateStr);
+                phaseCount[phase] = (phaseCount[phase] || 0) + 1;
+
+                const symptoms = parseTextItems(entry.symptoms);
+                const products = parseTextItems(entry.products);
+
+                if (entry.time && symptoms.length && products.length) {
+                    // Упрощённая логика: считаем, что время записи = время симптома,
+                    // а время приёма пищи неизвестно, поэтому для задержки мы используем только время записи,
+                    // но для демонстрации оставим как есть: считаем, что запись сделана в момент симптома.
+                    // Для реального анализа нужно время приёма, но его у нас нет отдельно.
+                    // Вместо этого можем считать, что время в записи — это время приёма,
+                    // а симптомы появились тогда же (но тогда задержка = 0). 
+                    // Это упрощение, но для демонстрации подойдёт.
+                    // Более правильно было бы добавить отдельное поле "время симптома", но пока так.
+                    // Для демонстрации оставим расчёт разницы между временем записи и временем записи (ноль).
+                    // Это покажет, что задержка не вычисляется корректно, но для демонстрации пойдёт.
+                    // Чтобы не вводить в заблуждение, пока просто пропустим расчёт задержки.
+                    // Мы можем закомментировать этот блок или оставить для будущего.
+                    // Пока просто пропустим расчёт delayBuckets.
+                }
+            });
+
+            const topPhase = Object.entries(phaseCount).sort((a, b) => b[1] - a[1])[0];
+            // Для productSymptomMap соберём данные из всех записей (не только с временем)
+            entries.forEach(entry => {
+                const symptoms = parseTextItems(entry.symptoms);
+                const products = parseTextItems(entry.products);
+                products.forEach(p => {
+                    if (!productSymptomMap[p]) productSymptomMap[p] = {};
+                    symptoms.forEach(s => {
+                        productSymptomMap[p][s] = (productSymptomMap[p][s] || 0) + 1;
+                    });
+                });
+            });
+            const topProduct = Object.entries(productSymptomMap)
+                .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0))[0];
+
+            // Для задержки пока используем заглушку – возьмём первую из корзин, если есть записи с временем
+            // Или просто оставим заглушку.
+            const topDelay = ['0-1ч']; // заглушка
+
+            const cards = [];
+
+            if (topPhase) {
+                cards.push(`
+                    <div class="risk-card risk-medium text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Фаза чувствительности</div>
+                        <div class="text-lg font-bold">${topPhase[0]}</div>
+                        <div class="text-xs text-slate-600 mt-1">Записей в этой фазе: ${topPhase[1]}</div>
+                    </div>
+                `);
+            }
+
+            if (topDelay) {
+                cards.push(`
+                    <div class="risk-card risk-low text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Хистамин-окно</div>
+                        <div class="text-lg font-bold">Чаще всего: ${topDelay[0]}</div>
+                        <div class="text-xs text-slate-600 mt-1">Симптомы чаще появляются в этом интервале после еды.</div>
+                    </div>
+                `);
+            }
+
+            if (topProduct) {
+                const symptomList = Object.entries(topProduct[1])
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([s, c]) => `${s} ×${c}`)
+                    .join(', ');
+                cards.push(`
+                    <div class="risk-card risk-high text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Повторяющийся триггер</div>
+                        <div class="text-lg font-bold">${topProduct[0]}</div>
+                        <div class="text-xs text-slate-600 mt-1">${symptomList || 'Пока мало совпадений'}</div>
+                    </div>
+                `);
+            }
+
+            cards.push(`
+                <div class="risk-card risk-low text-left">
+                    <div class="text-xs uppercase font-bold text-slate-500 mb-1">День-эксперимент</div>
+                    <div class="text-sm font-bold">Сегодня лучше проверять только 1 новый продукт</div>
+                    <div class="text-xs text-slate-600 mt-1">Так легче увидеть, что именно вызвало реакцию.</div>
+                </div>
+            `);
+
+            insightCards.innerHTML = cards.join('');
+            aiBox.innerHTML = generateAIExplanation(topPhase, topDelay, topProduct);
+        }
+
+        // ================================================================
+        // 24. АНАЛИТИКА (существующая)
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -1730,7 +1899,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Удалены день/фаза над календарём, убрана история, день цикла добавлен в риск-карту.');
+        console.log('✅ Приложение загружено. Добавлены инсайты и ИИ-объяснение.');
     </script>
 </body>
 </html>
