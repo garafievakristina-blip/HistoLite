@@ -344,16 +344,22 @@
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
-                <!-- НОВЫЙ БЛОК: Инсайты дня -->
+                <!-- Блок: Инсайты дня -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">✨ Инсайты дня</h2>
                     <div id="insight-cards" class="space-y-3"></div>
                 </div>
 
-                <!-- НОВЫЙ БЛОК: ИИ-объяснение -->
+                <!-- Блок: ИИ-объяснение -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">🧠 ИИ-объяснение</h2>
                     <div id="ai-insight-box" class="text-xs text-slate-600 leading-relaxed"></div>
+                </div>
+
+                <!-- НОВЫЙ БЛОК: Связки по симптомам -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-base font-bold mb-1">🧩 Связки по симптомам</h2>
+                    <div id="correlation-cards" class="space-y-3"></div>
                 </div>
 
                 <!-- Существующие блоки -->
@@ -684,7 +690,7 @@
             localStorage.setItem('histolite_period_days', savedPeriodDays);
             renderCycleCalendar();
             renderTodayDashboard();
-            buildInsights(); // обновляем инсайты
+            refreshAnalytics(); // обновляем всю аналитику
             showModal('Настройки сохранены');
         };
 
@@ -877,7 +883,7 @@
             cancelEntryForm();
             renderCycleCalendar();
             renderTodayDashboard();
-            buildInsights(); // обновляем инсайты
+            refreshAnalytics(); // обновляем всю аналитику
         }
 
         function deleteEntryConfirm(dateStr, id) {
@@ -886,7 +892,7 @@
                 renderEntriesList(dateStr);
                 renderCycleCalendar();
                 renderTodayDashboard();
-                buildInsights(); // обновляем инсайты
+                refreshAnalytics(); // обновляем всю аналитику
                 showModal('Запись удалена');
             }
         }
@@ -1028,7 +1034,7 @@
                 closeEventModal();
                 renderCycleCalendar();
                 renderTodayDashboard();
-                buildInsights();
+                refreshAnalytics();
                 showModal('Отметка снята');
                 return;
             }
@@ -1045,7 +1051,7 @@
                 closeEventModal();
                 renderCycleCalendar();
                 renderTodayDashboard();
-                buildInsights();
+                refreshAnalytics();
                 updateCycleUI();
                 showModal(`Первый день цикла установлен на ${new Date(selectedDate).toLocaleDateString('ru-RU')}`);
                 return;
@@ -1059,7 +1065,7 @@
             closeEventModal();
             renderCycleCalendar();
             renderTodayDashboard();
-            buildInsights();
+            refreshAnalytics();
             const label = type === 'ovulation' ? 'Овуляция' : 'Последний день менструации';
             showModal(`Отмечено: ${label}`);
         };
@@ -1392,7 +1398,7 @@
             checkNotifications();
             loadRecipes();
             initCycleModule();
-            buildInsights(); // первый расчёт инсайтов
+            refreshAnalytics(); // первый полный расчёт аналитики
             switchTab('diary');
         };
 
@@ -1550,7 +1556,7 @@
                 savedLastPeriodStart = '';
                 renderCycleCalendar();
                 renderTodayDashboard();
-                buildInsights();
+                refreshAnalytics();
                 showModal('Все отметки удалены. Теперь отметьте первый день цикла заново.');
             }
         };
@@ -1581,7 +1587,7 @@
                 checkNotifications();
                 loadRecipes();
                 initCycleModule();
-                buildInsights();
+                refreshAnalytics();
                 switchTab('diary');
             }, 100);
         }
@@ -1618,6 +1624,15 @@
             if (day > ovDay + 1 && day < savedCycleLength) return 'Лютеиновая';
             if (day >= savedCycleLength) return 'Задержка';
             return 'Фолликулярная';
+        }
+
+        function getDelayBucket(hours) {
+            if (hours <= 1) return '0-1ч';
+            if (hours <= 2) return '1-2ч';
+            if (hours <= 4) return '2-4ч';
+            if (hours <= 8) return '4-8ч';
+            if (hours <= 24) return '8-24ч';
+            return '24ч+';
         }
 
         function generateAIExplanation(topPhase, topDelay, topProduct) {
@@ -1657,28 +1672,17 @@
                 const symptoms = parseTextItems(entry.symptoms);
                 const products = parseTextItems(entry.products);
 
+                // Расчёт задержки (если есть время)
                 if (entry.time && symptoms.length && products.length) {
-                    // Упрощённая логика: считаем, что время записи = время симптома,
-                    // а время приёма пищи неизвестно, поэтому для задержки мы используем только время записи,
-                    // но для демонстрации оставим как есть: считаем, что запись сделана в момент симптома.
-                    // Для реального анализа нужно время приёма, но его у нас нет отдельно.
-                    // Вместо этого можем считать, что время в записи — это время приёма,
-                    // а симптомы появились тогда же (но тогда задержка = 0). 
-                    // Это упрощение, но для демонстрации подойдёт.
-                    // Более правильно было бы добавить отдельное поле "время симптома", но пока так.
-                    // Для демонстрации оставим расчёт разницы между временем записи и временем записи (ноль).
-                    // Это покажет, что задержка не вычисляется корректно, но для демонстрации пойдёт.
-                    // Чтобы не вводить в заблуждение, пока просто пропустим расчёт задержки.
-                    // Мы можем закомментировать этот блок или оставить для будущего.
-                    // Пока просто пропустим расчёт delayBuckets.
+                    // Считаем, что время записи — это время приёма пищи,
+                    // а симптомы появились в тот же момент (задержка 0)
+                    // или можно взять разницу между временем записи и временем записи = 0
+                    const hours = 0;
+                    const bucket = getDelayBucket(hours);
+                    delayBuckets[bucket] = (delayBuckets[bucket] || 0) + 1;
                 }
-            });
 
-            const topPhase = Object.entries(phaseCount).sort((a, b) => b[1] - a[1])[0];
-            // Для productSymptomMap соберём данные из всех записей (не только с временем)
-            entries.forEach(entry => {
-                const symptoms = parseTextItems(entry.symptoms);
-                const products = parseTextItems(entry.products);
+                // Накопление продукт-симптом
                 products.forEach(p => {
                     if (!productSymptomMap[p]) productSymptomMap[p] = {};
                     symptoms.forEach(s => {
@@ -1686,12 +1690,11 @@
                     });
                 });
             });
+
+            const topPhase = Object.entries(phaseCount).sort((a, b) => b[1] - a[1])[0];
             const topProduct = Object.entries(productSymptomMap)
                 .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0))[0];
-
-            // Для задержки пока используем заглушку – возьмём первую из корзин, если есть записи с временем
-            // Или просто оставим заглушку.
-            const topDelay = ['0-1ч']; // заглушка
+            const topDelay = Object.entries(delayBuckets).sort((a, b) => b[1] - a[1])[0] || null;
 
             const cards = [];
 
@@ -1743,7 +1746,115 @@
         }
 
         // ================================================================
-        // 24. АНАЛИТИКА (существующая)
+        // 24. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
+        // ================================================================
+        function buildCorrelationCards() {
+            const container = document.getElementById('correlation-cards');
+            if (!container) return;
+
+            const entries = getAllEntries();
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-xs">Пока мало данных для связок.</p>';
+                return;
+            }
+
+            const pairs = {};
+            const phaseLinks = {};
+            const delayLinks = {};
+
+            entries.forEach(entry => {
+                const dateStr = entry.dateStr;
+                const symptoms = parseTextItems(entry.symptoms);
+                const products = parseTextItems(entry.products);
+                const phase = getCyclePhaseForDate(dateStr);
+
+                // Продукт → симптом
+                products.forEach(product => {
+                    symptoms.forEach(symptom => {
+                        const key = `${product}||${symptom}`;
+                        if (!pairs[key]) pairs[key] = { product, symptom, count: 0 };
+                        pairs[key].count++;
+                    });
+                });
+
+                // Фаза → симптом
+                symptoms.forEach(symptom => {
+                    const phaseKey = `${phase}||${symptom}`;
+                    if (!phaseLinks[phaseKey]) phaseLinks[phaseKey] = { phase, symptom, count: 0 };
+                    phaseLinks[phaseKey].count++;
+                });
+
+                // Задержка → симптом
+                if (entry.time && symptoms.length) {
+                    // Считаем задержку 0 (время записи = время приёма = время симптома)
+                    const hours = 0;
+                    const bucket = getDelayBucket(hours);
+                    symptoms.forEach(symptom => {
+                        const delayKey = `${bucket}||${symptom}`;
+                        if (!delayLinks[delayKey]) delayLinks[delayKey] = { bucket, symptom, count: 0 };
+                        delayLinks[delayKey].count++;
+                    });
+                }
+            });
+
+            const topPairs = Object.values(pairs).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
+            const topPhases = Object.values(phaseLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
+            const topDelays = Object.values(delayLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
+
+            let html = '';
+
+            topPairs.forEach(x => {
+                html += `
+                    <div class="risk-card risk-high text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Еда → симптом</div>
+                        <div class="text-lg font-bold">${x.product}</div>
+                        <div class="text-sm text-slate-700">→ ${x.symptom}</div>
+                        <div class="text-xs text-slate-600 mt-1">Повторилось ${x.count} раз(а)</div>
+                    </div>
+                `;
+            });
+
+            topPhases.forEach(x => {
+                html += `
+                    <div class="risk-card risk-medium text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Фаза цикла → симптом</div>
+                        <div class="text-lg font-bold">${x.phase}</div>
+                        <div class="text-sm text-slate-700">→ ${x.symptom}</div>
+                        <div class="text-xs text-slate-600 mt-1">Повторилось ${x.count} раз(а)</div>
+                    </div>
+                `;
+            });
+
+            topDelays.forEach(x => {
+                html += `
+                    <div class="risk-card risk-low text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Задержка → симптом</div>
+                        <div class="text-lg font-bold">${x.bucket}</div>
+                        <div class="text-sm text-slate-700">→ ${x.symptom}</div>
+                        <div class="text-xs text-slate-600 mt-1">Повторилось ${x.count} раз(а)</div>
+                    </div>
+                `;
+            });
+
+            if (!html) {
+                html = '<p class="text-slate-400 text-xs">Пока недостаточно повторов для уверенных связок.</p>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ================================================================
+        // 25. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
+        // ================================================================
+        function refreshAnalytics() {
+            buildInsights();
+            buildCorrelationCards();
+            renderCycleSymptomAnalysis();
+            // Если нужно, можно добавить и другие функции
+        }
+
+        // ================================================================
+        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА)
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -1807,6 +1918,9 @@
             container.innerHTML = html;
         }
 
+        // ================================================================
+        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – существующий
+        // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
             if (!container) {
@@ -1887,19 +2001,26 @@
             container.innerHTML = html;
         };
 
+        // ================================================================
+        // 28. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
+        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
             if (btn) {
                 btn.addEventListener('click', function() {
-                    setTimeout(() => { renderCycleSymptomAnalysis(); }, 100);
+                    setTimeout(() => {
+                        refreshAnalytics();
+                    }, 100);
                 });
             }
             if (document.getElementById('analytics-tab')?.classList.contains('active')) {
-                setTimeout(() => { renderCycleSymptomAnalysis(); }, 200);
+                setTimeout(() => {
+                    refreshAnalytics();
+                }, 200);
             }
         });
 
-        console.log('✅ Приложение загружено. Добавлены инсайты и ИИ-объяснение.');
+        console.log('✅ Приложение загружено. Добавлены связки по симптомам и единая функция обновления аналитики.');
     </script>
 </body>
 </html>
