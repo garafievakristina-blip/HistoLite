@@ -254,41 +254,178 @@
         }
         .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
         .mic-error { background-color: #ef4444 !important; }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ КАЛЕНДАРЯ ===== */
         .cycle-day-cell {
             aspect-ratio: 1 / 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.1s;
+            border-radius: 18px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
             cursor: pointer;
             user-select: none;
             position: relative;
-            padding: 2px;
-            line-height: 1.2;
+            padding: 4px;
+            line-height: 1.1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
-        .cycle-day-cell:hover { opacity: 0.8; transform: scale(0.95); }
-        .cycle-day-cell.today { background-color: #D6EAF8 !important; border: 2px solid #2980B9; box-shadow: 0 0 4px #2980B9; }
-        .cycle-day-cell.period-day { background-color: #FADBD8 !important; border: 2px solid #E74C3C; box-shadow: 0 0 4px #E74C3C; }
-        .cycle-day-cell.ovulation-day { background-color: #FCF3CF !important; border: 2px solid #F39C12; box-shadow: 0 0 4px #F39C12; }
-        .cycle-day-cell.fertile-day { background-color: #D5F5E3 !important; border: 2px solid #27AE60; box-shadow: 0 0 4px #27AE60; }
-        .cycle-day-cell.next-period-day { background-color: #E8DAEF !important; border: 2px dashed #8E44AD; box-shadow: 0 0 4px #8E44AD; }
-        .cycle-day-cell.delay-day { background-color: #EAECEE !important; color: #7F8C8D; border: 1px solid #BDC3C7; }
-        .cycle-day-cell.has-note::after { content: '📝'; position: absolute; top: 1px; right: 3px; font-size: 0.5rem; }
+
+        .cycle-day-cell:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(47, 47, 42, 0.07);
+        }
+
+        .cycle-day-cell.today {
+            background: rgba(156, 168, 136, 0.16) !important;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 0 2px rgba(156, 168, 136, 0.10);
+        }
+
+        .cycle-day-cell.period-day {
+            background: rgba(217, 178, 169, 0.18) !important;
+            border: 1px solid rgba(217, 178, 169, 0.8);
+        }
+
+        .cycle-day-cell.ovulation-day {
+            background: rgba(185, 195, 165, 0.22) !important;
+            border: 1px solid rgba(185, 195, 165, 0.95);
+        }
+
+        .cycle-day-cell.fertile-day {
+            background: rgba(156, 168, 136, 0.12) !important;
+            border: 1px solid rgba(156, 168, 136, 0.6);
+        }
+
+        .cycle-day-cell.next-period-day {
+            background: rgba(122, 117, 109, 0.08) !important;
+            border: 1px dashed rgba(122, 117, 109, 0.55);
+        }
+
+        .cycle-day-cell.delay-day {
+            background: rgba(122, 117, 109, 0.05) !important;
+            color: var(--muted);
+            border: 1px solid rgba(122, 117, 109, 0.35);
+        }
+
+        .cycle-day-cell.has-note::after {
+            content: '📝';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.5rem;
+        }
+
         .calendar-nav-btn {
             padding: 4px 10px;
             border-radius: 9999px;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid var(--border);
+            background: var(--surface);
             cursor: pointer;
             transition: all 0.15s;
+            color: var(--text);
+            font-size: 0.8rem;
         }
-        .calendar-nav-btn:hover { background: #f1f5f9; }
-        .calendar-month-label { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
+        .calendar-nav-btn:hover {
+            background: var(--surface-2);
+        }
+        .calendar-month-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
 
+        /* ===== СТИЛИ ДЛЯ КАРТОЧЕК РЕЦЕПТОВ ===== */
+        .recipe-soft-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .recipe-soft-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(47, 47, 42, 0.08);
+        }
+
+        .recipe-image-wrap img {
+            width: 100%;
+            height: 136px;
+            object-fit: cover;
+            display: block;
+            background: #f3ede4;
+        }
+
+        .recipe-content {
+            padding: 14px;
+        }
+
+        .recipe-title {
+            font-size: 17px;
+            line-height: 1.1;
+            font-family: "Cormorant Garamond", serif;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .recipe-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .recipe-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .recipe-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            background: rgba(185,195,165,0.18);
+            color: var(--primary-dark);
+            border: 1px solid rgba(185,195,165,0.28);
+        }
+
+        .recipe-level {
+            background: rgba(156,168,136,0.18);
+        }
+
+        /* ===== СТИЛИ ДЛЯ МОДАЛКИ РЕЦЕПТОВ ===== */
+        #recipe-modal .bg-white {
+            background: var(--surface);
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            box-shadow: 0 24px 60px rgba(47, 47, 42, 0.16);
+        }
+
+        #recipe-modal h3,
+        #recipe-modal h4 {
+            font-family: "Cormorant Garamond", serif;
+        }
+
+        #recipe-modal .bg-slate-100,
+        #recipe-modal .bg-amber-50 {
+            background: rgba(156,168,136,0.10) !important;
+            color: var(--text) !important;
+            border-color: rgba(156,168,136,0.22) !important;
+        }
+
+        /* Остальные оригинальные стили */
         .mic-btn-modal {
             background: #3b82f6;
             color: white;
@@ -438,13 +575,14 @@
                         <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
                     </div>
                     <div id="cycle-load-calendar" class="cycle-calendar"></div>
-                    <div class="flex flex-wrap gap-3 mt-2 text-xs">
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FADBD8; border:2px solid #E74C3C; border-radius:4px;"></span> Менструация</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FCF3CF; border:2px solid #F39C12; border-radius:4px;"></span> Овуляция</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D5F5E3; border:2px solid #27AE60; border-radius:4px;"></span> Фертильное окно</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#E8DAEF; border:2px dashed #8E44AD; border-radius:4px;"></span> Ожидаемый день</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D6EAF8; border:2px solid #2980B9; border-radius:4px;"></span> Сегодня</span>
+                    <!-- ОБНОВЛЁННАЯ ЛЕГЕНДА -->
+                    <div class="flex flex-wrap gap-3 mt-2 text-xs text-[var(--muted)]">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(217,178,169,0.22); border:1px solid rgba(217,178,169,0.8); border-radius:9999px;"></span> Менструация</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(185,195,165,0.22); border:1px solid rgba(185,195,165,0.9); border-radius:9999px;"></span> Овуляция</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(156,168,136,0.16); border:1px solid rgba(156,168,136,0.75); border-radius:9999px;"></span> Фертильное окно</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(122,117,109,0.10); border:1px dashed rgba(122,117,109,0.55); border-radius:9999px;"></span> Ожидаемый день</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(122,117,109,0.05); border:1px solid rgba(122,117,109,0.35); border-radius:9999px;"></span> Задержка</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(156,168,136,0.18); border:1px solid var(--primary); border-radius:9999px;"></span> Сегодня</span>
                         <span class="flex items-center gap-1">📝 Заметка</span>
                     </div>
                 </div>
@@ -1111,10 +1249,9 @@
                 const isToday = dateStr === todayStr;
                 const entries = getEntriesForDate(dateStr);
                 const hasNote = entries.length > 0;
-                let bg = 'bg-slate-100';
-                let text = 'text-slate-600';
-                let extra = '';
+                let extraClasses = '';
                 let label = String(d);
+
                 const diffDays = start ? Math.floor((dateObj - start) / (1000 * 60 * 60 * 24)) + 1 : null;
                 const isPeriod = diffDays !== null && diffDays >= 1 && diffDays <= savedPeriodDays;
                 const isOvulation = ovulation && dateStr === formatDate(ovulation.getFullYear(), ovulation.getMonth(), ovulation.getDate());
@@ -1124,41 +1261,31 @@
                 if (delayDays > 0 && nextPeriod && dateObj > nextPeriod && !isPeriod && !isNextPeriod) {
                     isDelay = true;
                 }
+
+                // Добавляем классы состояния (без цвета, только модификаторы)
                 if (isPeriod) {
-                    bg = 'bg-red-200';
-                    text = 'text-red-800';
-                    extra += ' period-day';
+                    extraClasses += ' period-day';
                 } else if (isOvulation) {
-                    bg = 'bg-amber-200';
-                    text = 'text-amber-800';
-                    extra += ' ovulation-day';
+                    extraClasses += ' ovulation-day';
                 } else if (isFertile) {
-                    bg = 'bg-green-200';
-                    text = 'text-green-800';
-                    extra += ' fertile-day';
+                    extraClasses += ' fertile-day';
                 } else if (isNextPeriod) {
-                    bg = 'bg-violet-200';
-                    text = 'text-violet-800';
-                    extra += ' next-period-day';
+                    extraClasses += ' next-period-day';
                 } else if (isDelay) {
-                    bg = 'bg-violet-100';
-                    text = 'text-violet-700';
-                    extra += ' delay-day';
+                    extraClasses += ' delay-day';
                     const diffFromNext = Math.floor((dateObj - nextPeriod) / (1000 * 60 * 60 * 24));
                     label = `+${diffFromNext}`;
                 }
+
                 if (isToday) {
-                    extra += ' today';
-                    if (!isPeriod && !isOvulation && !isFertile && !isNextPeriod && !isDelay) {
-                        bg = 'bg-blue-300';
-                        text = 'text-white font-bold';
-                    }
+                    extraClasses += ' today';
                 }
                 if (hasNote) {
-                    extra += ' has-note';
+                    extraClasses += ' has-note';
                 }
+
                 html += `
-                    <div class="cycle-day-cell ${bg} ${text} ${extra}"
+                    <div class="cycle-day-cell ${extraClasses}"
                          data-date="${dateStr}"
                          onclick="openDayModal('${dateStr}')">
                         <div>${label}</div>
@@ -1615,6 +1742,8 @@
                 container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
             }
         }
+
+        // ===== ОБНОВЛЁННАЯ ФУНКЦИЯ ОТРИСОВКИ РЕЦЕПТОВ =====
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) return;
@@ -1638,25 +1767,31 @@
                 container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">По вашему запросу ничего не найдено.</p>';
                 return;
             }
+
             container.innerHTML = filtered.map(r => `
-                <div class="border border-slate-200 rounded-xl p-3 bg-white hover:shadow-md transition cursor-pointer" onclick="openRecipeModal(${r.id})">
-                    <img src="${r.image || 'https://via.placeholder.com/300x200?text=Рецепт'}" alt="${r.name}" class="w-full h-32 object-cover rounded-lg mb-2" onerror="this.src='https://via.placeholder.com/300x200?text=Изображение+отсутствует'">
-                    <h4 class="font-bold text-sm text-slate-800">${r.name}</h4>
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>${r.category || ''}</span>
-                        <span>⏱ ${r.prep_time || 0} мин</span>
+                <div class="recipe-soft-card" onclick="openRecipeModal(${r.id})">
+                    <div class="recipe-image-wrap">
+                        <img src="${r.image || 'https://via.placeholder.com/300x200?text=Recipe'}" alt="${r.name}" onerror="this.src='https://via.placeholder.com/300x200?text=Image'">
                     </div>
-                    <div class="mt-1 flex items-center gap-1 flex-wrap">
-                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100">
-                            ${r.histamine_level === 'низкий' ? '🟢 Низкий' : r.histamine_level === 'средний' ? '🟡 Средний' : '🔴 Высокий'}
-                        </span>
-                        ${r.gluten_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">🌾 БГ</span>' : ''}
-                        ${r.lactose_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">🥛 БЛ</span>' : ''}
-                        ${r.dairy_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">🧈 БМ</span>' : ''}
+                    <div class="recipe-content">
+                        <h4 class="recipe-title">${r.name}</h4>
+                        <div class="recipe-meta">
+                            <span>${r.category || ''}</span>
+                            <span>⏱ ${r.prep_time || 0} мин</span>
+                        </div>
+                        <div class="recipe-tags">
+                            <span class="recipe-tag recipe-level">
+                                ${r.histamine_level === 'низкий' ? 'Низкий' : r.histamine_level === 'средний' ? 'Средний' : 'Высокий'}
+                            </span>
+                            ${r.gluten_free ? '<span class="recipe-tag">Без глютена</span>' : ''}
+                            ${r.lactose_free ? '<span class="recipe-tag">Без лактозы</span>' : ''}
+                            ${r.dairy_free ? '<span class="recipe-tag">Без молочного</span>' : ''}
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
+
         function openRecipeModal(id) {
             const allRecipes = [...recipesDB, ...userRecipes];
             const recipe = allRecipes.find(r => r.id === id);
@@ -2183,7 +2318,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Визуальная система обновлена.');
+        console.log('✅ Приложение загружено. Визуальная система обновлена: календарь и рецепты приведены к новому стилю.');
     </script>
 </body>
 </html>
