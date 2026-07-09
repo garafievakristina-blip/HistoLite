@@ -191,15 +191,19 @@
         .product-result.medium { border-color: #facc15; background-color: #fef9c3; }
         .product-result.high { border-color: #f87171; background-color: #fee2e2; }
         .product-result.unknown { border-color: #94a3b8; background-color: #f1f5f9; }
+
+        /* ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ RISK-CARD */
         .risk-card {
-            border-radius: 16px;
-            padding: 16px;
+            border-radius: 28px;
+            padding: 18px;
             text-align: center;
             margin-bottom: 16px;
+            box-shadow: var(--shadow);
         }
         .risk-low { background-color: #dcfce7; border: 2px solid #4ade80; }
         .risk-medium { background-color: #fef9c3; border: 2px solid #facc15; }
         .risk-high { background-color: #fee2e2; border: 2px solid #f87171; }
+
         .stat-card {
             background: white;
             border-radius: 12px;
@@ -554,9 +558,9 @@
         <main class="max-w-md mx-auto p-4 space-y-4">
             <!-- ВКЛАДКА ДНЕВНИК (основная) -->
             <div id="diary-tab" class="tab-content active space-y-4">
-                <!-- Блок риск-карты -->
+                <!-- Блок риск-карты (добавлен surface-soft) -->
                 <div id="today-dashboard">
-                    <div id="risk-card" class="risk-card risk-low card-soft p-4">
+                    <div id="risk-card" class="risk-card risk-low card-soft surface-soft p-4">
                         <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
                         <div class="text-2xl font-bold" id="risk-level">Низкий</div>
                         <div class="text-xs text-slate-500" id="risk-reason">Фаза цикла: стабильная</div>
@@ -565,7 +569,7 @@
                     </div>
                 </div>
 
-                <!-- Календарь -->
+                <!-- Календарь: обёрнут в мягкую карточку card-soft -->
                 <div class="card-soft p-4">
                     <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
                     <div class="flex items-center justify-between mb-3">
@@ -574,7 +578,12 @@
                         <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
                         <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
                     </div>
-                    <div id="cycle-load-calendar" class="cycle-calendar"></div>
+
+                    <!-- ДОПОЛНИТЕЛЬНАЯ МЯГКАЯ ПОДЛОЖКА ВОКРУГ КАЛЕНДАРЯ -->
+                    <div class="mt-3 p-3 rounded-2xl bg-[rgba(255,253,249,0.8)] border border-[var(--border)]">
+                        <div id="cycle-load-calendar" class="cycle-calendar"></div>
+                    </div>
+
                     <!-- ОБНОВЛЁННАЯ ЛЕГЕНДА -->
                     <div class="flex flex-wrap gap-3 mt-2 text-xs text-[var(--muted)]">
                         <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(217,178,169,0.22); border:1px solid rgba(217,178,169,0.8); border-radius:9999px;"></span> Менструация</span>
@@ -587,9 +596,9 @@
                     </div>
                 </div>
 
-                <!-- Выпадающий блок настроек -->
+                <!-- Настройки цикла -->
                 <details class="settings-details card-soft p-4">
-                    <summary class="text-sm font-bold text-slate-600">⚙️ Настройки цикла</summary>
+                    <summary class="text-sm font-bold text-[var(--text)]">⚙️ Настройки цикла</summary>
                     <div class="mt-3 grid grid-cols-3 gap-2">
                         <div>
                             <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день</label>
@@ -648,25 +657,18 @@
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
-                <!-- Блок: Инсайты дня -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">✨ Инсайты дня</h2>
                     <div id="insight-cards" class="space-y-3"></div>
                 </div>
-
-                <!-- Блок: ИИ-объяснение -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">🧠 ИИ-объяснение</h2>
                     <div id="ai-insight-box" class="text-xs text-slate-600 leading-relaxed"></div>
                 </div>
-
-                <!-- НОВЫЙ БЛОК: Связки по симптомам -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">🧩 Связки по симптомам</h2>
                     <div id="correlation-cards" class="space-y-3"></div>
                 </div>
-
-                <!-- Существующие блоки -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">📈 Связь симптомов с фазой цикла</h2>
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
@@ -712,9 +714,7 @@
                             <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> 🧈 Без молочных продуктов
                         </label>
                     </div>
-                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Сюда будут загружаться рецепты -->
-                    </div>
+                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                 </div>
             </div>
         </main>
@@ -994,7 +994,7 @@
             localStorage.setItem('histolite_period_days', savedPeriodDays);
             renderCycleCalendar();
             renderTodayDashboard();
-            refreshAnalytics(); // обновляем всю аналитику
+            refreshAnalytics();
             showModal('Настройки сохранены');
         };
 
@@ -1187,7 +1187,7 @@
             cancelEntryForm();
             renderCycleCalendar();
             renderTodayDashboard();
-            refreshAnalytics(); // обновляем всю аналитику
+            refreshAnalytics();
         }
 
         function deleteEntryConfirm(dateStr, id) {
@@ -1196,7 +1196,7 @@
                 renderEntriesList(dateStr);
                 renderCycleCalendar();
                 renderTodayDashboard();
-                refreshAnalytics(); // обновляем всю аналитику
+                refreshAnalytics();
                 showModal('Запись удалена');
             }
         }
@@ -1262,7 +1262,6 @@
                     isDelay = true;
                 }
 
-                // Добавляем классы состояния (без цвета, только модификаторы)
                 if (isPeriod) {
                     extraClasses += ' period-day';
                 } else if (isOvulation) {
@@ -1336,7 +1335,6 @@
                     if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
                 }
                 savedLastPeriodStart = selectedDate;
-                delayStartDate = null;
                 localStorage.removeItem('histolite_delay_start');
                 localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
                 cycleMarks[selectedDate] = 'first_day';
@@ -1691,7 +1689,7 @@
             checkNotifications();
             loadRecipes();
             initCycleModule();
-            refreshAnalytics(); // первый полный расчёт аналитики
+            refreshAnalytics();
             switchTab('diary');
         };
 
@@ -1743,7 +1741,6 @@
             }
         }
 
-        // ===== ОБНОВЛЁННАЯ ФУНКЦИЯ ОТРИСОВКИ РЕЦЕПТОВ =====
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) return;
@@ -1973,17 +1970,12 @@
                 const symptoms = parseTextItems(entry.symptoms);
                 const products = parseTextItems(entry.products);
 
-                // Расчёт задержки (если есть время)
                 if (entry.time && symptoms.length && products.length) {
-                    // Считаем, что время записи — это время приёма пищи,
-                    // а симптомы появились в тот же момент (задержка 0)
-                    // или можно взять разницу между временем записи и временем записи = 0
                     const hours = 0;
                     const bucket = getDelayBucket(hours);
                     delayBuckets[bucket] = (delayBuckets[bucket] || 0) + 1;
                 }
 
-                // Накопление продукт-симптом
                 products.forEach(p => {
                     if (!productSymptomMap[p]) productSymptomMap[p] = {};
                     symptoms.forEach(s => {
@@ -2069,7 +2061,6 @@
                 const products = parseTextItems(entry.products);
                 const phase = getCyclePhaseForDate(dateStr);
 
-                // Продукт → симптом
                 products.forEach(product => {
                     symptoms.forEach(symptom => {
                         const key = `${product}||${symptom}`;
@@ -2078,16 +2069,13 @@
                     });
                 });
 
-                // Фаза → симптом
                 symptoms.forEach(symptom => {
                     const phaseKey = `${phase}||${symptom}`;
                     if (!phaseLinks[phaseKey]) phaseLinks[phaseKey] = { phase, symptom, count: 0 };
                     phaseLinks[phaseKey].count++;
                 });
 
-                // Задержка → симптом
                 if (entry.time && symptoms.length) {
-                    // Считаем задержку 0 (время записи = время приёма = время симптома)
                     const hours = 0;
                     const bucket = getDelayBucket(hours);
                     symptoms.forEach(symptom => {
@@ -2148,7 +2136,6 @@
             buildInsights();
             buildCorrelationCards();
             renderCycleSymptomAnalysis();
-            // Если нужно, можно добавить и другие функции
         }
 
         // ================================================================
@@ -2318,7 +2305,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Визуальная система обновлена: календарь и рецепты приведены к новому стилю.');
+        console.log('✅ Приложение загружено. Дневник приведён к новому стилю.');
     </script>
 </body>
 </html>
