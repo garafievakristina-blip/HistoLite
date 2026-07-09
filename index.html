@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>ГистЛайт — дневник гистамина и цикла</title>
 
-    <!-- Подключение шрифтов Google Fonts -->
+    <!-- Шрифты -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
@@ -15,30 +15,20 @@
     <script src="recipes.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        emerald: { 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b' }
-                    }
-                }
-            }
-        }
-    </script>
+
     <style>
-        /* ===== НОВАЯ СТИЛЕВАЯ СИСТЕМА ===== */
+        /* ===== ЕДИНАЯ ПАЛИТРА ===== */
         :root {
-            --bg: #F7F1E8;
-            --surface: #FFFDF9;
-            --surface-2: #F6EFE6;
+            --bg: #F4EFE6;
+            --surface: #FFFCF7;
+            --surface-2: #F3EDE3;
             --primary: #9CAF88;
             --primary-dark: #5E7460;
             --primary-soft: #B9C3A5;
             --accent: #D9B2A9;
             --text: #2F2F2A;
             --muted: #7A756D;
-            --border: #E7DDCF;
+            --border: #E1D6C7;
             --shadow: 0 10px 30px rgba(47, 47, 42, 0.06);
         }
 
@@ -58,10 +48,6 @@
             border: 1px solid var(--border);
             border-radius: 28px;
             box-shadow: var(--shadow);
-        }
-
-        .surface-soft {
-            background: linear-gradient(180deg, var(--surface), var(--surface-2));
         }
 
         .btn-primary {
@@ -88,111 +74,42 @@
             background: var(--surface-2);
         }
 
-        /* Переопределение Tailwind-классов для единой палитры */
-        .bg-emerald-600,
-        .bg-emerald-700,
-        .bg-emerald-500,
-        .bg-teal-600,
-        .bg-purple-600,
-        .bg-blue-600 {
-            background-color: var(--primary) !important;
-        }
-        .bg-emerald-700:hover,
-        .hover\:bg-emerald-700:hover,
-        .hover\:bg-emerald-600:hover,
-        .bg-teal-600:hover,
-        .bg-purple-600:hover,
-        .bg-blue-600:hover {
-            background-color: var(--primary-dark) !important;
-        }
-        .text-emerald-600,
-        .text-emerald-700,
-        .text-emerald-800,
-        .text-teal-600 {
-            color: var(--primary-dark) !important;
-        }
-        .text-emerald-100 {
-            color: var(--primary-soft) !important;
-        }
-        .border-emerald-600 {
-            border-color: var(--primary) !important;
-        }
-
-        /* Акцентные кнопки (как сканер) */
-        .bg-teal-600 { background-color: var(--accent) !important; }
-        .bg-purple-600 { background-color: var(--primary-soft) !important; }
-
-        /* Стили для вкладок и карточек */
-        .tab-content .bg-white,
-        .bg-white {
-            background: var(--surface) !important;
-            border: 1px solid var(--border) !important;
-            border-radius: 28px !important;
-            box-shadow: var(--shadow) !important;
-        }
-
-        button, .tab-button {
-            border-radius: 18px !important;
-        }
-
-        .tab-button.active,
-        .tab-button.text-emerald-600 {
-            color: var(--primary-dark) !important;
-        }
-
-        /* Аналитика: карточки инсайтов */
-        .insight-card {
-            background: var(--surface);
+        .event-btn {
+            border-radius: 18px;
             border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 16px;
-            box-shadow: var(--shadow);
-        }
-        .insight-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-        .insight-main {
-            font-family: "Cormorant Garamond", serif;
-            font-size: 22px;
-            line-height: 1;
+            background: var(--surface);
             color: var(--text);
-            font-weight: 700;
-        }
-        .insight-sub {
-            font-size: 13px;
-            color: var(--muted);
-            margin-top: 6px;
-        }
-
-        /* Для заголовков в аналитике */
-        .analytics-title {
-            font-family: "Cormorant Garamond", serif;
             font-weight: 600;
-            font-size: 1.1rem;
+            padding: 10px 16px;
+            transition: all 0.15s;
+            box-shadow: var(--shadow);
+            width: 100%;
+            text-align: center;
+        }
+        .event-btn:hover {
+            background: var(--surface-2);
+            transform: translateY(-1px);
         }
 
-        /* Существующие стили (не трогаем) */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-        .cycle-calendar { display: flex; flex-direction: column; gap: 8px; }
-        .calendar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .phase-label { width: 110px; font-weight: bold; font-size: 11px; }
-        .load-bar { height: 20px; border-radius: 8px; background-color: #e2e8f0; flex: 1; overflow: hidden; }
-        .load-fill { height: 100%; width: 0%; border-radius: 8px; transition: width 0.3s; }
-        .product-result { padding: 12px; border-radius: 12px; border: 2px solid #e2e8f0; }
-        .product-result.low { border-color: #4ade80; background-color: #dcfce7; }
-        .product-result.medium { border-color: #facc15; background-color: #fef9c3; }
-        .product-result.high { border-color: #f87171; background-color: #fee2e2; }
-        .product-result.unknown { border-color: #94a3b8; background-color: #f1f5f9; }
+        .mic-btn-modal {
+            background: var(--primary-soft);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            height: 38px;
+        }
+        .mic-btn-modal:hover { background: var(--primary); }
+        .mic-btn-modal.mic-active { background: var(--accent); transform: scale(1.05); }
 
-        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ RISK-CARD ===== */
+        /* ===== РИСК-КАРТА ===== */
         .risk-card {
             border-radius: 28px;
             padding: 18px;
@@ -213,17 +130,81 @@
             border: 1px solid rgba(217, 178, 169, 0.50);
         }
 
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-            flex: 1;
+        /* ===== КАЛЕНДАРЬ ===== */
+        .cycle-day-cell {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding: 4px;
+            line-height: 1.1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
-        .stat-number { font-size: 24px; font-weight: 700; }
+        .cycle-day-cell:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(47, 47, 42, 0.07);
+        }
+        .cycle-day-cell.today {
+            background: rgba(156, 168, 136, 0.16) !important;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 0 2px rgba(156, 168, 136, 0.10);
+        }
+        .cycle-day-cell.period-day {
+            background: rgba(217, 178, 169, 0.18) !important;
+            border: 1px solid rgba(217, 178, 169, 0.8);
+        }
+        .cycle-day-cell.ovulation-day {
+            background: rgba(185, 195, 165, 0.22) !important;
+            border: 1px solid rgba(185, 195, 165, 0.95);
+        }
+        .cycle-day-cell.fertile-day {
+            background: rgba(156, 168, 136, 0.12) !important;
+            border: 1px solid rgba(156, 168, 136, 0.6);
+        }
+        .cycle-day-cell.next-period-day {
+            background: rgba(122, 117, 109, 0.08) !important;
+            border: 1px dashed rgba(122, 117, 109, 0.55);
+        }
+        .cycle-day-cell.delay-day {
+            background: rgba(122, 117, 109, 0.05) !important;
+            color: var(--muted);
+            border: 1px solid rgba(122, 117, 109, 0.35);
+        }
+        .cycle-day-cell.has-note::after {
+            content: '📝';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.5rem;
+        }
 
-        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ КНОПОК ПРОДУКТОВ ===== */
+        .calendar-nav-btn {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
+            font-size: 0.8rem;
+        }
+        .calendar-nav-btn:hover {
+            background: rgba(156, 168, 136, 0.12);
+        }
+
+        /* ===== ПРОДУКТЫ ===== */
         .product-status-btn {
             width: 32px;
             height: 32px;
@@ -256,7 +237,6 @@
         }
         .product-status-btn:hover { transform: scale(1.05); }
 
-        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ ПРОДУКТОВ ===== */
         .safe-filter-btn {
             border-radius: 9999px;
             padding: 4px 12px;
@@ -284,7 +264,7 @@
             border-color: rgba(185, 195, 165, 0.45);
         }
 
-        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ РЕЦЕПТОВ ===== */
+        /* ===== РЕЦЕПТЫ ===== */
         .recipe-filter-btn, .level-filter-btn {
             border-radius: 9999px;
             padding: 4px 14px;
@@ -302,7 +282,6 @@
             border-color: rgba(156, 168, 136, 0.45);
         }
 
-        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ ТЕГОВ РЕЦЕПТОВ ===== */
         .recipe-tag {
             font-size: 11px;
             padding: 4px 10px;
@@ -312,95 +291,50 @@
             border: 1px solid rgba(185,195,165,0.28);
         }
 
-        /* ===== ОБНОВЛЁННЫЕ СТИЛИ КАЛЕНДАРЯ ===== */
-        .cycle-day-cell {
-            aspect-ratio: 1 / 1;
-            display: flex;
-            flex-direction: column;
+        /* ===== ЧИПСЫ ===== */
+        .chip {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 18px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: all 0.15s ease;
-            cursor: pointer;
-            user-select: none;
-            position: relative;
-            padding: 4px;
-            line-height: 1.1;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text);
-            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
-        }
-
-        .cycle-day-cell:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 18px rgba(47, 47, 42, 0.07);
-        }
-
-        .cycle-day-cell.today {
-            background: rgba(156, 168, 136, 0.16) !important;
-            border: 1px solid var(--primary);
-            box-shadow: 0 0 0 2px rgba(156, 168, 136, 0.10);
-        }
-
-        .cycle-day-cell.period-day {
-            background: rgba(217, 178, 169, 0.18) !important;
-            border: 1px solid rgba(217, 178, 169, 0.8);
-        }
-
-        .cycle-day-cell.ovulation-day {
-            background: rgba(185, 195, 165, 0.22) !important;
-            border: 1px solid rgba(185, 195, 165, 0.95);
-        }
-
-        .cycle-day-cell.fertile-day {
-            background: rgba(156, 168, 136, 0.12) !important;
-            border: 1px solid rgba(156, 168, 136, 0.6);
-        }
-
-        .cycle-day-cell.next-period-day {
-            background: rgba(122, 117, 109, 0.08) !important;
-            border: 1px dashed rgba(122, 117, 109, 0.55);
-        }
-
-        .cycle-day-cell.delay-day {
-            background: rgba(122, 117, 109, 0.05) !important;
-            color: var(--muted);
-            border: 1px solid rgba(122, 117, 109, 0.35);
-        }
-
-        .cycle-day-cell.has-note::after {
-            content: '📝';
-            position: absolute;
-            top: 2px;
-            right: 4px;
-            font-size: 0.5rem;
-        }
-
-        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ НАВИГАЦИОННЫХ КНОПОК КАЛЕНДАРЯ ===== */
-        .calendar-nav-btn {
+            gap: 4px;
             padding: 4px 10px;
             border-radius: 9999px;
-            border: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 500;
             background: var(--surface);
+            border: 1px solid var(--border);
             color: var(--text);
-            cursor: pointer;
-            transition: all 0.15s;
             box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
-            font-size: 0.8rem;
         }
-        .calendar-nav-btn:hover {
+        .chip-safe {
+            border-color: rgba(156, 168, 136, 0.6);
             background: rgba(156, 168, 136, 0.12);
+            color: var(--primary-dark);
         }
-        .calendar-month-label {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text);
+        .chip-unsafe {
+            border-color: rgba(217, 178, 169, 0.6);
+            background: rgba(217, 178, 169, 0.12);
+            color: #8F5E56;
         }
+        .chip-question {
+            border-color: rgba(185, 195, 165, 0.6);
+            background: rgba(185, 195, 165, 0.12);
+            color: var(--primary-dark);
+        }
+        .chip-unknown {
+            border-color: var(--border);
+            background: var(--surface-2);
+            color: var(--muted);
+        }
+        .chip-remove {
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            margin-left: 2px;
+        }
+        .chip-remove:hover { opacity: 1; }
 
-        /* ===== СТИЛИ ДЛЯ КАРТОЧЕК РЕЦЕПТОВ ===== */
+        /* ===== КАРТОЧКИ РЕЦЕПТОВ ===== */
         .recipe-soft-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -410,24 +344,18 @@
             cursor: pointer;
             transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
-
         .recipe-soft-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 14px 28px rgba(47, 47, 42, 0.08);
         }
-
         .recipe-image-wrap img {
             width: 100%;
             height: 136px;
             object-fit: cover;
             display: block;
-            background: #f3ede4;
+            background: var(--surface-2);
         }
-
-        .recipe-content {
-            padding: 14px;
-        }
-
+        .recipe-content { padding: 14px; }
         .recipe-title {
             font-size: 17px;
             line-height: 1.1;
@@ -436,7 +364,6 @@
             margin-bottom: 8px;
             font-weight: 700;
         }
-
         .recipe-meta {
             display: flex;
             justify-content: space-between;
@@ -444,116 +371,132 @@
             color: var(--muted);
             margin-bottom: 10px;
         }
-
         .recipe-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
         }
 
-        .recipe-tag {
+        /* ===== АНАЛИТИКА ===== */
+        .insight-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+        }
+        .insight-title {
             font-size: 11px;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            background: rgba(185,195,165,0.18);
-            color: var(--primary-dark);
-            border: 1px solid rgba(185,195,165,0.28);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .insight-main {
+            font-family: "Cormorant Garamond", serif;
+            font-size: 22px;
+            line-height: 1;
+            color: var(--text);
+            font-weight: 700;
+        }
+        .insight-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
         }
 
-        .recipe-level {
-            background: rgba(156,168,136,0.18);
+        .analytics-title {
+            font-family: "Cormorant Garamond", serif;
+            font-weight: 600;
+            font-size: 1.1rem;
         }
 
-        /* ===== СТИЛИ ДЛЯ МОДАЛКИ РЕЦЕПТОВ ===== */
-        #recipe-modal .bg-white {
+        /* ===== МОДАЛКИ ===== */
+        #recipe-modal .bg-white,
+        #event-modal .bg-white,
+        #cycle-day-modal .bg-white,
+        #custom-modal .bg-white {
             background: var(--surface);
             border-radius: 30px;
             border: 1px solid var(--border);
             box-shadow: 0 24px 60px rgba(47, 47, 42, 0.16);
         }
 
-        #recipe-modal h3,
-        #recipe-modal h4 {
-            font-family: "Cormorant Garamond", serif;
+        /* ===== НАВИГАЦИЯ ===== */
+        .tab-button {
+            border-radius: 18px !important;
+            transition: all 0.15s;
+        }
+        .tab-button.active,
+        .tab-button.text-emerald-600 {
+            color: var(--primary-dark) !important;
         }
 
-        #recipe-modal .bg-slate-100,
-        #recipe-modal .bg-amber-50 {
-            background: rgba(156,168,136,0.10) !important;
-            color: var(--text) !important;
-            border-color: rgba(156,168,136,0.22) !important;
+        /* ===== ПЕРЕОПРЕДЕЛЕНИЕ TAILWIND ===== */
+        .bg-emerald-600,
+        .bg-emerald-700,
+        .bg-emerald-500,
+        .bg-teal-600,
+        .bg-purple-600,
+        .bg-blue-600 {
+            background-color: var(--primary) !important;
+        }
+        .hover\:bg-emerald-700:hover,
+        .hover\:bg-emerald-600:hover,
+        .bg-teal-600:hover,
+        .bg-purple-600:hover,
+        .bg-blue-600:hover {
+            background-color: var(--primary-dark) !important;
+        }
+        .text-emerald-600,
+        .text-emerald-700,
+        .text-emerald-800,
+        .text-teal-600 {
+            color: var(--primary-dark) !important;
+        }
+        .text-emerald-100 {
+            color: var(--primary-soft) !important;
+        }
+        .border-emerald-600 {
+            border-color: var(--primary) !important;
         }
 
-        /* Остальные оригинальные стили */
-        .mic-btn-modal {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 9999px;
-            padding: 6px 12px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            height: 38px;
+        .tab-content .bg-white,
+        .bg-white {
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 28px !important;
+            box-shadow: var(--shadow) !important;
         }
-        .mic-btn-modal:hover { background: #2563eb; }
-        .mic-btn-modal.mic-active { background: #ef4444; transform: scale(1.05); }
 
-        .entry-list-item {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            border: 1px solid #e2e8f0;
-            position: relative;
-        }
-        .entry-list-item .entry-time {
-            font-weight: bold;
-            font-size: 13px;
-            color: #0f172a;
-        }
-        .entry-list-item .entry-details {
-            font-size: 12px;
-            color: #475569;
-            margin-top: 2px;
-        }
-        .entry-list-item .entry-actions {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            display: flex;
-            gap: 6px;
-        }
-        .entry-list-item .entry-actions button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 2px 4px;
-            border-radius: 6px;
-        }
-        .entry-list-item .entry-actions .edit-btn:hover { background: #dbeafe; }
-        .entry-list-item .entry-actions .delete-btn:hover { background: #fee2e2; }
+        .bg-teal-600 { background-color: var(--accent) !important; }
+        .bg-purple-600 { background-color: var(--primary-soft) !important; }
 
-        .settings-details summary {
-            cursor: pointer;
-            font-weight: bold;
-            color: #475569;
-            padding: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            user-select: none;
+        input, textarea, select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            color: var(--text);
+            transition: border-color 0.2s;
         }
-        .settings-details summary:hover { color: #0f172a; }
-        .settings-details summary::marker { color: #94a3b8; }
-        .settings-details[open] summary { color: #0f172a; }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(156, 168, 136, 0.2);
+        }
 
-        #history-container { display: none; }
+        /* ===== ДОПОЛНИТЕЛЬНЫЕ КЛАССЫ ДЛЯ ЦВЕТНЫХ МАРКЕРОВ (БЕЗ ЭМОДЗИ) ===== */
+        .level-low { color: var(--primary); }
+        .level-medium { color: var(--primary-soft); }
+        .level-high { color: var(--accent); }
+        .dot-low::before { content: "●"; color: var(--primary); font-size: 0.8rem; margin-right: 4px; }
+        .dot-medium::before { content: "●"; color: var(--primary-soft); font-size: 0.8rem; margin-right: 4px; }
+        .dot-high::before { content: "●"; color: var(--accent); font-size: 0.8rem; margin-right: 4px; }
+        .badge-low { background: rgba(156,168,136,0.18); color: var(--primary-dark); }
+        .badge-medium { background: rgba(185,195,165,0.18); color: var(--primary-dark); }
+        .badge-high { background: rgba(217,178,169,0.18); color: #8F5E56; }
     </style>
 </head>
 <body class="min-h-screen pb-24" style="background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;">
@@ -574,11 +517,11 @@
                 <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="gender" value="female" checked class="accent-emerald-600">
-                        <span class="text-sm">👩 Женщина</span>
+                        <span class="text-sm">Женщина</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="gender" value="male" class="accent-emerald-600">
-                        <span class="text-sm">👨 Мужчина</span>
+                        <span class="text-sm">Мужчина</span>
                     </label>
                 </div>
             </div>
@@ -595,7 +538,7 @@
     <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
     <div id="app-body" class="opacity-30 pointer-events-none">
 
-        <!-- НОВЫЙ HEADER -->
+        <!-- HEADER -->
         <header class="sticky top-0 z-40 border-b border-[var(--border)] bg-[rgba(247,241,232,0.92)] backdrop-blur-md">
             <div class="max-w-md mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
@@ -611,9 +554,9 @@
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-4">
-            <!-- ВКЛАДКА ДНЕВНИК (основная) -->
+            <!-- ВКЛАДКА ДНЕВНИК -->
             <div id="diary-tab" class="tab-content active space-y-4">
-                <!-- Блок риск-карты (добавлен surface-soft) -->
+                <!-- Риск-карта -->
                 <div id="today-dashboard">
                     <div id="risk-card" class="risk-card risk-low card-soft surface-soft p-4">
                         <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
@@ -624,7 +567,7 @@
                     </div>
                 </div>
 
-                <!-- Календарь: обёрнут в мягкую карточку card-soft -->
+                <!-- Календарь -->
                 <div class="card-soft p-4">
                     <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
                     <div class="flex items-center justify-between mb-3">
@@ -633,13 +576,10 @@
                         <button class="calendar-nav-btn" onclick="changeMonth(1)">▶</button>
                         <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
                     </div>
-
-                    <!-- ДОПОЛНИТЕЛЬНАЯ МЯГКАЯ ПОДЛОЖКА ВОКРУГ КАЛЕНДАРЯ -->
                     <div class="mt-3 p-3 rounded-2xl bg-[rgba(255,253,249,0.8)] border border-[var(--border)]">
                         <div id="cycle-load-calendar" class="cycle-calendar"></div>
                     </div>
-
-                    <!-- ОБНОВЛЁННАЯ ЛЕГЕНДА -->
+                    <!-- Легенда календаря без эмодзи, только цветные индикаторы -->
                     <div class="flex flex-wrap gap-3 mt-2 text-xs text-[var(--muted)]">
                         <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(217,178,169,0.22); border:1px solid rgba(217,178,169,0.8); border-radius:9999px;"></span> Менструация</span>
                         <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(185,195,165,0.22); border:1px solid rgba(185,195,165,0.9); border-radius:9999px;"></span> Овуляция</span>
@@ -684,13 +624,13 @@
                         </div>
                     </div>
                     <div class="mb-4 flex gap-2 flex-wrap">
-                        <button onclick="scanBarcode()" class="flex-1 bg-teal-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]" style="background:var(--accent) !important;">📷 Сканировать камерой</button>
-                        <button onclick="uploadBarcodeImage()" class="flex-1 bg-purple-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm min-w-[120px]" style="background:var(--primary-soft) !important;">📤 Загрузить фото</button>
+                        <button onclick="scanBarcode()" class="flex-1" style="background:var(--accent); color:white; font-weight:bold; padding:8px 16px; border-radius:18px; border:none; box-shadow:var(--shadow);">📷 Сканировать камерой</button>
+                        <button onclick="uploadBarcodeImage()" class="flex-1" style="background:var(--primary-soft); color:white; font-weight:bold; padding:8px 16px; border-radius:18px; border:none; box-shadow:var(--shadow);">📤 Загрузить фото</button>
                     </div>
                     <input type="file" id="barcode-image-input" accept="image/*" style="display:none" onchange="decodeBarcodeFromImage(this)">
                     <div id="scanner-container" style="display: none; margin-bottom: 15px;">
                         <div id="qr-reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
-                        <button onclick="stopScanner()" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition text-sm">❌ Закрыть сканер</button>
+                        <button onclick="stopScanner()" class="w-full mt-2" style="background:var(--accent); color:white; font-weight:bold; padding:8px; border-radius:18px; border:none;">Закрыть сканер</button>
                     </div>
                     <div id="product-search-result" class="hidden"></div>
                 </div>
@@ -700,9 +640,9 @@
                         <input type="text" id="safe-search-input" placeholder="Поиск продукта..." class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50" oninput="renderSafeProducts()">
                         <div class="flex gap-1 flex-wrap">
                             <button class="safe-filter-btn active" data-filter="all" onclick="setSafeFilter('all')">Все</button>
-                            <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">✅ Можно</button>
-                            <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">❌ Нельзя</button>
-                            <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">❓ Под вопросом</button>
+                            <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">Можно</button>
+                            <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">Нельзя</button>
+                            <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">Под вопросом</button>
                         </div>
                     </div>
                     <div id="safe-products-list" class="space-y-1.5 max-h-96 overflow-y-auto pr-1"></div>
@@ -754,19 +694,19 @@
                     </div>
                     <div class="flex flex-wrap gap-2 mb-4">
                         <button class="level-filter-btn active" data-level="all">Все уровни</button>
-                        <button class="level-filter-btn" data-level="низкий">🟢 Низкий</button>
-                        <button class="level-filter-btn" data-level="средний">🟡 Средний</button>
-                        <button class="level-filter-btn" data-level="высокий">🔴 Высокий</button>
+                        <button class="level-filter-btn" data-level="низкий">Низкий</button>
+                        <button class="level-filter-btn" data-level="средний">Средний</button>
+                        <button class="level-filter-btn" data-level="высокий">Высокий</button>
                     </div>
                     <div class="flex flex-wrap gap-4 mb-4">
                         <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-gluten-free" onchange="renderRecipes()"> 🌾 Без глютена
+                            <input type="checkbox" id="filter-gluten-free" onchange="renderRecipes()"> Без глютена
                         </label>
                         <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-lactose-free" onchange="renderRecipes()"> 🥛 Без лактозы
+                            <input type="checkbox" id="filter-lactose-free" onchange="renderRecipes()"> Без лактозы
                         </label>
                         <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> 🧈 Без молочных продуктов
+                            <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> Без молочных продуктов
                         </label>
                     </div>
                     <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
@@ -782,7 +722,6 @@
             <button data-tab="recipes" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🍳</span><span>Рецепты</span></button>
         </nav>
 
-        <!-- ФУТЕР -->
         <footer class="text-center text-[10px] text-slate-400 py-4 border-t border-slate-100 mt-4 max-w-md mx-auto">
             <p>© 2026 ГистЛайт — дневник самонаблюдения</p>
             <p>Разработчик: самозанятая | ИНН: 123456789012</p>
@@ -797,58 +736,45 @@
             <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
             <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
             <div class="space-y-2">
-                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
-                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
-                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
-                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
-                <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
+                <button onclick="confirmEvent('first_day')" class="event-btn">Началась менструация</button>
+                <button onclick="confirmEvent('ovulation')" class="event-btn">Овуляция</button>
+                <button onclick="confirmEvent('last_day')" class="event-btn">Последний день менструации</button>
+                <button onclick="confirmEvent('clear')" class="event-btn">Снять отметку</button>
+                <button onclick="closeEventModal()" class="btn-secondary w-full py-2 px-4 text-sm">Отмена</button>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА -->
     <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <h4 class="text-base font-bold text-slate-800 mb-2">📅 День дневника</h4>
             <p class="text-sm text-slate-600 mb-1" id="cycle-day-modal-date">Дата:</p>
             <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
-
             <div id="entries-list" class="mb-4"></div>
-
-            <button onclick="openEntryForm(null)" class="w-full btn-primary py-2 px-4 text-sm mb-3">
-                + Добавить запись
-            </button>
-
+            <button onclick="openEntryForm(null)" class="w-full btn-primary py-2 px-4 text-sm mb-3">+ Добавить запись</button>
             <div id="entry-form" style="display:none;" class="border-t border-slate-200 pt-4 mt-2">
                 <h5 class="font-bold text-slate-700 text-sm mb-3" id="entry-form-title">Новая запись</h5>
-
                 <label class="block text-xs font-bold text-slate-600 mb-1">Время</label>
                 <input type="time" id="entry-time" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
-
                 <label class="block text-xs font-bold text-slate-600 mb-1">Продукты (через запятую)</label>
                 <div class="flex gap-2 items-center mb-3">
                     <input type="text" id="entry-products" placeholder="рис, курица, овощи" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                     <button id="mic-products-entry" class="mic-btn-modal" title="Голосовой ввод продуктов">🎤</button>
                 </div>
-
                 <label class="block text-xs font-bold text-slate-600 mb-1">Принятые лекарства (через запятую)</label>
                 <input type="text" id="entry-medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
-
                 <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы (через запятую)</label>
                 <div class="flex gap-2 items-center mb-3">
                     <textarea id="entry-symptoms" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px]" placeholder="головная боль, усталость, зуд"></textarea>
                     <button id="mic-symptoms-entry" class="mic-btn-modal" title="Голосовой ввод симптомов">🎤</button>
                 </div>
-
                 <label class="block text-xs font-bold text-slate-600 mb-1">Комментарий</label>
                 <textarea id="entry-comment" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px] mb-3" placeholder="Дополнительные заметки"></textarea>
-
                 <div class="flex gap-2">
                     <button onclick="saveEntryForm()" class="flex-1 btn-primary py-2 px-4 text-sm">Сохранить</button>
                     <button onclick="cancelEntryForm()" class="flex-1 btn-secondary py-2 px-4 text-sm">Отмена</button>
                 </div>
             </div>
-
             <button onclick="closeCycleDayModal()" class="w-full mt-3 btn-secondary py-2 px-4 text-sm">Закрыть</button>
         </div>
     </div>
@@ -998,30 +924,30 @@
                 riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
                 riskClass = 'risk-high';
                 riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
-                tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
+                tip = 'ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
             } else if (userGender !== 'male' && cycleDay !== null) {
                 const phase = getCyclePhaseName(cycleDay);
                 if (phase === 'Овуляция' || phase === 'ПМС') {
                     riskLevel = 'Высокий';
                     riskClass = 'risk-high';
                     riskReason = `Фаза цикла: ${phase} (чувствительность повышена)`;
-                    tip = '⚠️ Сегодня повышенная чувствительность. Выбирайте зелёные продукты, избегайте сыра и шоколада.';
+                    tip = 'Сегодня повышенная чувствительность. Выбирайте зелёные продукты, избегайте сыра и шоколада.';
                 } else if (phase === 'Начало цикла' || phase === 'Лютеиновая') {
                     riskLevel = 'Средний';
                     riskClass = 'risk-medium';
                     riskReason = `Фаза цикла: ${phase} (умеренная чувствительность)`;
-                    tip = '🟡 Умеренная чувствительность. Следите за реакциями, но можно пробовать новое.';
+                    tip = 'Умеренная чувствительность. Следите за реакциями, но можно пробовать новое.';
                 } else {
                     riskLevel = 'Низкий';
                     riskClass = 'risk-low';
                     riskReason = `Фаза цикла: ${phase} (стабильная)`;
-                    tip = '✅ Организм стабилен. Можно пробовать новые продукты и экспериментировать.';
+                    tip = 'Организм стабилен. Можно пробовать новые продукты и экспериментировать.';
                 }
             } else if (userGender === 'male') {
                 riskLevel = 'Низкий';
                 riskClass = 'risk-low';
                 riskReason = 'Мужчина, цикл не учитывается';
-                tip = '✅ Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
+                tip = 'Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
             } else {
                 riskReason = 'Цикл не настроен';
                 tip = 'Отметьте первый день цикла в календаре.';
@@ -1461,7 +1387,7 @@
                 renderSafeProducts();
             } catch (error) {
                 console.error('Ошибка загрузки продуктов:', error);
-                showModal('❌ Не удалось загрузить базу продуктов. Проверьте файл products.json.');
+                showModal('Не удалось загрузить базу продуктов. Проверьте файл products.json.');
             }
         }
         window.renderSafeProducts = function() {
@@ -1481,9 +1407,9 @@
                     <div class="flex items-center justify-between py-1 border-b border-slate-100">
                         <span class="text-xs font-medium">${p.name}</span>
                         <div class="flex gap-1">
-                            <button class="product-status-btn ${safeClass}" onclick="setProductStatus('${p.name}','safe')" title="Можно">✅</button>
-                            <button class="product-status-btn ${unsafeClass}" onclick="setProductStatus('${p.name}','unsafe')" title="Нельзя">❌</button>
-                            <button class="product-status-btn ${questionClass}" onclick="setProductStatus('${p.name}','question')" title="Под вопросом">❓</button>
+                            <button class="product-status-btn ${safeClass}" onclick="setProductStatus('${p.name}','safe')" title="Можно">✔</button>
+                            <button class="product-status-btn ${unsafeClass}" onclick="setProductStatus('${p.name}','unsafe')" title="Нельзя">✖</button>
+                            <button class="product-status-btn ${questionClass}" onclick="setProductStatus('${p.name}','question')" title="Под вопросом">?</button>
                         </div>
                     </div>
                 `;
@@ -1523,7 +1449,7 @@
             if (!name) { resultDiv.classList.add('hidden'); return; }
             const found = myHistamineDB.find(p => p.name.toLowerCase() === name);
             if (!found) {
-                resultDiv.innerHTML = `<div class="product-result unknown"><strong>❓ Не найдено</strong><br>Продукт "${name}" отсутствует в базе.</div>`;
+                resultDiv.innerHTML = `<div class="product-result unknown"><strong>Не найдено</strong><br>Продукт "${name}" отсутствует в базе.</div>`;
                 resultDiv.classList.remove('hidden');
                 return;
             }
@@ -1662,7 +1588,7 @@
                     micBtn.classList.remove('mic-active');
                     micBtn.textContent = '🎤';
                     if (event.error === 'not-allowed') {
-                        showModal('⚠️ Доступ к микрофону запрещён.');
+                        showModal('Доступ к микрофону запрещён.');
                     } else {
                         showModal('Ошибка распознавания: ' + event.error);
                     }
@@ -1693,7 +1619,7 @@
             if (lastVisit) {
                 const daysDiff = Math.floor((now - new Date(lastVisit)) / (1000 * 60 * 60 * 24));
                 if (daysDiff >= 2) {
-                    showModal(`📢 Вы не записывали дневник уже ${daysDiff} дня. Как ваше самочувствие?`);
+                    showModal(`Вы не записывали дневник уже ${daysDiff} дня. Как ваше самочувствие?`);
                 }
             }
             localStorage.setItem('histolite_last_visit', now.toISOString());
@@ -1792,7 +1718,7 @@
             if (Array.isArray(window.recipesDB) && window.recipesDB.length > 0) {
                 renderRecipes();
             } else {
-                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
+                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">Рецепты не найдены. Проверьте recipes.js</p>';
             }
         }
 
@@ -1820,28 +1746,30 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(r => `
-                <div class="recipe-soft-card" onclick="openRecipeModal(${r.id})">
-                    <div class="recipe-image-wrap">
-                        <img src="${r.image || 'https://via.placeholder.com/300x200?text=Recipe'}" alt="${r.name}" onerror="this.src='https://via.placeholder.com/300x200?text=Image'">
-                    </div>
-                    <div class="recipe-content">
-                        <h4 class="recipe-title">${r.name}</h4>
-                        <div class="recipe-meta">
-                            <span>${r.category || ''}</span>
-                            <span>⏱ ${r.prep_time || 0} мин</span>
+            container.innerHTML = filtered.map(r => {
+                const levelLabel = r.histamine_level === 'низкий' ? 'Низкий' : r.histamine_level === 'средний' ? 'Средний' : 'Высокий';
+                const levelClass = r.histamine_level === 'низкий' ? 'badge-low' : r.histamine_level === 'средний' ? 'badge-medium' : 'badge-high';
+                return `
+                    <div class="recipe-soft-card" onclick="openRecipeModal(${r.id})">
+                        <div class="recipe-image-wrap">
+                            <img src="${r.image || 'https://via.placeholder.com/300x200?text=Recipe'}" alt="${r.name}" onerror="this.src='https://via.placeholder.com/300x200?text=Image'">
                         </div>
-                        <div class="recipe-tags">
-                            <span class="recipe-tag recipe-level">
-                                ${r.histamine_level === 'низкий' ? 'Низкий' : r.histamine_level === 'средний' ? 'Средний' : 'Высокий'}
-                            </span>
-                            ${r.gluten_free ? '<span class="recipe-tag">Без глютена</span>' : ''}
-                            ${r.lactose_free ? '<span class="recipe-tag">Без лактозы</span>' : ''}
-                            ${r.dairy_free ? '<span class="recipe-tag">Без молочного</span>' : ''}
+                        <div class="recipe-content">
+                            <h4 class="recipe-title">${r.name}</h4>
+                            <div class="recipe-meta">
+                                <span>${r.category || ''}</span>
+                                <span>⏱ ${r.prep_time || 0} мин</span>
+                            </div>
+                            <div class="recipe-tags">
+                                <span class="recipe-tag ${levelClass}">${levelLabel}</span>
+                                ${r.gluten_free ? '<span class="recipe-tag">Без глютена</span>' : ''}
+                                ${r.lactose_free ? '<span class="recipe-tag">Без лактозы</span>' : ''}
+                                ${r.dairy_free ? '<span class="recipe-tag">Без молочного</span>' : ''}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function openRecipeModal(id) {
@@ -1851,9 +1779,8 @@
             document.getElementById('recipe-modal-image').src = recipe.image || 'https://via.placeholder.com/400x300?text=Рецепт';
             document.getElementById('recipe-modal-name').textContent = recipe.name || '';
             document.getElementById('recipe-modal-category').textContent = recipe.category || '';
-            document.getElementById('recipe-modal-level').textContent =
-                recipe.histamine_level === 'низкий' ? '🟢 Низкий' :
-                recipe.histamine_level === 'средний' ? '🟡 Средний' : '🔴 Высокий';
+            const levelLabel = recipe.histamine_level === 'низкий' ? 'Низкий' : recipe.histamine_level === 'средний' ? 'Средний' : 'Высокий';
+            document.getElementById('recipe-modal-level').textContent = levelLabel;
             document.getElementById('recipe-modal-time').textContent = `⏱ ${recipe.prep_time || 0} мин`;
             document.getElementById('recipe-modal-servings').textContent = `🍽 ${recipe.servings || 1} порц.`;
             document.getElementById('recipe-modal-description').textContent = recipe.description || '';
@@ -1862,16 +1789,16 @@
             document.getElementById('recipe-modal-instructions').textContent = recipe.instructions || '';
             const tipsDiv = document.getElementById('recipe-modal-tips');
             if (recipe.tips) {
-                tipsDiv.innerHTML = `<strong>💡 Совет:</strong> ${recipe.tips}`;
+                tipsDiv.innerHTML = `<strong>Совет:</strong> ${recipe.tips}`;
                 tipsDiv.style.display = 'block';
             } else {
                 tipsDiv.style.display = 'none';
             }
             const dietsDiv = document.getElementById('recipe-modal-diets');
             dietsDiv.innerHTML = '';
-            if (recipe.gluten_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">🌾 Без глютена</span> ';
-            if (recipe.lactose_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">🥛 Без лактозы</span> ';
-            if (recipe.dairy_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">🧈 Без молочных продуктов</span> ';
+            if (recipe.gluten_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Без глютена</span> ';
+            if (recipe.lactose_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Без лактозы</span> ';
+            if (recipe.dairy_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">Без молочных продуктов</span> ';
             if (!recipe.gluten_free && !recipe.lactose_free && !recipe.dairy_free) {
                 dietsDiv.innerHTML = '<span class="text-xs text-slate-400">Нет специальных маркеров</span>';
             }
@@ -1946,7 +1873,7 @@
         }
 
         // ================================================================
-        // 23. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
+        // 23. АНАЛИТИКА
         // ================================================================
         function getAllEntries() {
             const all = [];
@@ -1992,13 +1919,7 @@
             const phaseText = topPhase ? `Чаще всего записи попадают в фазу «${topPhase[0]}». ` : '';
             const delayText = topDelay ? `Самое частое окно реакции — ${topDelay[0]}. ` : '';
             const productText = topProduct ? `Больше всего совпадений найдено у продукта «${topProduct[0]}». ` : '';
-
-            return `
-                ${phaseText}
-                ${delayText}
-                ${productText}
-                Это не диагноз, а подсказка: попробуйте несколько дней отслеживать один новый продукт и сохранять время реакции.
-            `;
+            return `${phaseText}${delayText}${productText}Это не диагноз, а подсказка: попробуйте несколько дней отслеживать один новый продукт и сохранять время реакции.`;
         }
 
         function buildInsights() {
@@ -2006,31 +1927,25 @@
             const insightCards = document.getElementById('insight-cards');
             const aiBox = document.getElementById('ai-insight-box');
             if (!insightCards || !aiBox) return;
-
             if (entries.length === 0) {
                 insightCards.innerHTML = '<p class="text-slate-400 text-xs">Пока мало данных для инсайтов.</p>';
                 aiBox.innerHTML = 'Добавьте несколько записей с едой и симптомами — и здесь появятся персональные выводы.';
                 return;
             }
-
             const productSymptomMap = {};
             const phaseCount = {};
             const delayBuckets = { '0-1ч': 0, '1-2ч': 0, '2-4ч': 0, '4-8ч': 0, '8-24ч': 0, '24ч+': 0 };
-
             entries.forEach(entry => {
                 const dateStr = entry.dateStr;
                 const phase = getCyclePhaseForDate(dateStr);
                 phaseCount[phase] = (phaseCount[phase] || 0) + 1;
-
                 const symptoms = parseTextItems(entry.symptoms);
                 const products = parseTextItems(entry.products);
-
                 if (entry.time && symptoms.length && products.length) {
                     const hours = 0;
                     const bucket = getDelayBucket(hours);
                     delayBuckets[bucket] = (delayBuckets[bucket] || 0) + 1;
                 }
-
                 products.forEach(p => {
                     if (!productSymptomMap[p]) productSymptomMap[p] = {};
                     symptoms.forEach(s => {
@@ -2038,14 +1953,11 @@
                     });
                 });
             });
-
             const topPhase = Object.entries(phaseCount).sort((a, b) => b[1] - a[1])[0];
             const topProduct = Object.entries(productSymptomMap)
                 .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0))[0];
             const topDelay = Object.entries(delayBuckets).sort((a, b) => b[1] - a[1])[0] || null;
-
             const cards = [];
-
             if (topPhase) {
                 cards.push(`
                     <div class="insight-card">
@@ -2055,7 +1967,6 @@
                     </div>
                 `);
             }
-
             if (topDelay) {
                 cards.push(`
                     <div class="insight-card">
@@ -2065,7 +1976,6 @@
                     </div>
                 `);
             }
-
             if (topProduct) {
                 const symptomList = Object.entries(topProduct[1])
                     .sort((a, b) => b[1] - a[1])
@@ -2080,7 +1990,6 @@
                     </div>
                 `);
             }
-
             cards.push(`
                 <div class="insight-card">
                     <div class="insight-title">День-эксперимент</div>
@@ -2088,34 +1997,26 @@
                     <div class="insight-sub">Так легче увидеть, что именно вызвало реакцию.</div>
                 </div>
             `);
-
             insightCards.innerHTML = cards.join('');
             aiBox.innerHTML = generateAIExplanation(topPhase, topDelay, topProduct);
         }
 
-        // ================================================================
-        // 24. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
-        // ================================================================
         function buildCorrelationCards() {
             const container = document.getElementById('correlation-cards');
             if (!container) return;
-
             const entries = getAllEntries();
             if (entries.length === 0) {
                 container.innerHTML = '<p class="text-slate-400 text-xs">Пока мало данных для связок.</p>';
                 return;
             }
-
             const pairs = {};
             const phaseLinks = {};
             const delayLinks = {};
-
             entries.forEach(entry => {
                 const dateStr = entry.dateStr;
                 const symptoms = parseTextItems(entry.symptoms);
                 const products = parseTextItems(entry.products);
                 const phase = getCyclePhaseForDate(dateStr);
-
                 products.forEach(product => {
                     symptoms.forEach(symptom => {
                         const key = `${product}||${symptom}`;
@@ -2123,13 +2024,11 @@
                         pairs[key].count++;
                     });
                 });
-
                 symptoms.forEach(symptom => {
                     const phaseKey = `${phase}||${symptom}`;
                     if (!phaseLinks[phaseKey]) phaseLinks[phaseKey] = { phase, symptom, count: 0 };
                     phaseLinks[phaseKey].count++;
                 });
-
                 if (entry.time && symptoms.length) {
                     const hours = 0;
                     const bucket = getDelayBucket(hours);
@@ -2140,13 +2039,10 @@
                     });
                 }
             });
-
             const topPairs = Object.values(pairs).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
             const topPhases = Object.values(phaseLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
             const topDelays = Object.values(delayLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
-
             let html = '';
-
             topPairs.forEach(x => {
                 html += `
                     <div class="insight-card">
@@ -2156,7 +2052,6 @@
                     </div>
                 `;
             });
-
             topPhases.forEach(x => {
                 html += `
                     <div class="insight-card">
@@ -2166,7 +2061,6 @@
                     </div>
                 `;
             });
-
             topDelays.forEach(x => {
                 html += `
                     <div class="insight-card">
@@ -2176,26 +2070,12 @@
                     </div>
                 `;
             });
-
             if (!html) {
                 html = '<p class="text-slate-400 text-xs">Пока недостаточно повторов для уверенных связок.</p>';
             }
-
             container.innerHTML = html;
         }
 
-        // ================================================================
-        // 25. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
-        // ================================================================
-        function refreshAnalytics() {
-            buildInsights();
-            buildCorrelationCards();
-            renderCycleSymptomAnalysis();
-        }
-
-        // ================================================================
-        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА)
-        // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!container) return;
@@ -2258,9 +2138,6 @@
             container.innerHTML = html;
         }
 
-        // ================================================================
-        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – существующий
-        // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
             if (!container) {
@@ -2341,8 +2218,14 @@
             container.innerHTML = html;
         };
 
+        function refreshAnalytics() {
+            buildInsights();
+            buildCorrelationCards();
+            renderCycleSymptomAnalysis();
+        }
+
         // ================================================================
-        // 28. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
+        // 24. АВТОЗАПУСК
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
@@ -2360,7 +2243,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Общие цвета и стили применены.');
+        console.log('✅ Приложение загружено. Все цветные эмодзи заменены на текстовые метки с цветами из палитры.');
     </script>
 </body>
 </html>
