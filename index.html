@@ -27,18 +27,18 @@
         }
     </script>
     <style>
-        /* ===== НОВАЯ СТИЛЕВАЯ СИСТЕМА ===== */
+        /* ===== ЕДИНАЯ ПАЛИТРА ===== */
         :root {
-            --bg: #F7F1E8;
-            --surface: #FFFDF9;
-            --surface-2: #F6EFE6;
+            --bg: #F4EFE6;
+            --surface: #FFFCF7;
+            --surface-2: #F3EDE3;
             --primary: #9CAF88;
             --primary-dark: #5E7460;
             --primary-soft: #B9C3A5;
             --accent: #D9B2A9;
             --text: #2F2F2A;
             --muted: #7A756D;
-            --border: #E7DDCF;
+            --border: #E1D6C7;
             --shadow: 0 10px 30px rgba(47, 47, 42, 0.06);
         }
 
@@ -168,7 +168,6 @@
             margin-top: 6px;
         }
 
-        /* Для заголовков в аналитике */
         .analytics-title {
             font-family: "Cormorant Garamond", serif;
             font-weight: 600;
@@ -191,15 +190,28 @@
         .product-result.medium { border-color: #facc15; background-color: #fef9c3; }
         .product-result.high { border-color: #f87171; background-color: #fee2e2; }
         .product-result.unknown { border-color: #94a3b8; background-color: #f1f5f9; }
+
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ RISK-CARD ===== */
         .risk-card {
-            border-radius: 16px;
-            padding: 16px;
+            border-radius: 28px;
+            padding: 18px;
             text-align: center;
             margin-bottom: 16px;
+            box-shadow: var(--shadow);
         }
-        .risk-low { background-color: #dcfce7; border: 2px solid #4ade80; }
-        .risk-medium { background-color: #fef9c3; border: 2px solid #facc15; }
-        .risk-high { background-color: #fee2e2; border: 2px solid #f87171; }
+        .risk-low {
+            background: rgba(156, 168, 136, 0.14);
+            border: 1px solid rgba(156, 168, 136, 0.35);
+        }
+        .risk-medium {
+            background: rgba(185, 195, 165, 0.18);
+            border: 1px solid rgba(185, 195, 165, 0.45);
+        }
+        .risk-high {
+            background: rgba(217, 178, 169, 0.18);
+            border: 1px solid rgba(217, 178, 169, 0.50);
+        }
+
         .stat-card {
             background: white;
             border-radius: 12px;
@@ -209,85 +221,234 @@
             flex: 1;
         }
         .stat-number { font-size: 24px; font-weight: 700; }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ КНОПОК ПРОДУКТОВ ===== */
         .product-status-btn {
             width: 32px;
             height: 32px;
             border-radius: 9999px;
-            border: 2px solid #e2e8f0;
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.15s;
-            background: white;
+            background: var(--surface);
+            color: var(--muted);
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
-        .product-status-btn.active-safe { border-color: #4ade80; background: #dcfce7; }
-        .product-status-btn.active-unsafe { border-color: #f87171; background: #fee2e2; }
-        .product-status-btn.active-question { border-color: #facc15; background: #fef9c3; }
+        .product-status-btn.active-safe {
+            border-color: rgba(156, 168, 136, 0.7);
+            background: rgba(156, 168, 136, 0.16);
+            color: var(--primary-dark);
+        }
+        .product-status-btn.active-unsafe {
+            border-color: rgba(217, 178, 169, 0.75);
+            background: rgba(217, 178, 169, 0.18);
+            color: #8F5E56;
+        }
+        .product-status-btn.active-question {
+            border-color: rgba(185, 195, 165, 0.75);
+            background: rgba(185, 195, 165, 0.18);
+            color: var(--primary-dark);
+        }
         .product-status-btn:hover { transform: scale(1.05); }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ ПРОДУКТОВ ===== */
         .safe-filter-btn {
             border-radius: 9999px;
             padding: 4px 12px;
             font-size: 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
             cursor: pointer;
             transition: all 0.15s;
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
-        .safe-filter-btn.active { background: #10b981; color: white; border-color: #10b981; }
-        .safe-filter-btn.unsafe-active { background: #ef4444; color: white; border-color: #ef4444; }
-        .safe-filter-btn.question-active { background: #f59e0b; color: white; border-color: #f59e0b; }
+        .safe-filter-btn.active {
+            background: rgba(156, 168, 136, 0.18);
+            color: var(--primary-dark);
+            border-color: rgba(156, 168, 136, 0.45);
+        }
+        .safe-filter-btn.unsafe-active {
+            background: rgba(217, 178, 169, 0.18);
+            color: #8F5E56;
+            border-color: rgba(217, 178, 169, 0.45);
+        }
+        .safe-filter-btn.question-active {
+            background: rgba(185, 195, 165, 0.18);
+            color: var(--primary-dark);
+            border-color: rgba(185, 195, 165, 0.45);
+        }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ РЕЦЕПТОВ ===== */
         .recipe-filter-btn, .level-filter-btn {
             border-radius: 9999px;
             padding: 4px 14px;
             font-size: 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
             cursor: pointer;
             transition: all 0.15s;
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
         .recipe-filter-btn.active, .level-filter-btn.active {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
+            background: rgba(156, 168, 136, 0.18);
+            color: var(--primary-dark);
+            border-color: rgba(156, 168, 136, 0.45);
         }
-        .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
-        .mic-error { background-color: #ef4444 !important; }
+
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ ТЕГОВ РЕЦЕПТОВ ===== */
+        .recipe-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            background: rgba(185,195,165,0.18);
+            color: var(--primary-dark);
+            border: 1px solid rgba(185,195,165,0.28);
+        }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ КАЛЕНДАРЯ ===== */
         .cycle-day-cell {
             aspect-ratio: 1 / 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.1s;
+            border-radius: 18px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
             cursor: pointer;
             user-select: none;
             position: relative;
-            padding: 2px;
-            line-height: 1.2;
+            padding: 4px;
+            line-height: 1.1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
-        .cycle-day-cell:hover { opacity: 0.8; transform: scale(0.95); }
-        .cycle-day-cell.today { background-color: #D6EAF8 !important; border: 2px solid #2980B9; box-shadow: 0 0 4px #2980B9; }
-        .cycle-day-cell.period-day { background-color: #FADBD8 !important; border: 2px solid #E74C3C; box-shadow: 0 0 4px #E74C3C; }
-        .cycle-day-cell.ovulation-day { background-color: #FCF3CF !important; border: 2px solid #F39C12; box-shadow: 0 0 4px #F39C12; }
-        .cycle-day-cell.fertile-day { background-color: #D5F5E3 !important; border: 2px solid #27AE60; box-shadow: 0 0 4px #27AE60; }
-        .cycle-day-cell.next-period-day { background-color: #E8DAEF !important; border: 2px dashed #8E44AD; box-shadow: 0 0 4px #8E44AD; }
-        .cycle-day-cell.delay-day { background-color: #EAECEE !important; color: #7F8C8D; border: 1px solid #BDC3C7; }
-        .cycle-day-cell.has-note::after { content: '📝'; position: absolute; top: 1px; right: 3px; font-size: 0.5rem; }
+
+        .cycle-day-cell:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(47, 47, 42, 0.07);
+        }
+
+        .cycle-day-cell.today {
+            background: rgba(156, 168, 136, 0.16) !important;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 0 2px rgba(156, 168, 136, 0.10);
+        }
+
+        .cycle-day-cell.period-day {
+            background: rgba(217, 178, 169, 0.18) !important;
+            border: 1px solid rgba(217, 178, 169, 0.8);
+        }
+
+        .cycle-day-cell.ovulation-day {
+            background: rgba(185, 195, 165, 0.22) !important;
+            border: 1px solid rgba(185, 195, 165, 0.95);
+        }
+
+        .cycle-day-cell.fertile-day {
+            background: rgba(156, 168, 136, 0.12) !important;
+            border: 1px solid rgba(156, 168, 136, 0.6);
+        }
+
+        .cycle-day-cell.next-period-day {
+            background: rgba(122, 117, 109, 0.08) !important;
+            border: 1px dashed rgba(122, 117, 109, 0.55);
+        }
+
+        .cycle-day-cell.delay-day {
+            background: rgba(122, 117, 109, 0.05) !important;
+            color: var(--muted);
+            border: 1px solid rgba(122, 117, 109, 0.35);
+        }
+
+        .cycle-day-cell.has-note::after {
+            content: '📝';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.5rem;
+        }
+
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ НАВИГАЦИОННЫХ КНОПОК КАЛЕНДАРЯ ===== */
         .calendar-nav-btn {
             padding: 4px 10px;
             border-radius: 9999px;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
             cursor: pointer;
             transition: all 0.15s;
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
+            font-size: 0.8rem;
         }
-        .calendar-nav-btn:hover { background: #f1f5f9; }
-        .calendar-month-label { font-weight: 600; font-size: 0.9rem; color: #0f172a; }
+        .calendar-nav-btn:hover {
+            background: rgba(156, 168, 136, 0.12);
+        }
+        .calendar-month-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        /* ===== СТИЛИ ДЛЯ КАРТОЧЕК РЕЦЕПТОВ ===== */
+        .recipe-soft-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .recipe-soft-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(47, 47, 42, 0.08);
+        }
+
+        .recipe-image-wrap img {
+            width: 100%;
+            height: 136px;
+            object-fit: cover;
+            display: block;
+            background: #f3ede4;
+        }
+
+        .recipe-content {
+            padding: 14px;
+        }
+
+        .recipe-title {
+            font-size: 17px;
+            line-height: 1.1;
+            font-family: "Cormorant Garamond", serif;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .recipe-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .recipe-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
 
         .mic-btn-modal {
             background: #3b82f6;
@@ -378,11 +539,11 @@
                 <div class="flex gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="gender" value="female" checked class="accent-emerald-600">
-                        <span class="text-sm">👩 Женщина</span>
+                        <span class="text-sm">Женщина</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="gender" value="male" class="accent-emerald-600">
-                        <span class="text-sm">👨 Мужчина</span>
+                        <span class="text-sm">Мужчина</span>
                     </label>
                 </div>
             </div>
@@ -399,7 +560,7 @@
     <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
     <div id="app-body" class="opacity-30 pointer-events-none">
 
-        <!-- НОВЫЙ HEADER -->
+        <!-- HEADER -->
         <header class="sticky top-0 z-40 border-b border-[var(--border)] bg-[rgba(247,241,232,0.92)] backdrop-blur-md">
             <div class="max-w-md mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
@@ -415,9 +576,9 @@
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-4">
-            <!-- ВКЛАДКА ДНЕВНИК (основная) -->
+            <!-- ВКЛАДКА ДНЕВНИК -->
             <div id="diary-tab" class="tab-content active space-y-4">
-                <!-- Блок риск-карты -->
+                <!-- Риск-карта -->
                 <div id="today-dashboard">
                     <div id="risk-card" class="risk-card risk-low card-soft p-4">
                         <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
@@ -438,20 +599,21 @@
                         <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
                     </div>
                     <div id="cycle-load-calendar" class="cycle-calendar"></div>
-                    <div class="flex flex-wrap gap-3 mt-2 text-xs">
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FADBD8; border:2px solid #E74C3C; border-radius:4px;"></span> Менструация</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#FCF3CF; border:2px solid #F39C12; border-radius:4px;"></span> Овуляция</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D5F5E3; border:2px solid #27AE60; border-radius:4px;"></span> Фертильное окно</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#E8DAEF; border:2px dashed #8E44AD; border-radius:4px;"></span> Ожидаемый день</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#EAECEE; border:1px solid #BDC3C7; border-radius:4px;"></span> Задержка</span>
-                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:#D6EAF8; border:2px solid #2980B9; border-radius:4px;"></span> Сегодня</span>
+                    <!-- ОБНОВЛЁННАЯ ЛЕГЕНДА (цвета мягкие) -->
+                    <div class="flex flex-wrap gap-3 mt-2 text-xs text-[var(--muted)]">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(217,178,169,0.22); border:1px solid rgba(217,178,169,0.8); border-radius:4px;"></span> Менструация</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(185,195,165,0.22); border:1px solid rgba(185,195,165,0.9); border-radius:4px;"></span> Овуляция</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(156,168,136,0.16); border:1px solid rgba(156,168,136,0.75); border-radius:4px;"></span> Фертильное окно</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(122,117,109,0.10); border:1px dashed rgba(122,117,109,0.55); border-radius:4px;"></span> Ожидаемый день</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(122,117,109,0.05); border:1px solid rgba(122,117,109,0.35); border-radius:4px;"></span> Задержка</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(156,168,136,0.18); border:1px solid var(--primary); border-radius:4px;"></span> Сегодня</span>
                         <span class="flex items-center gap-1">📝 Заметка</span>
                     </div>
                 </div>
 
-                <!-- Выпадающий блок настроек -->
+                <!-- Настройки цикла -->
                 <details class="settings-details card-soft p-4">
-                    <summary class="text-sm font-bold text-slate-600">⚙️ Настройки цикла</summary>
+                    <summary class="text-sm font-bold text-[var(--text)]">⚙️ Настройки цикла</summary>
                     <div class="mt-3 grid grid-cols-3 gap-2">
                         <div>
                             <label class="text-[10px] uppercase font-bold text-slate-400 mb-1">Первый день</label>
@@ -498,9 +660,9 @@
                         <input type="text" id="safe-search-input" placeholder="Поиск продукта..." class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50" oninput="renderSafeProducts()">
                         <div class="flex gap-1 flex-wrap">
                             <button class="safe-filter-btn active" data-filter="all" onclick="setSafeFilter('all')">Все</button>
-                            <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">✅ Можно</button>
-                            <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">❌ Нельзя</button>
-                            <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">❓ Под вопросом</button>
+                            <button class="safe-filter-btn" data-filter="safe" onclick="setSafeFilter('safe')">Можно</button>
+                            <button class="safe-filter-btn" data-filter="unsafe" onclick="setSafeFilter('unsafe')">Нельзя</button>
+                            <button class="safe-filter-btn" data-filter="question" onclick="setSafeFilter('question')">Под вопросом</button>
                         </div>
                     </div>
                     <div id="safe-products-list" class="space-y-1.5 max-h-96 overflow-y-auto pr-1"></div>
@@ -510,25 +672,18 @@
 
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
-                <!-- Блок: Инсайты дня -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">✨ Инсайты дня</h2>
                     <div id="insight-cards" class="space-y-3"></div>
                 </div>
-
-                <!-- Блок: ИИ-объяснение -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">🧠 ИИ-объяснение</h2>
                     <div id="ai-insight-box" class="text-xs text-slate-600 leading-relaxed"></div>
                 </div>
-
-                <!-- НОВЫЙ БЛОК: Связки по симптомам -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">🧩 Связки по симптомам</h2>
                     <div id="correlation-cards" class="space-y-3"></div>
                 </div>
-
-                <!-- Существующие блоки -->
                 <div class="card-soft p-4">
                     <h2 class="text-base font-bold mb-1 analytics-title">📈 Связь симптомов с фазой цикла</h2>
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
@@ -559,24 +714,22 @@
                     </div>
                     <div class="flex flex-wrap gap-2 mb-4">
                         <button class="level-filter-btn active" data-level="all">Все уровни</button>
-                        <button class="level-filter-btn" data-level="низкий">🟢 Низкий</button>
-                        <button class="level-filter-btn" data-level="средний">🟡 Средний</button>
-                        <button class="level-filter-btn" data-level="высокий">🔴 Высокий</button>
+                        <button class="level-filter-btn" data-level="низкий">Низкий</button>
+                        <button class="level-filter-btn" data-level="средний">Средний</button>
+                        <button class="level-filter-btn" data-level="высокий">Высокий</button>
                     </div>
                     <div class="flex flex-wrap gap-4 mb-4">
                         <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-gluten-free" onchange="renderRecipes()"> 🌾 Без глютена
+                            <input type="checkbox" id="filter-gluten-free" onchange="renderRecipes()"> Без глютена
                         </label>
                         <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-lactose-free" onchange="renderRecipes()"> 🥛 Без лактозы
+                            <input type="checkbox" id="filter-lactose-free" onchange="renderRecipes()"> Без лактозы
                         </label>
                         <label class="flex items-center gap-1 text-xs">
-                            <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> 🧈 Без молочных продуктов
+                            <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> Без молочных продуктов
                         </label>
                     </div>
-                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Сюда будут загружаться рецепты -->
-                    </div>
+                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                 </div>
             </div>
         </main>
@@ -604,10 +757,10 @@
             <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
             <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
             <div class="space-y-2">
-                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">🔴 Сегодня началась менструация</button>
-                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟡 Овуляция</button>
-                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">🟣 Последний день менструации</button>
-                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">❌ Снять отметку</button>
+                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">Началась менструация</button>
+                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">Овуляция</button>
+                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">Последний день менструации</button>
+                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">Снять отметку</button>
                 <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
             </div>
         </div>
@@ -856,7 +1009,7 @@
             localStorage.setItem('histolite_period_days', savedPeriodDays);
             renderCycleCalendar();
             renderTodayDashboard();
-            refreshAnalytics(); // обновляем всю аналитику
+            refreshAnalytics();
             showModal('Настройки сохранены');
         };
 
@@ -1049,7 +1202,7 @@
             cancelEntryForm();
             renderCycleCalendar();
             renderTodayDashboard();
-            refreshAnalytics(); // обновляем всю аналитику
+            refreshAnalytics();
         }
 
         function deleteEntryConfirm(dateStr, id) {
@@ -1058,7 +1211,7 @@
                 renderEntriesList(dateStr);
                 renderCycleCalendar();
                 renderTodayDashboard();
-                refreshAnalytics(); // обновляем всю аналитику
+                refreshAnalytics();
                 showModal('Запись удалена');
             }
         }
@@ -1080,7 +1233,7 @@
         };
 
         // ================================================================
-        // 8. ОТРИСОВКА КАЛЕНДАРЯ
+        // 8. ОТРИСОВКА КАЛЕНДАРЯ (ОБНОВЛЁННАЯ)
         // ================================================================
         function renderCycleCalendar() {
             const container = document.getElementById('cycle-load-calendar');
@@ -1099,6 +1252,7 @@
             const fertile = getFertileRange();
             const nextPeriod = getNextPeriodDate();
             const delayDays = getDelayDays();
+
             let html = '<div class="grid grid-cols-7 gap-1 text-xs">';
             const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
             html += weekDays.map(d => `<div class="text-center font-bold text-slate-400">${d}</div>`).join('');
@@ -1124,34 +1278,36 @@
                 if (delayDays > 0 && nextPeriod && dateObj > nextPeriod && !isPeriod && !isNextPeriod) {
                     isDelay = true;
                 }
+
                 if (isPeriod) {
-                    bg = 'bg-red-200';
-                    text = 'text-red-800';
+                    bg = 'bg-[rgba(217,178,169,0.18)]';
+                    text = 'text-[var(--text)]';
                     extra += ' period-day';
                 } else if (isOvulation) {
-                    bg = 'bg-amber-200';
-                    text = 'text-amber-800';
+                    bg = 'bg-[rgba(185,195,165,0.22)]';
+                    text = 'text-[var(--text)]';
                     extra += ' ovulation-day';
                 } else if (isFertile) {
-                    bg = 'bg-green-200';
-                    text = 'text-green-800';
+                    bg = 'bg-[rgba(156,168,136,0.12)]';
+                    text = 'text-[var(--text)]';
                     extra += ' fertile-day';
                 } else if (isNextPeriod) {
-                    bg = 'bg-violet-200';
-                    text = 'text-violet-800';
+                    bg = 'bg-[rgba(122,117,109,0.08)]';
+                    text = 'text-[var(--muted)]';
                     extra += ' next-period-day';
                 } else if (isDelay) {
-                    bg = 'bg-violet-100';
-                    text = 'text-violet-700';
+                    bg = 'bg-[rgba(122,117,109,0.05)]';
+                    text = 'text-[var(--muted)]';
                     extra += ' delay-day';
                     const diffFromNext = Math.floor((dateObj - nextPeriod) / (1000 * 60 * 60 * 24));
                     label = `+${diffFromNext}`;
                 }
+
                 if (isToday) {
                     extra += ' today';
                     if (!isPeriod && !isOvulation && !isFertile && !isNextPeriod && !isDelay) {
-                        bg = 'bg-blue-300';
-                        text = 'text-white font-bold';
+                        bg = 'bg-[rgba(156,168,136,0.16)]';
+                        text = 'text-[var(--text)] font-bold';
                     }
                 }
                 if (hasNote) {
@@ -1281,7 +1437,7 @@
                 renderSafeProducts();
             } catch (error) {
                 console.error('Ошибка загрузки продуктов:', error);
-                showModal('❌ Не удалось загрузить базу продуктов. Проверьте файл products.json.');
+                showModal('Не удалось загрузить базу продуктов. Проверьте файл products.json.');
             }
         }
         window.renderSafeProducts = function() {
@@ -1301,9 +1457,9 @@
                     <div class="flex items-center justify-between py-1 border-b border-slate-100">
                         <span class="text-xs font-medium">${p.name}</span>
                         <div class="flex gap-1">
-                            <button class="product-status-btn ${safeClass}" onclick="setProductStatus('${p.name}','safe')" title="Можно">✅</button>
-                            <button class="product-status-btn ${unsafeClass}" onclick="setProductStatus('${p.name}','unsafe')" title="Нельзя">❌</button>
-                            <button class="product-status-btn ${questionClass}" onclick="setProductStatus('${p.name}','question')" title="Под вопросом">❓</button>
+                            <button class="product-status-btn ${safeClass}" onclick="setProductStatus('${p.name}','safe')" title="Можно">OK</button>
+                            <button class="product-status-btn ${unsafeClass}" onclick="setProductStatus('${p.name}','unsafe')" title="Нельзя">NO</button>
+                            <button class="product-status-btn ${questionClass}" onclick="setProductStatus('${p.name}','question')" title="Под вопросом">?</button>
                         </div>
                     </div>
                 `;
@@ -1343,7 +1499,7 @@
             if (!name) { resultDiv.classList.add('hidden'); return; }
             const found = myHistamineDB.find(p => p.name.toLowerCase() === name);
             if (!found) {
-                resultDiv.innerHTML = `<div class="product-result unknown"><strong>❓ Не найдено</strong><br>Продукт "${name}" отсутствует в базе.</div>`;
+                resultDiv.innerHTML = `<div class="product-result unknown"><strong>Не найдено</strong><br>Продукт "${name}" отсутствует в базе.</div>`;
                 resultDiv.classList.remove('hidden');
                 return;
             }
@@ -1482,7 +1638,7 @@
                     micBtn.classList.remove('mic-active');
                     micBtn.textContent = '🎤';
                     if (event.error === 'not-allowed') {
-                        showModal('⚠️ Доступ к микрофону запрещён.');
+                        showModal('Доступ к микрофону запрещён.');
                     } else {
                         showModal('Ошибка распознавания: ' + event.error);
                     }
@@ -1513,7 +1669,7 @@
             if (lastVisit) {
                 const daysDiff = Math.floor((now - new Date(lastVisit)) / (1000 * 60 * 60 * 24));
                 if (daysDiff >= 2) {
-                    showModal(`📢 Вы не записывали дневник уже ${daysDiff} дня. Как ваше самочувствие?`);
+                    showModal(`Вы не записывали дневник уже ${daysDiff} дня. Как ваше самочувствие?`);
                 }
             }
             localStorage.setItem('histolite_last_visit', now.toISOString());
@@ -1564,7 +1720,7 @@
             checkNotifications();
             loadRecipes();
             initCycleModule();
-            refreshAnalytics(); // первый полный расчёт аналитики
+            refreshAnalytics();
             switchTab('diary');
         };
 
@@ -1612,9 +1768,10 @@
             if (Array.isArray(window.recipesDB) && window.recipesDB.length > 0) {
                 renderRecipes();
             } else {
-                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">❌ Рецепты не найдены. Проверьте recipes.js</p>';
+                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">Рецепты не найдены. Проверьте recipes.js</p>';
             }
         }
+
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) return;
@@ -1638,25 +1795,31 @@
                 container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">По вашему запросу ничего не найдено.</p>';
                 return;
             }
+
             container.innerHTML = filtered.map(r => `
-                <div class="border border-slate-200 rounded-xl p-3 bg-white hover:shadow-md transition cursor-pointer" onclick="openRecipeModal(${r.id})">
-                    <img src="${r.image || 'https://via.placeholder.com/300x200?text=Рецепт'}" alt="${r.name}" class="w-full h-32 object-cover rounded-lg mb-2" onerror="this.src='https://via.placeholder.com/300x200?text=Изображение+отсутствует'">
-                    <h4 class="font-bold text-sm text-slate-800">${r.name}</h4>
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>${r.category || ''}</span>
-                        <span>⏱ ${r.prep_time || 0} мин</span>
+                <div class="recipe-soft-card" onclick="openRecipeModal(${r.id})">
+                    <div class="recipe-image-wrap">
+                        <img src="${r.image || 'https://via.placeholder.com/300x200?text=Recipe'}" alt="${r.name}" onerror="this.src='https://via.placeholder.com/300x200?text=Image'">
                     </div>
-                    <div class="mt-1 flex items-center gap-1 flex-wrap">
-                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100">
-                            ${r.histamine_level === 'низкий' ? '🟢 Низкий' : r.histamine_level === 'средний' ? '🟡 Средний' : '🔴 Высокий'}
-                        </span>
-                        ${r.gluten_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">🌾 БГ</span>' : ''}
-                        ${r.lactose_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">🥛 БЛ</span>' : ''}
-                        ${r.dairy_free ? '<span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">🧈 БМ</span>' : ''}
+                    <div class="recipe-content">
+                        <h4 class="recipe-title">${r.name}</h4>
+                        <div class="recipe-meta">
+                            <span>${r.category || ''}</span>
+                            <span>⏱ ${r.prep_time || 0} мин</span>
+                        </div>
+                        <div class="recipe-tags">
+                            <span class="recipe-tag recipe-level">
+                                ${r.histamine_level === 'низкий' ? 'Низкий' : r.histamine_level === 'средний' ? 'Средний' : 'Высокий'}
+                            </span>
+                            ${r.gluten_free ? '<span class="recipe-tag">Без глютена</span>' : ''}
+                            ${r.lactose_free ? '<span class="recipe-tag">Без лактозы</span>' : ''}
+                            ${r.dairy_free ? '<span class="recipe-tag">Без молочного</span>' : ''}
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
+
         function openRecipeModal(id) {
             const allRecipes = [...recipesDB, ...userRecipes];
             const recipe = allRecipes.find(r => r.id === id);
@@ -1665,8 +1828,8 @@
             document.getElementById('recipe-modal-name').textContent = recipe.name || '';
             document.getElementById('recipe-modal-category').textContent = recipe.category || '';
             document.getElementById('recipe-modal-level').textContent =
-                recipe.histamine_level === 'низкий' ? '🟢 Низкий' :
-                recipe.histamine_level === 'средний' ? '🟡 Средний' : '🔴 Высокий';
+                recipe.histamine_level === 'низкий' ? 'Низкий' :
+                recipe.histamine_level === 'средний' ? 'Средний' : 'Высокий';
             document.getElementById('recipe-modal-time').textContent = `⏱ ${recipe.prep_time || 0} мин`;
             document.getElementById('recipe-modal-servings').textContent = `🍽 ${recipe.servings || 1} порц.`;
             document.getElementById('recipe-modal-description').textContent = recipe.description || '';
@@ -1675,16 +1838,16 @@
             document.getElementById('recipe-modal-instructions').textContent = recipe.instructions || '';
             const tipsDiv = document.getElementById('recipe-modal-tips');
             if (recipe.tips) {
-                tipsDiv.innerHTML = `<strong>💡 Совет:</strong> ${recipe.tips}`;
+                tipsDiv.innerHTML = `<strong>Совет:</strong> ${recipe.tips}`;
                 tipsDiv.style.display = 'block';
             } else {
                 tipsDiv.style.display = 'none';
             }
             const dietsDiv = document.getElementById('recipe-modal-diets');
             dietsDiv.innerHTML = '';
-            if (recipe.gluten_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">🌾 Без глютена</span> ';
-            if (recipe.lactose_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">🥛 Без лактозы</span> ';
-            if (recipe.dairy_free) dietsDiv.innerHTML += '<span class="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">🧈 Без молочных продуктов</span> ';
+            if (recipe.gluten_free) dietsDiv.innerHTML += '<span class="recipe-tag">Без глютена</span> ';
+            if (recipe.lactose_free) dietsDiv.innerHTML += '<span class="recipe-tag">Без лактозы</span> ';
+            if (recipe.dairy_free) dietsDiv.innerHTML += '<span class="recipe-tag">Без молочных продуктов</span> ';
             if (!recipe.gluten_free && !recipe.lactose_free && !recipe.dairy_free) {
                 dietsDiv.innerHTML = '<span class="text-xs text-slate-400">Нет специальных маркеров</span>';
             }
@@ -1805,13 +1968,7 @@
             const phaseText = topPhase ? `Чаще всего записи попадают в фазу «${topPhase[0]}». ` : '';
             const delayText = topDelay ? `Самое частое окно реакции — ${topDelay[0]}. ` : '';
             const productText = topProduct ? `Больше всего совпадений найдено у продукта «${topProduct[0]}». ` : '';
-
-            return `
-                ${phaseText}
-                ${delayText}
-                ${productText}
-                Это не диагноз, а подсказка: попробуйте несколько дней отслеживать один новый продукт и сохранять время реакции.
-            `;
+            return `${phaseText}${delayText}${productText}Это не диагноз, а подсказка: попробуйте несколько дней отслеживать один новый продукт и сохранять время реакции.`;
         }
 
         function buildInsights() {
@@ -1819,36 +1976,25 @@
             const insightCards = document.getElementById('insight-cards');
             const aiBox = document.getElementById('ai-insight-box');
             if (!insightCards || !aiBox) return;
-
             if (entries.length === 0) {
-                insightCards.innerHTML = '<p class="text-slate-400 text-xs">Пока мало данных для инсайтов.</p>';
+                insightCards.innerHTML = '<p class="text-[var(--muted)] text-xs">Пока мало данных для инсайтов.</p>';
                 aiBox.innerHTML = 'Добавьте несколько записей с едой и симптомами — и здесь появятся персональные выводы.';
                 return;
             }
-
             const productSymptomMap = {};
             const phaseCount = {};
             const delayBuckets = { '0-1ч': 0, '1-2ч': 0, '2-4ч': 0, '4-8ч': 0, '8-24ч': 0, '24ч+': 0 };
-
             entries.forEach(entry => {
                 const dateStr = entry.dateStr;
                 const phase = getCyclePhaseForDate(dateStr);
                 phaseCount[phase] = (phaseCount[phase] || 0) + 1;
-
                 const symptoms = parseTextItems(entry.symptoms);
                 const products = parseTextItems(entry.products);
-
-                // Расчёт задержки (если есть время)
                 if (entry.time && symptoms.length && products.length) {
-                    // Считаем, что время записи — это время приёма пищи,
-                    // а симптомы появились в тот же момент (задержка 0)
-                    // или можно взять разницу между временем записи и временем записи = 0
                     const hours = 0;
                     const bucket = getDelayBucket(hours);
                     delayBuckets[bucket] = (delayBuckets[bucket] || 0) + 1;
                 }
-
-                // Накопление продукт-симптом
                 products.forEach(p => {
                     if (!productSymptomMap[p]) productSymptomMap[p] = {};
                     symptoms.forEach(s => {
@@ -1856,14 +2002,11 @@
                     });
                 });
             });
-
             const topPhase = Object.entries(phaseCount).sort((a, b) => b[1] - a[1])[0];
             const topProduct = Object.entries(productSymptomMap)
                 .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0))[0];
             const topDelay = Object.entries(delayBuckets).sort((a, b) => b[1] - a[1])[0] || null;
-
             const cards = [];
-
             if (topPhase) {
                 cards.push(`
                     <div class="insight-card">
@@ -1873,7 +2016,6 @@
                     </div>
                 `);
             }
-
             if (topDelay) {
                 cards.push(`
                     <div class="insight-card">
@@ -1883,7 +2025,6 @@
                     </div>
                 `);
             }
-
             if (topProduct) {
                 const symptomList = Object.entries(topProduct[1])
                     .sort((a, b) => b[1] - a[1])
@@ -1898,7 +2039,6 @@
                     </div>
                 `);
             }
-
             cards.push(`
                 <div class="insight-card">
                     <div class="insight-title">День-эксперимент</div>
@@ -1906,7 +2046,6 @@
                     <div class="insight-sub">Так легче увидеть, что именно вызвало реакцию.</div>
                 </div>
             `);
-
             insightCards.innerHTML = cards.join('');
             aiBox.innerHTML = generateAIExplanation(topPhase, topDelay, topProduct);
         }
@@ -1917,24 +2056,19 @@
         function buildCorrelationCards() {
             const container = document.getElementById('correlation-cards');
             if (!container) return;
-
             const entries = getAllEntries();
             if (entries.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-xs">Пока мало данных для связок.</p>';
+                container.innerHTML = '<p class="text-[var(--muted)] text-xs">Пока мало данных для связок.</p>';
                 return;
             }
-
             const pairs = {};
             const phaseLinks = {};
             const delayLinks = {};
-
             entries.forEach(entry => {
                 const dateStr = entry.dateStr;
                 const symptoms = parseTextItems(entry.symptoms);
                 const products = parseTextItems(entry.products);
                 const phase = getCyclePhaseForDate(dateStr);
-
-                // Продукт → симптом
                 products.forEach(product => {
                     symptoms.forEach(symptom => {
                         const key = `${product}||${symptom}`;
@@ -1942,17 +2076,12 @@
                         pairs[key].count++;
                     });
                 });
-
-                // Фаза → симптом
                 symptoms.forEach(symptom => {
                     const phaseKey = `${phase}||${symptom}`;
                     if (!phaseLinks[phaseKey]) phaseLinks[phaseKey] = { phase, symptom, count: 0 };
                     phaseLinks[phaseKey].count++;
                 });
-
-                // Задержка → симптом
                 if (entry.time && symptoms.length) {
-                    // Считаем задержку 0 (время записи = время приёма = время симптома)
                     const hours = 0;
                     const bucket = getDelayBucket(hours);
                     symptoms.forEach(symptom => {
@@ -1962,13 +2091,10 @@
                     });
                 }
             });
-
             const topPairs = Object.values(pairs).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
             const topPhases = Object.values(phaseLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
             const topDelays = Object.values(delayLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
-
             let html = '';
-
             topPairs.forEach(x => {
                 html += `
                     <div class="insight-card">
@@ -1978,7 +2104,6 @@
                     </div>
                 `;
             });
-
             topPhases.forEach(x => {
                 html += `
                     <div class="insight-card">
@@ -1988,7 +2113,6 @@
                     </div>
                 `;
             });
-
             topDelays.forEach(x => {
                 html += `
                     <div class="insight-card">
@@ -1998,11 +2122,9 @@
                     </div>
                 `;
             });
-
             if (!html) {
-                html = '<p class="text-slate-400 text-xs">Пока недостаточно повторов для уверенных связок.</p>';
+                html = '<p class="text-[var(--muted)] text-xs">Пока недостаточно повторов для уверенных связок.</p>';
             }
-
             container.innerHTML = html;
         }
 
@@ -2013,11 +2135,10 @@
             buildInsights();
             buildCorrelationCards();
             renderCycleSymptomAnalysis();
-            // Если нужно, можно добавить и другие функции
         }
 
         // ================================================================
-        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА)
+        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -2036,7 +2157,7 @@
                 });
             });
             if (allEntries.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-center py-4">Нет записей с симптомами для анализа.</p>';
+                container.innerHTML = '<p class="text-[var(--muted)] text-center py-4">Нет записей с симптомами для анализа.</p>';
                 return;
             }
             const phases = {
@@ -2070,19 +2191,25 @@
                 const data = phases[name];
                 const total = data.days.length;
                 if (total === 0) {
-                    html += `<div><strong>${name}</strong>: <span class="text-slate-400">нет записей</span></div>`;
+                    html += `<div><strong>${name}</strong>: <span class="text-[var(--muted)]">нет записей</span></div>`;
                     return;
                 }
                 const top = Object.entries(data.symptoms).sort((a,b) => b[1]-a[1]).slice(0,3);
                 const txt = top.length ? top.map(([s,c]) => `${s} (${c})`).join(', ') : 'нет симптомов';
-                html += `<div class="border-b pb-2"><div class="font-semibold text-sm">${name}</div><div class="text-xs text-slate-600">Записей: ${total}</div><div class="text-xs text-rose-600">Частые симптомы: ${txt}</div></div>`;
+                html += `
+                    <div class="border-b border-[rgba(122,117,109,0.12)] pb-2">
+                        <div class="font-semibold text-sm text-[var(--text)]">${name}</div>
+                        <div class="text-xs text-[var(--muted)]">Записей: ${total}</div>
+                        <div class="text-xs text-[var(--primary-dark)]">Частые симптомы: ${txt}</div>
+                    </div>
+                `;
             });
             html += '</div>';
             container.innerHTML = html;
         }
 
         // ================================================================
-        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – существующий
+        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
         // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -2100,10 +2227,10 @@
                 });
             });
             if (symptomEntries.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Нет записей с симптомами для анализа. Добавьте записи с симптомами.</p>';
+                container.innerHTML = '<p class="text-xs text-[var(--muted)] text-center py-4">Нет записей с симптомами для анализа. Добавьте записи с симптомами.</p>';
                 return;
             }
-            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">⏳ Анализ...</p>';
+            container.innerHTML = '<p class="text-xs text-[var(--muted)] text-center py-4">⏳ Анализ...</p>';
             const triggers = {};
             let totalMatches = 0;
             symptomEntries.forEach(({ date, data: symptomData }) => {
@@ -2140,7 +2267,7 @@
                 });
             });
             if (totalMatches === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Не найдено совпадений. Возможно, вы не записывали продукты или лекарства перед симптомами.</p>';
+                container.innerHTML = '<p class="text-xs text-[var(--muted)] text-center py-4">Не найдено совпадений. Возможно, вы не записывали продукты или лекарства перед симптомами.</p>';
                 return;
             }
             const sorted = Object.entries(triggers)
@@ -2148,7 +2275,7 @@
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 15);
             if (sorted.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Найдено совпадений, но все с частотой 1. Добавьте больше записей для выявления устойчивых триггеров.</p>';
+                container.innerHTML = '<p class="text-xs text-[var(--muted)] text-center py-4">Найдено совпадений, но все с частотой 1. Добавьте больше записей для выявления устойчивых триггеров.</p>';
                 return;
             }
             let html = '<div class="space-y-2">';
@@ -2156,11 +2283,11 @@
                 const percentage = Math.round((count / symptomEntries.length) * 100);
                 html += `<div class="flex justify-between items-center border-b border-slate-100 py-1 text-xs">
                     <span>${item}</span>
-                    <span class="font-bold text-rose-600">${count} раз (${percentage}% записей)</span>
+                    <span class="font-bold text-[var(--primary-dark)]">${count} раз (${percentage}% записей)</span>
                 </div>`;
             });
-            html += `<div class="text-[10px] text-slate-400 mt-2">* Совпадения с симптомами в течение 48 часов после употребления. Показаны только частые совпадения (>=2).</div>`;
-            html += `<div class="text-[10px] text-slate-400 mt-1">Всего записей с симптомами: ${symptomEntries.length}</div>`;
+            html += `<div class="text-[10px] text-[var(--muted)] mt-2">* Совпадения с симптомами в течение 48 часов после употребления. Показаны только частые совпадения (>=2).</div>`;
+            html += `<div class="text-[10px] text-[var(--muted)] mt-1">Всего записей с симптомами: ${symptomEntries.length}</div>`;
             container.innerHTML = html;
         };
 
@@ -2183,7 +2310,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Визуальная система обновлена.');
+        console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру.');
     </script>
 </body>
 </html>
