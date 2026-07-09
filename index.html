@@ -192,7 +192,7 @@
         .product-result.high { border-color: #f87171; background-color: #fee2e2; }
         .product-result.unknown { border-color: #94a3b8; background-color: #f1f5f9; }
 
-        /* ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ RISK-CARD */
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ RISK-CARD ===== */
         .risk-card {
             border-radius: 28px;
             padding: 18px;
@@ -200,9 +200,18 @@
             margin-bottom: 16px;
             box-shadow: var(--shadow);
         }
-        .risk-low { background-color: #dcfce7; border: 2px solid #4ade80; }
-        .risk-medium { background-color: #fef9c3; border: 2px solid #facc15; }
-        .risk-high { background-color: #fee2e2; border: 2px solid #f87171; }
+        .risk-low {
+            background: rgba(156, 168, 136, 0.14);
+            border: 1px solid rgba(156, 168, 136, 0.35);
+        }
+        .risk-medium {
+            background: rgba(185, 195, 165, 0.18);
+            border: 1px solid rgba(185, 195, 165, 0.45);
+        }
+        .risk-high {
+            background: rgba(217, 178, 169, 0.18);
+            border: 1px solid rgba(217, 178, 169, 0.50);
+        }
 
         .stat-card {
             background: white;
@@ -213,51 +222,95 @@
             flex: 1;
         }
         .stat-number { font-size: 24px; font-weight: 700; }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ КНОПОК ПРОДУКТОВ ===== */
         .product-status-btn {
             width: 32px;
             height: 32px;
             border-radius: 9999px;
-            border: 2px solid #e2e8f0;
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.15s;
-            background: white;
+            background: var(--surface);
+            color: var(--muted);
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
-        .product-status-btn.active-safe { border-color: #4ade80; background: #dcfce7; }
-        .product-status-btn.active-unsafe { border-color: #f87171; background: #fee2e2; }
-        .product-status-btn.active-question { border-color: #facc15; background: #fef9c3; }
+        .product-status-btn.active-safe {
+            border-color: rgba(156, 168, 136, 0.7);
+            background: rgba(156, 168, 136, 0.16);
+            color: var(--primary-dark);
+        }
+        .product-status-btn.active-unsafe {
+            border-color: rgba(217, 178, 169, 0.75);
+            background: rgba(217, 178, 169, 0.18);
+            color: #8F5E56;
+        }
+        .product-status-btn.active-question {
+            border-color: rgba(185, 195, 165, 0.75);
+            background: rgba(185, 195, 165, 0.18);
+            color: var(--primary-dark);
+        }
         .product-status-btn:hover { transform: scale(1.05); }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ ПРОДУКТОВ ===== */
         .safe-filter-btn {
             border-radius: 9999px;
             padding: 4px 12px;
             font-size: 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
             cursor: pointer;
             transition: all 0.15s;
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
-        .safe-filter-btn.active { background: #10b981; color: white; border-color: #10b981; }
-        .safe-filter-btn.unsafe-active { background: #ef4444; color: white; border-color: #ef4444; }
-        .safe-filter-btn.question-active { background: #f59e0b; color: white; border-color: #f59e0b; }
+        .safe-filter-btn.active {
+            background: rgba(156, 168, 136, 0.18);
+            color: var(--primary-dark);
+            border-color: rgba(156, 168, 136, 0.45);
+        }
+        .safe-filter-btn.unsafe-active {
+            background: rgba(217, 178, 169, 0.18);
+            color: #8F5E56;
+            border-color: rgba(217, 178, 169, 0.45);
+        }
+        .safe-filter-btn.question-active {
+            background: rgba(185, 195, 165, 0.18);
+            color: var(--primary-dark);
+            border-color: rgba(185, 195, 165, 0.45);
+        }
+
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ РЕЦЕПТОВ ===== */
         .recipe-filter-btn, .level-filter-btn {
             border-radius: 9999px;
             padding: 4px 14px;
             font-size: 12px;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
             cursor: pointer;
             transition: all 0.15s;
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
         .recipe-filter-btn.active, .level-filter-btn.active {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
+            background: rgba(156, 168, 136, 0.18);
+            color: var(--primary-dark);
+            border-color: rgba(156, 168, 136, 0.45);
         }
-        .mic-active { background-color: #3b82f6 !important; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
-        .mic-error { background-color: #ef4444 !important; }
+
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ ТЕГОВ РЕЦЕПТОВ ===== */
+        .recipe-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            background: rgba(185,195,165,0.18);
+            color: var(--primary-dark);
+            border: 1px solid rgba(185,195,165,0.28);
+        }
 
         /* ===== ОБНОВЛЁННЫЕ СТИЛИ КАЛЕНДАРЯ ===== */
         .cycle-day-cell {
@@ -326,18 +379,20 @@
             font-size: 0.5rem;
         }
 
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ НАВИГАЦИОННЫХ КНОПОК КАЛЕНДАРЯ ===== */
         .calendar-nav-btn {
             padding: 4px 10px;
             border-radius: 9999px;
             border: 1px solid var(--border);
             background: var(--surface);
+            color: var(--text);
             cursor: pointer;
             transition: all 0.15s;
-            color: var(--text);
+            box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
             font-size: 0.8rem;
         }
         .calendar-nav-btn:hover {
-            background: var(--surface-2);
+            background: rgba(156, 168, 136, 0.12);
         }
         .calendar-month-label {
             font-weight: 600;
@@ -2305,7 +2360,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Дневник приведён к новому стилю.');
+        console.log('✅ Приложение загружено. Общие цвета и стили применены.');
     </script>
 </body>
 </html>
