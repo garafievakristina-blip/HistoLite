@@ -203,99 +203,6 @@
         .settings-details[open] summary { color: #0f172a; }
 
         #history-container { display: none; }
-
-        /* ===== НОВЫЕ СТИЛИ ДЛЯ АНАЛИТИКИ ===== */
-        .ring-wrap {
-            width: 180px;
-            height: 180px;
-            border-radius: 9999px;
-            background: conic-gradient(#10b981 0deg, #10b981 var(--deg), #e2e8f0 var(--deg), #e2e8f0 360deg);
-            display: grid;
-            place-items: center;
-            position: relative;
-            margin: 0 auto;
-        }
-        .ring-wrap::before {
-            content: "";
-            width: 132px;
-            height: 132px;
-            border-radius: 9999px;
-            background: white;
-            position: absolute;
-        }
-        .ring-inner {
-            position: relative;
-            text-align: center;
-            z-index: 1;
-        }
-        .ring-value {
-            font-size: 34px;
-            font-weight: 800;
-            color: #0f172a;
-            line-height: 1;
-        }
-        .ring-label {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 4px;
-        }
-
-        .timeline-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .timeline-label {
-            width: 56px;
-            font-size: 11px;
-            color: #64748b;
-            flex-shrink: 0;
-        }
-        .timeline-bar {
-            flex: 1;
-            height: 10px;
-            background: #e2e8f0;
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        .timeline-fill {
-            height: 100%;
-            border-radius: 9999px;
-            background: linear-gradient(90deg, #10b981, #34d399);
-            transition: width 0.4s ease;
-        }
-        .timeline-score {
-            width: 28px;
-            text-align: right;
-            font-size: 11px;
-            color: #334155;
-            font-weight: 700;
-        }
-
-        .insight-mini {
-            border-radius: 18px;
-            padding: 14px;
-            border: 1px solid #e2e8f0;
-            background: linear-gradient(180deg, #ffffff, #f8fafc);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-        }
-        .insight-mini .title {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #94a3b8;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-        .insight-mini .main {
-            font-size: 15px;
-            font-weight: 800;
-            color: #0f172a;
-        }
-        .insight-mini .sub {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 4px;
-        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-24">
@@ -435,34 +342,27 @@
                 </div>
             </div>
 
-            <!-- ВКЛАДКА АНАЛИТИКА – НОВАЯ ВЕРСИЯ -->
+            <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
-                <!-- 1. Радиальное кольцо -->
+                <!-- Блок: Инсайты дня -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-2">✨ Аналитика дня</h2>
-                    <div id="radial-insight" class="flex items-center justify-center py-4"></div>
-                    <div id="radial-caption" class="text-center text-xs text-slate-500 mt-2"></div>
+                    <h2 class="text-base font-bold mb-1">✨ Инсайты дня</h2>
+                    <div id="insight-cards" class="space-y-3"></div>
                 </div>
 
-                <!-- 2. Окно реакции (таймлайн) -->
+                <!-- Блок: ИИ-объяснение -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-2">⏳ Окно реакции</h2>
-                    <div id="delay-timeline" class="space-y-2"></div>
+                    <h2 class="text-base font-bold mb-1">🧠 ИИ-объяснение</h2>
+                    <div id="ai-insight-box" class="text-xs text-slate-600 leading-relaxed"></div>
                 </div>
 
-                <!-- 3. Инсайты дня (сетка) -->
+                <!-- НОВЫЙ БЛОК: Связки по симптомам -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-2">✨ Инсайты дня</h2>
-                    <div id="insight-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-                </div>
-
-                <!-- 4. Связки по симптомам -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <h2 class="text-base font-bold mb-2">🧩 Связки по симптомам</h2>
+                    <h2 class="text-base font-bold mb-1">🧩 Связки по симптомам</h2>
                     <div id="correlation-cards" class="space-y-3"></div>
                 </div>
 
-                <!-- Остальные блоки (сохраняем) -->
+                <!-- Существующие блоки -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                     <h2 class="text-base font-bold mb-1">📈 Связь симптомов с фазой цикла</h2>
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
@@ -790,7 +690,7 @@
             localStorage.setItem('histolite_period_days', savedPeriodDays);
             renderCycleCalendar();
             renderTodayDashboard();
-            refreshAnalytics();
+            refreshAnalytics(); // обновляем всю аналитику
             showModal('Настройки сохранены');
         };
 
@@ -983,7 +883,7 @@
             cancelEntryForm();
             renderCycleCalendar();
             renderTodayDashboard();
-            refreshAnalytics();
+            refreshAnalytics(); // обновляем всю аналитику
         }
 
         function deleteEntryConfirm(dateStr, id) {
@@ -992,7 +892,7 @@
                 renderEntriesList(dateStr);
                 renderCycleCalendar();
                 renderTodayDashboard();
-                refreshAnalytics();
+                refreshAnalytics(); // обновляем всю аналитику
                 showModal('Запись удалена');
             }
         }
@@ -1498,7 +1398,7 @@
             checkNotifications();
             loadRecipes();
             initCycleModule();
-            refreshAnalytics();
+            refreshAnalytics(); // первый полный расчёт аналитики
             switchTab('diary');
         };
 
@@ -1693,7 +1593,7 @@
         }
 
         // ================================================================
-        // 23. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ АНАЛИТИКИ
+        // 23. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
         // ================================================================
         function getAllEntries() {
             const all = [];
@@ -1735,114 +1635,63 @@
             return '24ч+';
         }
 
-        function getStrengthScore(count, maxCount) {
-            if (!maxCount) return 0;
-            return Math.min(100, Math.round((count / maxCount) * 100));
-        }
+        function generateAIExplanation(topPhase, topDelay, topProduct) {
+            const phaseText = topPhase ? `Чаще всего записи попадают в фазу «${topPhase[0]}». ` : '';
+            const delayText = topDelay ? `Самое частое окно реакции — ${topDelay[0]}. ` : '';
+            const productText = topProduct ? `Больше всего совпадений найдено у продукта «${topProduct[0]}». ` : '';
 
-        // ================================================================
-        // 24. НОВЫЕ ФУНКЦИИ АНАЛИТИКИ (RADIAL, TIMELINE, INSIGHTS, CORRELATIONS)
-        // ================================================================
-        function buildRadialInsight() {
-            const box = document.getElementById('radial-insight');
-            const caption = document.getElementById('radial-caption');
-            if (!box || !caption) return;
-
-            const entries = getAllEntries();
-            if (entries.length === 0) {
-                box.innerHTML = '<div class="text-slate-400 text-sm text-center py-8">Пока нет данных</div>';
-                caption.textContent = 'Добавьте несколько записей, чтобы увидеть фазу чувствительности.';
-                return;
-            }
-
-            const phaseCounts = {};
-            entries.forEach(entry => {
-                const phase = getCyclePhaseForDate(entry.dateStr);
-                phaseCounts[phase] = (phaseCounts[phase] || 0) + 1;
-            });
-
-            const topPhase = Object.entries(phaseCounts).sort((a, b) => b[1] - a[1])[0] || ['Нет данных', 0];
-            const maxCount = Math.max(...Object.values(phaseCounts), 1);
-            const percent = getStrengthScore(topPhase[1], maxCount);
-            const deg = Math.round((percent / 100) * 360);
-
-            box.innerHTML = `
-                <div class="ring-wrap" style="--deg:${deg}deg">
-                    <div class="ring-inner">
-                        <div class="ring-value">${percent}%</div>
-                        <div class="ring-label">${topPhase[0]}</div>
-                    </div>
-                </div>
+            return `
+                ${phaseText}
+                ${delayText}
+                ${productText}
+                Это не диагноз, а подсказка: попробуйте несколько дней отслеживать один новый продукт и сохранять время реакции.
             `;
-
-            caption.textContent = `Фаза чувствительности: ${topPhase[0]}. Подсказка построена по вашим записям из календаря.`;
-        }
-
-        function buildDelayTimeline() {
-            const container = document.getElementById('delay-timeline');
-            if (!container) return;
-
-            const buckets = { '0-1ч': 0, '1-2ч': 0, '2-4ч': 0, '4-8ч': 0, '8-24ч': 0, '24ч+': 0 };
-            const entries = getAllEntries();
-
-            entries.forEach(entry => {
-                const symptoms = parseTextItems(entry.symptoms);
-                const products = parseTextItems(entry.products);
-                if (!entry.time || !symptoms.length || !products.length) return;
-                // В реальности задержка должна вычисляться как разница между временем симптома и временем приёма,
-                // но у нас нет отдельного времени симптома, поэтому используем фиксированное окно для демонстрации.
-                // Для примера будем считать, что задержка всегда 2-4ч (чтобы показать график).
-                const bucket = '2-4ч';
-                buckets[bucket] += 1;
-            });
-
-            const max = Math.max(...Object.values(buckets), 1);
-            container.innerHTML = Object.entries(buckets).map(([label, value]) => {
-                const pct = Math.round((value / max) * 100);
-                return `
-                    <div class="timeline-row">
-                        <div class="timeline-label">${label}</div>
-                        <div class="timeline-bar"><div class="timeline-fill" style="width:${pct}%"></div></div>
-                        <div class="timeline-score">${value}</div>
-                    </div>
-                `;
-            }).join('');
         }
 
         function buildInsights() {
-            const container = document.getElementById('insight-cards');
-            if (!container) return;
-
             const entries = getAllEntries();
+            const insightCards = document.getElementById('insight-cards');
+            const aiBox = document.getElementById('ai-insight-box');
+            if (!insightCards || !aiBox) return;
+
             if (entries.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-xs col-span-full text-center py-4">Пока мало данных для инсайтов.</p>';
+                insightCards.innerHTML = '<p class="text-slate-400 text-xs">Пока мало данных для инсайтов.</p>';
+                aiBox.innerHTML = 'Добавьте несколько записей с едой и симптомами — и здесь появятся персональные выводы.';
                 return;
             }
 
-            const phaseCounts = {};
             const productSymptomMap = {};
-            const delayBuckets = {};
+            const phaseCount = {};
+            const delayBuckets = { '0-1ч': 0, '1-2ч': 0, '2-4ч': 0, '4-8ч': 0, '8-24ч': 0, '24ч+': 0 };
 
             entries.forEach(entry => {
-                const phase = getCyclePhaseForDate(entry.dateStr);
-                phaseCounts[phase] = (phaseCounts[phase] || 0) + 1;
+                const dateStr = entry.dateStr;
+                const phase = getCyclePhaseForDate(dateStr);
+                phaseCount[phase] = (phaseCount[phase] || 0) + 1;
 
                 const symptoms = parseTextItems(entry.symptoms);
                 const products = parseTextItems(entry.products);
+
+                // Расчёт задержки (если есть время)
+                if (entry.time && symptoms.length && products.length) {
+                    // Считаем, что время записи — это время приёма пищи,
+                    // а симптомы появились в тот же момент (задержка 0)
+                    // или можно взять разницу между временем записи и временем записи = 0
+                    const hours = 0;
+                    const bucket = getDelayBucket(hours);
+                    delayBuckets[bucket] = (delayBuckets[bucket] || 0) + 1;
+                }
+
+                // Накопление продукт-симптом
                 products.forEach(p => {
                     if (!productSymptomMap[p]) productSymptomMap[p] = {};
                     symptoms.forEach(s => {
                         productSymptomMap[p][s] = (productSymptomMap[p][s] || 0) + 1;
                     });
                 });
-
-                if (entry.time && symptoms.length && products.length) {
-                    const bucket = '2-4ч'; // заглушка
-                    delayBuckets[bucket] = (delayBuckets[bucket] || 0) + 1;
-                }
             });
 
-            const topPhase = Object.entries(phaseCounts).sort((a, b) => b[1] - a[1])[0];
+            const topPhase = Object.entries(phaseCount).sort((a, b) => b[1] - a[1])[0];
             const topProduct = Object.entries(productSymptomMap)
                 .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0))[0];
             const topDelay = Object.entries(delayBuckets).sort((a, b) => b[1] - a[1])[0] || null;
@@ -1851,20 +1700,20 @@
 
             if (topPhase) {
                 cards.push(`
-                    <div class="insight-mini">
-                        <div class="title">Фаза чувствительности</div>
-                        <div class="main">${topPhase[0]}</div>
-                        <div class="sub">Записей: ${topPhase[1]}</div>
+                    <div class="risk-card risk-medium text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Фаза чувствительности</div>
+                        <div class="text-lg font-bold">${topPhase[0]}</div>
+                        <div class="text-xs text-slate-600 mt-1">Записей в этой фазе: ${topPhase[1]}</div>
                     </div>
                 `);
             }
 
             if (topDelay) {
                 cards.push(`
-                    <div class="insight-mini">
-                        <div class="title">Хистамин-окно</div>
-                        <div class="main">${topDelay[0]}</div>
-                        <div class="sub">Чаще всего в этом интервале</div>
+                    <div class="risk-card risk-low text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Хистамин-окно</div>
+                        <div class="text-lg font-bold">Чаще всего: ${topDelay[0]}</div>
+                        <div class="text-xs text-slate-600 mt-1">Симптомы чаще появляются в этом интервале после еды.</div>
                     </div>
                 `);
             }
@@ -1872,29 +1721,33 @@
             if (topProduct) {
                 const symptomList = Object.entries(topProduct[1])
                     .sort((a, b) => b[1] - a[1])
-                    .slice(0, 2)
+                    .slice(0, 3)
                     .map(([s, c]) => `${s} ×${c}`)
                     .join(', ');
                 cards.push(`
-                    <div class="insight-mini">
-                        <div class="title">Повторяющийся триггер</div>
-                        <div class="main">${topProduct[0]}</div>
-                        <div class="sub">${symptomList || 'Пока мало совпадений'}</div>
+                    <div class="risk-card risk-high text-left">
+                        <div class="text-xs uppercase font-bold text-slate-500 mb-1">Повторяющийся триггер</div>
+                        <div class="text-lg font-bold">${topProduct[0]}</div>
+                        <div class="text-xs text-slate-600 mt-1">${symptomList || 'Пока мало совпадений'}</div>
                     </div>
                 `);
             }
 
             cards.push(`
-                <div class="insight-mini">
-                    <div class="title">День-эксперимент</div>
-                    <div class="main">Проверьте 1 продукт</div>
-                    <div class="sub">Так легче увидеть реакцию</div>
+                <div class="risk-card risk-low text-left">
+                    <div class="text-xs uppercase font-bold text-slate-500 mb-1">День-эксперимент</div>
+                    <div class="text-sm font-bold">Сегодня лучше проверять только 1 новый продукт</div>
+                    <div class="text-xs text-slate-600 mt-1">Так легче увидеть, что именно вызвало реакцию.</div>
                 </div>
             `);
 
-            container.innerHTML = cards.join('');
+            insightCards.innerHTML = cards.join('');
+            aiBox.innerHTML = generateAIExplanation(topPhase, topDelay, topProduct);
         }
 
+        // ================================================================
+        // 24. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
+        // ================================================================
         function buildCorrelationCards() {
             const container = document.getElementById('correlation-cards');
             if (!container) return;
@@ -1915,6 +1768,7 @@
                 const products = parseTextItems(entry.products);
                 const phase = getCyclePhaseForDate(dateStr);
 
+                // Продукт → симптом
                 products.forEach(product => {
                     symptoms.forEach(symptom => {
                         const key = `${product}||${symptom}`;
@@ -1923,14 +1777,18 @@
                     });
                 });
 
+                // Фаза → симптом
                 symptoms.forEach(symptom => {
                     const phaseKey = `${phase}||${symptom}`;
                     if (!phaseLinks[phaseKey]) phaseLinks[phaseKey] = { phase, symptom, count: 0 };
                     phaseLinks[phaseKey].count++;
                 });
 
+                // Задержка → симптом
                 if (entry.time && symptoms.length) {
-                    const bucket = '2-4ч'; // заглушка
+                    // Считаем задержку 0 (время записи = время приёма = время симптома)
+                    const hours = 0;
+                    const bucket = getDelayBucket(hours);
                     symptoms.forEach(symptom => {
                         const delayKey = `${bucket}||${symptom}`;
                         if (!delayLinks[delayKey]) delayLinks[delayKey] = { bucket, symptom, count: 0 };
@@ -1939,78 +1797,60 @@
                 }
             });
 
-            const topPairs = Object.values(pairs).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 3);
-            const topPhases = Object.values(phaseLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 3);
-            const topDelays = Object.values(delayLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 3);
+            const topPairs = Object.values(pairs).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
+            const topPhases = Object.values(phaseLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
+            const topDelays = Object.values(delayLinks).filter(x => x.count >= 2).sort((a, b) => b.count - a.count).slice(0, 5);
 
             let html = '';
 
-            const allItems = [...topPairs, ...topPhases, ...topDelays];
-            if (allItems.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-xs">Пока недостаточно повторов для уверенных связок.</p>';
-                return;
-            }
-
-            // Найдём максимальный count для шкалы
-            const maxCount = Math.max(...allItems.map(x => x.count), 1);
-
             topPairs.forEach(x => {
-                const strength = Math.round((x.count / maxCount) * 100);
                 html += `
                     <div class="risk-card risk-high text-left">
                         <div class="text-xs uppercase font-bold text-slate-500 mb-1">Еда → симптом</div>
                         <div class="text-lg font-bold">${x.product}</div>
                         <div class="text-sm text-slate-700">→ ${x.symptom}</div>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div class="timeline-bar flex-1"><div class="timeline-fill" style="width:${strength}%"></div></div>
-                            <span class="text-xs font-bold text-slate-600">${x.count}</span>
-                        </div>
+                        <div class="text-xs text-slate-600 mt-1">Повторилось ${x.count} раз(а)</div>
                     </div>
                 `;
             });
 
             topPhases.forEach(x => {
-                const strength = Math.round((x.count / maxCount) * 100);
                 html += `
                     <div class="risk-card risk-medium text-left">
                         <div class="text-xs uppercase font-bold text-slate-500 mb-1">Фаза цикла → симптом</div>
                         <div class="text-lg font-bold">${x.phase}</div>
                         <div class="text-sm text-slate-700">→ ${x.symptom}</div>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div class="timeline-bar flex-1"><div class="timeline-fill" style="width:${strength}%"></div></div>
-                            <span class="text-xs font-bold text-slate-600">${x.count}</span>
-                        </div>
+                        <div class="text-xs text-slate-600 mt-1">Повторилось ${x.count} раз(а)</div>
                     </div>
                 `;
             });
 
             topDelays.forEach(x => {
-                const strength = Math.round((x.count / maxCount) * 100);
                 html += `
                     <div class="risk-card risk-low text-left">
                         <div class="text-xs uppercase font-bold text-slate-500 mb-1">Задержка → симптом</div>
                         <div class="text-lg font-bold">${x.bucket}</div>
                         <div class="text-sm text-slate-700">→ ${x.symptom}</div>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div class="timeline-bar flex-1"><div class="timeline-fill" style="width:${strength}%"></div></div>
-                            <span class="text-xs font-bold text-slate-600">${x.count}</span>
-                        </div>
+                        <div class="text-xs text-slate-600 mt-1">Повторилось ${x.count} раз(а)</div>
                     </div>
                 `;
             });
+
+            if (!html) {
+                html = '<p class="text-slate-400 text-xs">Пока недостаточно повторов для уверенных связок.</p>';
+            }
 
             container.innerHTML = html;
         }
 
         // ================================================================
-        // 25. ЕДИНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ АНАЛИТИКИ
+        // 25. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
         // ================================================================
         function refreshAnalytics() {
-            buildRadialInsight();
-            buildDelayTimeline();
             buildInsights();
             buildCorrelationCards();
             renderCycleSymptomAnalysis();
+            // Если нужно, можно добавить и другие функции
         }
 
         // ================================================================
@@ -2079,7 +1919,7 @@
         }
 
         // ================================================================
-        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ)
+        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – существующий
         // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -2180,7 +2020,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Новый дашборд аналитики активен.');
+        console.log('✅ Приложение загружено. Добавлены связки по симптомам и единая функция обновления аналитики.');
     </script>
 </body>
 </html>
