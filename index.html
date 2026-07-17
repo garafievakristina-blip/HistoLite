@@ -715,8 +715,9 @@
                     <h2 class="text-base font-bold mb-1 analytics-title">🧩 Связки по симптомам</h2>
                     <div id="correlation-cards" class="space-y-3"></div>
                 </div>
+                <!-- Блок "Связь симптомов с фазой цикла" с id для управления -->
                 <div class="card-soft p-4">
-                    <h2 class="text-base font-bold mb-1 analytics-title">📈 Связь симптомов с фазой цикла</h2>
+                    <h2 id="cycle-analysis-title" class="text-base font-bold mb-1 analytics-title">📈 Связь симптомов с фазой цикла</h2>
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
                 </div>
                 <div class="card-soft p-4">
@@ -1121,15 +1122,17 @@
         // 6. ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛКИ
         // ================================================================
         function openDayModal(dateStr) {
-            if (appMode === 'male') {
-                showModal('В мужском режиме календарь цикла недоступен.');
-                return;
-            }
+            // Убираем блокировку для мужчин — пусть открывается, но скрываем информацию о цикле
             selectedCycleDayDate = dateStr;
             const dateObj = parseLocalDate(dateStr);
             const cycleDay = getCurrentCycleDayForDate(dateStr);
             document.getElementById('cycle-day-modal-date').textContent = `📅 ${dateObj.toLocaleDateString('ru-RU')}`;
-            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+            // для мужчин показываем, что цикл не отслеживается
+            if (appMode === 'male') {
+                document.getElementById('cycle-day-modal-info').textContent = 'Цикл не отслеживается';
+            } else {
+                document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+            }
             document.getElementById('entry-form').style.display = 'none';
             editingEntryId = null;
             renderEntriesList(dateStr);
@@ -1181,12 +1184,7 @@
         }
 
         function openEntryForm(entryId) {
-            if (appMode === 'male') {
-                showModal('В мужском режиме записи дневника не связаны с циклом.');
-                // можно разрешить ввод, но для простоты – запретим
-                // можно разрешить, но тогда нужно убрать проверку на цикл – лучше просто предупредить
-                // Показываем, что функция доступна, но данные о цикле не используются.
-            }
+            // Разрешаем редактирование для всех, так как записи не привязаны к циклу
             editingEntryId = entryId;
             const form = document.getElementById('entry-form');
             form.style.display = 'block';
@@ -1830,11 +1828,12 @@
         function applyAppMode() {
             const cycleModule = document.getElementById('cycle-module-container');
             const cycleSettings = document.getElementById('cycle-settings-container');
-            // Также можно скрыть легенду, но она внутри контейнера
+            const cycleAnalysisTitle = document.getElementById('cycle-analysis-title');
 
             if (appMode === 'male') {
                 if (cycleModule) cycleModule.style.display = 'none';
                 if (cycleSettings) cycleSettings.style.display = 'none';
+                if (cycleAnalysisTitle) cycleAnalysisTitle.style.display = 'none';
                 // Скрыть элементы в риск-карте, связанные с циклом
                 const cycleDaySmall = document.getElementById('cycle-day-small');
                 if (cycleDaySmall) cycleDaySmall.style.display = 'none';
@@ -1844,6 +1843,7 @@
             } else {
                 if (cycleModule) cycleModule.style.display = '';
                 if (cycleSettings) cycleSettings.style.display = '';
+                if (cycleAnalysisTitle) cycleAnalysisTitle.style.display = '';
                 const cycleDaySmall = document.getElementById('cycle-day-small');
                 if (cycleDaySmall) cycleDaySmall.style.display = '';
                 // riskReason будет обновлён через renderTodayDashboard
@@ -2282,7 +2282,13 @@
         function refreshAnalytics() {
             buildInsights();
             buildCorrelationCards();
-            renderCycleSymptomAnalysis();
+            // Рендерим анализ цикла только если не мужской режим
+            if (appMode !== 'male') {
+                renderCycleSymptomAnalysis();
+            } else {
+                const container = document.getElementById('cycle-symptom-analysis');
+                if (container) container.innerHTML = '';
+            }
         }
 
         // ================================================================
@@ -2291,8 +2297,9 @@
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!container) return;
+            // В мужском режиме просто очищаем контейнер без сообщения
             if (appMode === 'male') {
-                container.innerHTML = '<p class="text-[var(--muted)] text-center py-4">В мужском режиме анализ по фазам цикла не доступен.</p>';
+                container.innerHTML = '';
                 return;
             }
             const allEntries = [];
@@ -2462,7 +2469,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Добавлен мужской режим, цикл скрыт для мужчин.');
+        console.log('✅ Приложение загружено. Мужской режим корректно скрывает цикл и аналитику.');
     </script>
 </body>
 </html>
