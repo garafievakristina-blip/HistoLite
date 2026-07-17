@@ -557,25 +557,6 @@
         </div>
     </div>
 
-    <!-- ===== НОВЫЙ ЭКРАН ВЫБОРА РЕЖИМА ===== -->
-    <div id="mode-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-5 w-[92%] max-w-md shadow-xl">
-            <h2 class="text-lg font-bold mb-3">Для кого приложение?</h2>
-            <p class="text-sm text-slate-600 mb-4">Выберите режим, чтобы показать подходящие разделы.</p>
-
-            <div class="space-y-3">
-                <button class="w-full py-3 rounded-xl bg-rose-100 text-rose-900 font-semibold"
-                        onclick="setAppMode('female')">
-                    Для женщин
-                </button>
-                <button class="w-full py-3 rounded-xl bg-slate-100 text-slate-900 font-semibold"
-                        onclick="setAppMode('male')">
-                    Для мужчин
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
     <div id="app-body" class="opacity-30 pointer-events-none">
 
@@ -608,8 +589,8 @@
                     </div>
                 </div>
 
-                <!-- Календарь (скрывается в мужском режиме через applyAppMode) -->
-                <div id="cycle-module-container" class="card-soft p-4">
+                <!-- Календарь -->
+                <div class="card-soft p-4">
                     <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
                     <div class="flex items-center justify-between mb-3">
                         <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀</button>
@@ -630,8 +611,8 @@
                     </div>
                 </div>
 
-                <!-- Настройки цикла (скрываются в мужском режиме) -->
-                <details id="cycle-settings-container" class="settings-details card-soft p-4">
+                <!-- Настройки цикла -->
+                <details class="settings-details card-soft p-4">
                     <summary class="text-sm font-bold text-[var(--text)]">⚙️ Настройки цикла</summary>
                     <div class="mt-3 grid grid-cols-3 gap-2">
                         <div>
@@ -648,18 +629,6 @@
                         </div>
                     </div>
                     <button onclick="saveCycleSettings()" class="mt-3 w-full btn-primary py-2 px-4 text-sm">Сохранить настройки</button>
-                </details>
-
-                <!-- ===== ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА В НАСТРОЙКАХ ===== -->
-                <details class="settings-details card-soft p-4">
-                    <summary class="text-sm font-bold text-[var(--text)]">👤 Режим приложения</summary>
-                    <div class="mt-3">
-                        <p class="text-xs text-[var(--muted)] mb-2">Выберите режим, чтобы показывать только нужные разделы.</p>
-                        <div class="flex gap-2">
-                            <button class="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]" onclick="setAppMode('female')">Для женщин</button>
-                            <button class="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]" onclick="setAppMode('male')">Для мужчин</button>
-                        </div>
-                    </div>
                 </details>
             </div>
 
@@ -715,9 +684,8 @@
                     <h2 class="text-base font-bold mb-1 analytics-title">🧩 Связки по симптомам</h2>
                     <div id="correlation-cards" class="space-y-3"></div>
                 </div>
-                <!-- Блок "Связь симптомов с фазой цикла" с id для управления -->
                 <div class="card-soft p-4">
-                    <h2 id="cycle-analysis-title" class="text-base font-bold mb-1 analytics-title">📈 Связь симптомов с фазой цикла</h2>
+                    <h2 class="text-base font-bold mb-1 analytics-title">📈 Связь симптомов с фазой цикла</h2>
                     <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
                 </div>
                 <div class="card-soft p-4">
@@ -874,38 +842,10 @@
         </div>
     </div>
 
-    <!-- ===== СКРЫТЫЙ КОНТЕЙНЕР ДЛЯ PDF-ОТЧЁТА ===== -->
-    <div id="doctor-report" style="position: fixed; left: -99999px; top: 0; width: 794px; background: white; color: #1f2937; padding: 32px; font-family: Inter, sans-serif;">
-        <h1 style="font-size: 28px; margin-bottom: 8px; font-family: 'Cormorant Garamond', serif;">Отчёт для врача</h1>
-        <p id="report-meta" style="font-size: 12px; color: #6b7280; margin-bottom: 20px;"></p>
-
-        <div style="margin-bottom: 16px;">
-            <h2 style="font-size: 18px; margin-bottom: 8px;">Краткое резюме</h2>
-            <div id="report-summary" style="font-size: 13px; line-height: 1.5;"></div>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <h2 style="font-size: 18px; margin-bottom: 8px;">Аналитика</h2>
-            <div id="report-analytics" style="font-size: 13px; line-height: 1.5;"></div>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <h2 style="font-size: 18px; margin-bottom: 8px;">Триггеры</h2>
-            <div id="report-triggers" style="font-size: 13px; line-height: 1.5;"></div>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <h2 style="font-size: 18px; margin-bottom: 8px;">Рекомендации</h2>
-            <div id="report-recommendations" style="font-size: 13px; line-height: 1.5;"></div>
-        </div>
-    </div>
-
     <script>
         // ================================================================
         // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
         // ================================================================
-        let appMode = localStorage.getItem('histolite_app_mode') || '';
-
         let safeProducts = JSON.parse(localStorage.getItem('histolite_safe_products') || '{}');
         let safeFilter = 'all';
         let userGender = localStorage.getItem('histolite_gender') || 'female';
@@ -995,7 +935,6 @@
         // 3. ОБНОВЛЕНИЕ UI ЦИКЛА И РИСК-КАРТЫ
         // ================================================================
         function updateCycleUI() {
-            if (appMode === 'male') return;
             const day = getCurrentCycleDay();
             const cycleDaySmall = document.getElementById('cycle-day-small');
             if (cycleDaySmall) {
@@ -1010,17 +949,17 @@
             let riskReason = 'Фаза цикла: стабильная';
             let tip = 'Сегодня хороший день, чтобы попробовать новые продукты.';
             let delayDays = 0;
-            if (appMode !== 'male' && savedLastPeriodStart && cycleDay !== null) {
+            if (savedLastPeriodStart && cycleDay !== null) {
                 if (cycleDay > savedCycleLength) {
                     delayDays = cycleDay - savedCycleLength;
                 }
             }
-            if (appMode !== 'male' && delayDays > 0) {
+            if (delayDays > 0) {
                 riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
                 riskClass = 'risk-high';
                 riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
                 tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
-            } else if (appMode !== 'male' && cycleDay !== null) {
+            } else if (userGender !== 'male' && cycleDay !== null) {
                 const phase = getCyclePhaseName(cycleDay);
                 if (phase === 'Овуляция' || phase === 'ПМС') {
                     riskLevel = 'Высокий';
@@ -1038,11 +977,11 @@
                     riskReason = `Фаза цикла: ${phase} (стабильная)`;
                     tip = '✅ Организм стабилен. Можно пробовать новые продукты и экспериментировать.';
                 }
-            } else if (userGender === 'male' || appMode === 'male') {
+            } else if (userGender === 'male') {
                 riskLevel = 'Низкий';
                 riskClass = 'risk-low';
-                riskReason = 'Режим: мужской, цикл не учитывается';
-                tip = 'Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
+                riskReason = 'Мужчина, цикл не учитывается';
+                tip = '✅ Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
             } else {
                 riskReason = 'Цикл не настроен';
                 tip = 'Отметьте первый день цикла в календаре.';
@@ -1059,10 +998,6 @@
         // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
         // ================================================================
         window.saveCycleSettings = function() {
-            if (appMode === 'male') {
-                showModal('В мужском режиме настройки цикла недоступны.');
-                return;
-            }
             const dateInput = document.getElementById('last-period-start');
             const lengthInput = document.getElementById('cycle-length');
             const periodDaysInput = document.getElementById('period-days');
@@ -1135,7 +1070,6 @@
             return entries.find(e => e.id === id) || null;
         }
         function getCurrentCycleDayForDate(dateStr) {
-            if (appMode === 'male') return null;
             if (!savedLastPeriodStart) return null;
             const start = parseLocalDate(savedLastPeriodStart);
             const date = parseLocalDate(dateStr);
@@ -1152,11 +1086,7 @@
             const dateObj = parseLocalDate(dateStr);
             const cycleDay = getCurrentCycleDayForDate(dateStr);
             document.getElementById('cycle-day-modal-date').textContent = `📅 ${dateObj.toLocaleDateString('ru-RU')}`;
-            if (appMode === 'male') {
-                document.getElementById('cycle-day-modal-info').textContent = 'Цикл не отслеживается';
-            } else {
-                document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
-            }
+            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
             document.getElementById('entry-form').style.display = 'none';
             editingEntryId = null;
             renderEntriesList(dateStr);
@@ -1290,14 +1220,12 @@
         // 7. НАВИГАЦИЯ КАЛЕНДАРЯ
         // ================================================================
         window.changeMonth = function(delta) {
-            if (appMode === 'male') return;
             currentMonth += delta;
             if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             else if (currentMonth < 0) { currentMonth = 11; currentYear--; }
             renderCycleCalendar();
         };
         window.goToToday = function() {
-            if (appMode === 'male') return;
             const today = new Date();
             currentMonth = today.getMonth();
             currentYear = today.getFullYear();
@@ -1308,11 +1236,6 @@
         // 8. ОТРИСОВКА КАЛЕНДАРЯ (ОБНОВЛЁННАЯ)
         // ================================================================
         function renderCycleCalendar() {
-            if (appMode === 'male') {
-                const container = document.getElementById('cycle-load-calendar');
-                if (container) container.innerHTML = '';
-                return;
-            }
             const container = document.getElementById('cycle-load-calendar');
             if (!container) return;
             const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
@@ -1409,10 +1332,6 @@
         // ================================================================
         let selectedDate = null;
         function openEventModal(year, month, day) {
-            if (appMode === 'male') {
-                showModal('В мужском режиме цикл недоступен.');
-                return;
-            }
             selectedDate = formatDate(year, month, day);
             const dateObj = new Date(year, month, day);
             document.getElementById('event-modal-date').textContent = `Дата: ${dateObj.toLocaleDateString('ru-RU')}`;
@@ -1423,10 +1342,6 @@
             selectedDate = null;
         }
         window.confirmEvent = function(type) {
-            if (appMode === 'male') {
-                showModal('В мужском режиме цикл недоступен.');
-                return;
-            }
             if (!selectedDate) {
                 showModal('Ошибка: дата не выбрана');
                 return;
@@ -1481,7 +1396,6 @@
         // 10. ИНИЦИАЛИЗАЦИЯ КАЛЕНДАРЯ
         // ================================================================
         function initCycleModule() {
-            if (appMode === 'male') return;
             const dateInput = document.getElementById('last-period-start');
             const lengthInput = document.getElementById('cycle-length');
             const periodDaysInput = document.getElementById('period-days');
@@ -1784,100 +1698,8 @@
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
         };
-
-        // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ PDF =====
-        window.exportToPDF = async function() {
-            // Показываем модалку сразу
-            showModal('Формирую PDF...');
-
-            try {
-                console.log('PDF export start');
-
-                // Проверяем наличие библиотек
-                if (typeof html2canvas === 'undefined') {
-                    throw new Error('Библиотека html2canvas не загружена');
-                }
-                if (typeof jspdf === 'undefined' || typeof jspdf.jsPDF === 'undefined') {
-                    throw new Error('Библиотека jsPDF не загружена');
-                }
-
-                // Строим отчёт
-                buildDoctorReport();
-
-                const report = document.getElementById('doctor-report');
-                if (!report) {
-                    throw new Error('Шаблон отчёта не найден');
-                }
-
-                // Делаем отчёт видимым для захвата
-                const savedDisplay = report.style.display;
-                report.style.display = 'block';
-                report.style.visibility = 'hidden';
-                report.style.left = '0';
-                report.style.top = '0';
-                report.style.position = 'fixed';
-                report.style.zIndex = '9999';
-                report.style.width = '794px';
-
-                // Даём время на рендеринг
-                await new Promise(r => setTimeout(r, 300));
-
-                const canvas = await html2canvas(report, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    scrollX: 0,
-                    scrollY: 0,
-                    logging: true,
-                    width: 794,
-                    height: report.scrollHeight
-                });
-
-                // Возвращаем отчёт в исходное состояние
-                report.style.display = savedDisplay || 'block';
-                report.style.visibility = 'visible';
-                report.style.left = '-99999px';
-                report.style.position = 'fixed';
-                report.style.zIndex = '';
-                report.style.width = '794px';
-
-                console.log('canvas готов', canvas.width, canvas.height);
-
-                if (canvas.width === 0 || canvas.height === 0) {
-                    throw new Error('Получен пустой канвас');
-                }
-
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-
-                const pageWidth = 210;
-                const pageHeight = 297;
-                const margin = 10;
-                const usableWidth = pageWidth - margin * 2;
-                const imgHeight = canvas.height * usableWidth / canvas.width;
-
-                let position = margin;
-                pdf.addImage(imgData, 'PNG', margin, position, usableWidth, imgHeight);
-
-                if (imgHeight > pageHeight - margin * 2) {
-                    let heightLeft = imgHeight - (pageHeight - margin * 2);
-                    let page = 1;
-
-                    while (heightLeft > 0) {
-                        pdf.addPage();
-                        position = margin - (page * (pageHeight - margin * 2));
-                        pdf.addImage(imgData, 'PNG', margin, position, usableWidth, imgHeight);
-                        heightLeft -= (pageHeight - margin * 2);
-                        page++;
-                    }
-                }
-
-                pdf.save(`otchet_dlya_vracha_${new Date().toISOString().slice(0,10)}.pdf`);
-                showModal('PDF-отчёт скачан');
-            } catch (error) {
-                console.error('PDF export error:', error);
-                showModal('Ошибка создания PDF: ' + (error?.message || error));
-            }
+        window.exportToPDF = function() {
+            showModal('Экспорт PDF – будет реализован в следующей версии.');
         };
 
         // ================================================================
@@ -1893,71 +1715,17 @@
             document.getElementById('legal-modal').style.display = 'none';
             document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
 
-            const savedMode = localStorage.getItem('histolite_app_mode');
-            if (savedMode) {
-                appMode = savedMode;
-                applyAppMode();
-                loadProducts();
-                renderTodayDashboard();
-                checkNotifications();
-                loadRecipes();
-                initCycleModule();
-                refreshAnalytics();
-                switchTab('diary');
-            } else {
-                const modeModal = document.getElementById('mode-modal');
-                if (modeModal) modeModal.style.display = 'flex';
-            }
+            loadProducts();
+            renderTodayDashboard();
+            checkNotifications();
+            loadRecipes();
+            initCycleModule();
+            refreshAnalytics();
+            switchTab('diary');
         };
 
         // ================================================================
-        // 20. ФУНКЦИИ УПРАВЛЕНИЯ РЕЖИМОМ
-        // ================================================================
-        window.setAppMode = function(mode) {
-            appMode = mode;
-            localStorage.setItem('histolite_app_mode', mode);
-
-            const modal = document.getElementById('mode-modal');
-            if (modal) modal.style.display = 'none';
-
-            applyAppMode();
-
-            if (localStorage.getItem('histolite_legal_accepted') === 'true') {
-                loadProducts();
-                renderTodayDashboard();
-                checkNotifications();
-                loadRecipes();
-                initCycleModule();
-                refreshAnalytics();
-                switchTab('diary');
-                renderCycleCalendar();
-            }
-        };
-
-        function applyAppMode() {
-            const cycleModule = document.getElementById('cycle-module-container');
-            const cycleSettings = document.getElementById('cycle-settings-container');
-            const cycleAnalysisTitle = document.getElementById('cycle-analysis-title');
-
-            if (appMode === 'male') {
-                if (cycleModule) cycleModule.style.display = 'none';
-                if (cycleSettings) cycleSettings.style.display = 'none';
-                if (cycleAnalysisTitle) cycleAnalysisTitle.style.display = 'none';
-                const cycleDaySmall = document.getElementById('cycle-day-small');
-                if (cycleDaySmall) cycleDaySmall.style.display = 'none';
-                const riskReason = document.getElementById('risk-reason');
-                if (riskReason) riskReason.textContent = 'Режим: мужской, цикл не учитывается';
-            } else {
-                if (cycleModule) cycleModule.style.display = '';
-                if (cycleSettings) cycleSettings.style.display = '';
-                if (cycleAnalysisTitle) cycleAnalysisTitle.style.display = '';
-                const cycleDaySmall = document.getElementById('cycle-day-small');
-                if (cycleDaySmall) cycleDaySmall.style.display = '';
-            }
-        }
-
-        // ================================================================
-        // 21. РАБОТА С РЕЦЕПТАМИ
+        // 20. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         const defaultRecipes = [
             {
@@ -2107,13 +1875,9 @@
         });
 
         // ================================================================
-        // 22. КНОПКИ ОЧИСТКИ
+        // 21. КНОПКИ ОЧИСТКИ
         // ================================================================
         window.clearAllMarks = function() {
-            if (appMode === 'male') {
-                showModal('В мужском режиме отметки цикла недоступны.');
-                return;
-            }
             if (confirm('Удалить все отметки цикла (первый день, овуляция, последний день)?')) {
                 localStorage.removeItem('histolite_cycle_marks');
                 localStorage.removeItem('histolite_last_period_start');
@@ -2131,8 +1895,7 @@
                     'histolite_safe_products', 'histolite_gender',
                     'histolite_last_period_start', 'histolite_cycle_length', 'histolite_pms_start_days',
                     'histolite_cycle_marks', 'histolite_cycle_day_notes', 'histolite_period_days',
-                    'histolite_user_recipes', 'histolite_last_visit', 'histolite_legal_accepted',
-                    'histolite_app_mode'
+                    'histolite_user_recipes', 'histolite_last_visit', 'histolite_legal_accepted'
                 ];
                 keys.forEach(key => localStorage.removeItem(key));
                 location.reload();
@@ -2140,39 +1903,26 @@
         };
 
         // ================================================================
-        // 23. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
+        // 22. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
-            const savedMode = localStorage.getItem('histolite_app_mode');
-            if (savedMode) {
-                appMode = savedMode;
-                setTimeout(function() {
-                    const gender = localStorage.getItem('histolite_gender') || 'female';
-                    userGender = gender;
-                    document.getElementById('legal-modal').style.display = 'none';
-                    document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-                    applyAppMode();
-                    loadProducts();
-                    renderTodayDashboard();
-                    checkNotifications();
-                    loadRecipes();
-                    initCycleModule();
-                    refreshAnalytics();
-                    switchTab('diary');
-                    renderCycleCalendar();
-                }, 100);
-            } else {
-                setTimeout(function() {
-                    document.getElementById('legal-modal').style.display = 'none';
-                    document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-                    const modeModal = document.getElementById('mode-modal');
-                    if (modeModal) modeModal.style.display = 'flex';
-                }, 100);
-            }
+            setTimeout(function() {
+                const gender = localStorage.getItem('histolite_gender') || 'female';
+                userGender = gender;
+                document.getElementById('legal-modal').style.display = 'none';
+                document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
+                loadProducts();
+                renderTodayDashboard();
+                checkNotifications();
+                loadRecipes();
+                initCycleModule();
+                refreshAnalytics();
+                switchTab('diary');
+            }, 100);
         }
 
         // ================================================================
-        // 24. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
+        // 23. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
         // ================================================================
         function getAllEntries() {
             const all = [];
@@ -2194,7 +1944,6 @@
         }
 
         function getCyclePhaseForDate(dateStr) {
-            if (appMode === 'male') return 'Не учитывается';
             const day = getCurrentCycleDayForDate(dateStr);
             if (!day) return 'Без цикла';
             if (day <= savedPeriodDays) return 'Менструация';
@@ -2302,7 +2051,7 @@
         }
 
         // ================================================================
-        // 25. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
+        // 24. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
         // ================================================================
         function buildCorrelationCards() {
             const container = document.getElementById('correlation-cards');
@@ -2380,29 +2129,20 @@
         }
 
         // ================================================================
-        // 26. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
+        // 25. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
         // ================================================================
         function refreshAnalytics() {
             buildInsights();
             buildCorrelationCards();
-            if (appMode !== 'male') {
-                renderCycleSymptomAnalysis();
-            } else {
-                const container = document.getElementById('cycle-symptom-analysis');
-                if (container) container.innerHTML = '';
-            }
+            renderCycleSymptomAnalysis();
         }
 
         // ================================================================
-        // 27. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
+        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!container) return;
-            if (appMode === 'male') {
-                container.innerHTML = '';
-                return;
-            }
             const allEntries = [];
             Object.keys(cycleDayNotes).forEach(date => {
                 const entries = getEntriesForDate(date);
@@ -2469,7 +2209,7 @@
         }
 
         // ================================================================
-        // 28. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
+        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
         // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -2552,85 +2292,7 @@
         };
 
         // ================================================================
-        // 29. ФУНКЦИИ ДЛЯ ПОСТРОЕНИЯ ОТЧЁТА ДЛЯ ВРАЧА (НОВЫЕ)
-        // ================================================================
-        function buildDoctorReport() {
-            const entries = getAllEntries();
-            const meta = document.getElementById('report-meta');
-            const summary = document.getElementById('report-summary');
-            const analytics = document.getElementById('report-analytics');
-            const triggers = document.getElementById('report-triggers');
-            const recs = document.getElementById('report-recommendations');
-
-            if (meta) {
-                meta.textContent = `Дата формирования: ${new Date().toLocaleString('ru-RU')}`;
-            }
-
-            const totalEntries = entries.length;
-            const entriesWithSymptoms = entries.filter(e => (e.symptoms || '').trim()).length;
-            const entriesWithProducts = entries.filter(e => (e.products || '').trim()).length;
-
-            if (summary) {
-                summary.innerHTML = `
-                    <p>Всего записей: <strong>${totalEntries}</strong></p>
-                    <p>Записей с симптомами: <strong>${entriesWithSymptoms}</strong></p>
-                    <p>Записей с продуктами: <strong>${entriesWithProducts}</strong></p>
-                    <p>Режим приложения: <strong>${appMode === 'male' ? 'Для мужчин' : 'Для женщин'}</strong></p>
-                `;
-            }
-
-            if (analytics) {
-                const cycleText = appMode === 'male'
-                    ? 'Цикл не учитывается.'
-                    : (savedLastPeriodStart ? 'Цикл настроен и учитывается в аналитике.' : 'Цикл пока не настроен.');
-
-                analytics.innerHTML = `
-                    <p>${cycleText}</p>
-                    <p>Отчёт построен на основе записей о продуктах, симптомах и времени реакции.</p>
-                `;
-            }
-
-            const topTriggers = buildTopTriggersForReport(entries);
-            if (triggers) {
-                if (topTriggers.length === 0) {
-                    triggers.innerHTML = '<p>Пока недостаточно данных для устойчивых триггеров.</p>';
-                } else {
-                    triggers.innerHTML = topTriggers.map(x => `
-                        <p><strong>${x.name}</strong> — ${x.count} совпадений</p>
-                    `).join('');
-                }
-            }
-
-            if (recs) {
-                recs.innerHTML = `
-                    <p>1. Отслеживать питание и симптомы минимум 2–3 недели.</p>
-                    <p>2. Фиксировать время еды и реакции после неё.</p>
-                    <p>3. Проверять только один новый продукт за раз.</p>
-                    <p>4. Показывать отчёт врачу на приёме.</p>
-                `;
-            }
-        }
-
-        function buildTopTriggersForReport(entries) {
-            const counts = {};
-            entries.forEach(entry => {
-                const products = parseTextItems(entry.products || '');
-                const symptoms = parseTextItems(entry.symptoms || '');
-                products.forEach(p => {
-                    symptoms.forEach(() => {
-                        counts[p] = (counts[p] || 0) + 1;
-                    });
-                });
-            });
-
-            return Object.entries(counts)
-                .map(([name, count]) => ({ name, count }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 10);
-        }
-
-        // ================================================================
-        // 30. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
+        // 28. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
@@ -2648,7 +2310,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Исправлен экспорт PDF-отчёта.');
+        console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру.');
     </script>
 </body>
 </html>
