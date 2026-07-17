@@ -1785,44 +1785,67 @@
             showModal('Экспорт CSV – будет реализован в следующей версии.');
         };
 
-        // ===== НОВАЯ УЛУЧШЕННАЯ ФУНКЦИЯ ДЛЯ PDF =====
+        // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ PDF =====
         window.exportToPDF = async function() {
+            // Показываем модалку сразу
+            showModal('Формирую PDF...');
+
             try {
                 console.log('PDF export start');
 
+                // Проверяем наличие библиотек
+                if (typeof html2canvas === 'undefined') {
+                    throw new Error('Библиотека html2canvas не загружена');
+                }
+                if (typeof jspdf === 'undefined' || typeof jspdf.jsPDF === 'undefined') {
+                    throw new Error('Библиотека jsPDF не загружена');
+                }
+
+                // Строим отчёт
                 buildDoctorReport();
 
                 const report = document.getElementById('doctor-report');
                 if (!report) {
-                    showModal('Шаблон отчёта не найден');
-                    return;
+                    throw new Error('Шаблон отчёта не найден');
                 }
 
-                // Сохраняем исходный display
+                // Делаем отчёт видимым для захвата
                 const savedDisplay = report.style.display;
-                // Делаем отчёт видимым, но скрытым для пользователя
                 report.style.display = 'block';
                 report.style.visibility = 'hidden';
                 report.style.left = '0';
                 report.style.top = '0';
+                report.style.position = 'fixed';
+                report.style.zIndex = '9999';
+                report.style.width = '794px';
 
-                // Даём время браузеру на рендеринг
-                await new Promise(r => setTimeout(r, 200));
+                // Даём время на рендеринг
+                await new Promise(r => setTimeout(r, 300));
 
                 const canvas = await html2canvas(report, {
                     scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff',
                     scrollX: 0,
-                    scrollY: -window.scrollY
+                    scrollY: 0,
+                    logging: true,
+                    width: 794,
+                    height: report.scrollHeight
                 });
 
                 // Возвращаем отчёт в исходное состояние
                 report.style.display = savedDisplay || 'block';
                 report.style.visibility = 'visible';
                 report.style.left = '-99999px';
+                report.style.position = 'fixed';
+                report.style.zIndex = '';
+                report.style.width = '794px';
 
-                console.log('canvas ready', canvas.width, canvas.height);
+                console.log('canvas готов', canvas.width, canvas.height);
+
+                if (canvas.width === 0 || canvas.height === 0) {
+                    throw new Error('Получен пустой канвас');
+                }
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
@@ -2625,7 +2648,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Добавлен улучшенный экспорт PDF-отчёта с логированием.');
+        console.log('✅ Приложение загружено. Исправлен экспорт PDF-отчёта.');
     </script>
 </body>
 </html>
