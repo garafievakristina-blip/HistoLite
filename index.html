@@ -766,34 +766,12 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА (ДОБАВЛЕНЫ БЛОКИ PMDD) -->
+    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА -->
     <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <h4 class="text-base font-bold text-slate-800 mb-2">📅 День дневника</h4>
             <p class="text-sm text-slate-600 mb-1" id="cycle-day-modal-date">Дата:</p>
             <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
-
-            <!-- === НОВЫЕ БЛОКИ PMDD === -->
-            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
-                <div class="text-xs font-bold text-slate-500 mb-2">Настроение</div>
-                <div id="pmdd-mood-chips" class="flex flex-wrap gap-2"></div>
-            </div>
-
-            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
-                <div class="text-xs font-bold text-slate-500 mb-2">PMDD симптомы</div>
-                <div id="pmdd-symptom-chips" class="flex flex-wrap gap-2"></div>
-            </div>
-
-            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
-                <div class="text-xs font-bold text-slate-500 mb-2">Продукты, после которых была реакция</div>
-                <input type="text" id="pmdd-product-search" placeholder="Найти продукт..." class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-white mb-3" oninput="renderPmddProductChips()">
-                <div id="pmdd-product-chips" class="flex flex-wrap gap-2 max-h-44 overflow-y-auto"></div>
-            </div>
-
-            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
-                <div class="text-xs font-bold text-slate-500 mb-2">Отложенная реакция</div>
-                <div id="pmdd-delay-chips" class="flex flex-wrap gap-2"></div>
-            </div>
 
             <div id="entries-list" class="mb-4"></div>
 
@@ -885,41 +863,6 @@
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
         let editingEntryId = null;
-
-        // === PMDD КОНСТАНТЫ И ПЕРЕМЕННЫЕ ===
-        const pmddMoodOptions = [
-            'спокойствие',
-            'раздражительность',
-            'тревога',
-            'плаксивость',
-            'гнев',
-            'печаль',
-            'мозговой туман'
-        ];
-
-        const pmddSymptomOptions = [
-            'головная боль',
-            'вздутие',
-            'спазмы',
-            'бессонница',
-            'болезненность груди',
-            'тахикардия',
-            'зуд',
-            'высыпания',
-            'усталость'
-        ];
-
-        const pmddDelayOptions = [
-            '0-30 мин',
-            '30-120 мин',
-            'до вечера',
-            'на следующий день'
-        ];
-
-        window.pmddMoodSelection = [];
-        window.pmddSymptomSelection = [];
-        window.pmddProductSelection = [];
-        window.pmddDelaySelection = '';
 
         window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
         recipesDB = window.recipesDB;
@@ -1146,20 +1089,9 @@
             document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
             document.getElementById('entry-form').style.display = 'none';
             editingEntryId = null;
-
-            // Загружаем последнюю запись для заполнения PMDD
-            const entries = getEntriesForDate(dateStr);
-            const last = entries.length ? entries[entries.length - 1] : null;
-            window.pmddMoodSelection = last?.pmddMood || [];
-            window.pmddSymptomSelection = last?.pmddSymptoms || [];
-            window.pmddProductSelection = last?.pmddProducts || [];
-            window.pmddDelaySelection = last?.pmddDelay || '';
-
             renderEntriesList(dateStr);
-            refreshPmddUi();
             document.getElementById('cycle-day-modal').style.display = 'flex';
         }
-
         function closeCycleDayModal() {
             document.getElementById('cycle-day-modal').style.display = 'none';
             selectedCycleDayDate = null;
@@ -1175,11 +1107,6 @@
                 document.getElementById('mic-products-entry').classList.remove('mic-active');
                 document.getElementById('mic-products-entry').textContent = '🎤';
             }
-            // Сброс PMDD
-            window.pmddMoodSelection = [];
-            window.pmddSymptomSelection = [];
-            window.pmddProductSelection = [];
-            window.pmddDelaySelection = '';
         }
 
         function renderEntriesList(dateStr) {
@@ -1196,11 +1123,6 @@
                 if (entry.medications) parts.push(`💊 ${entry.medications}`);
                 if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
                 if (entry.comment) parts.push(`📝 ${entry.comment}`);
-                // PMDD
-                if (entry.pmddMood && entry.pmddMood.length) parts.push(`🌸 ${entry.pmddMood.join(', ')}`);
-                if (entry.pmddSymptoms && entry.pmddSymptoms.length) parts.push(`⚡ ${entry.pmddSymptoms.join(', ')}`);
-                if (entry.pmddProducts && entry.pmddProducts.length) parts.push(`🍓 ${entry.pmddProducts.join(', ')}`);
-                if (entry.pmddDelay) parts.push(`⏳ ${entry.pmddDelay}`);
                 const details = parts.join(' • ') || '—';
                 return `
                     <div class="entry-list-item">
@@ -1228,12 +1150,6 @@
                     document.getElementById('entry-medications').value = entry.medications || '';
                     document.getElementById('entry-symptoms').value = entry.symptoms || '';
                     document.getElementById('entry-comment').value = entry.comment || '';
-                    // загружаем PMDD в поля чипов (они уже хранятся в глобальных переменных, но при редактировании надо подгрузить)
-                    window.pmddMoodSelection = entry.pmddMood || [];
-                    window.pmddSymptomSelection = entry.pmddSymptoms || [];
-                    window.pmddProductSelection = entry.pmddProducts || [];
-                    window.pmddDelaySelection = entry.pmddDelay || '';
-                    refreshPmddUi();
                 }
             } else {
                 document.getElementById('entry-form-title').textContent = 'Новая запись';
@@ -1242,12 +1158,6 @@
                 document.getElementById('entry-medications').value = '';
                 document.getElementById('entry-symptoms').value = '';
                 document.getElementById('entry-comment').value = '';
-                // сбрасываем PMDD
-                window.pmddMoodSelection = [];
-                window.pmddSymptomSelection = [];
-                window.pmddProductSelection = [];
-                window.pmddDelaySelection = '';
-                refreshPmddUi();
             }
         }
 
@@ -1279,17 +1189,7 @@
                 showModal('Заполните хотя бы одно поле');
                 return;
             }
-            const entryData = {
-                time,
-                products,
-                medications,
-                symptoms,
-                comment,
-                pmddMood: window.pmddMoodSelection || [],
-                pmddSymptoms: window.pmddSymptomSelection || [],
-                pmddProducts: window.pmddProductSelection || [],
-                pmddDelay: window.pmddDelaySelection || ''
-            };
+            const entryData = { time, products, medications, symptoms, comment };
             if (editingEntryId !== null) {
                 updateEntry(selectedCycleDayDate, editingEntryId, entryData);
                 showModal('Запись обновлена');
@@ -2022,98 +1922,7 @@
         }
 
         // ================================================================
-        // 23. PMDD ФУНКЦИИ
-        // ================================================================
-        function escapeQuotes(text) {
-            return String(text).replace(/'/g, "\\'");
-        }
-
-        function renderPmddChips(containerId, options, selected, onToggle) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-
-            container.innerHTML = options.map(opt => {
-                const active = selected.includes(opt);
-                return `
-                    <button type="button"
-                        class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
-                        onclick="${onToggle}('${escapeQuotes(opt)}')">
-                        ${opt}
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function renderPmddProductChips() {
-            const container = document.getElementById('pmdd-product-chips');
-            if (!container) return;
-
-            const search = document.getElementById('pmdd-product-search')?.value.toLowerCase() || '';
-            const products = (myHistamineDB || [])
-                .map(p => p.name)
-                .filter(name => name.toLowerCase().includes(search))
-                .slice(0, 50);
-
-            container.innerHTML = products.map(name => {
-                const active = window.pmddProductSelection.includes(name);
-                return `
-                    <button type="button"
-                        class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
-                        onclick="togglePmddProduct('${escapeQuotes(name)}')">
-                        ${name}
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function togglePmddMood(value) {
-            const idx = window.pmddMoodSelection.indexOf(value);
-            if (idx >= 0) window.pmddMoodSelection.splice(idx, 1);
-            else window.pmddMoodSelection.push(value);
-            refreshPmddUi();
-        }
-
-        function togglePmddSymptom(value) {
-            const idx = window.pmddSymptomSelection.indexOf(value);
-            if (idx >= 0) window.pmddSymptomSelection.splice(idx, 1);
-            else window.pmddSymptomSelection.push(value);
-            refreshPmddUi();
-        }
-
-        function togglePmddProduct(value) {
-            const idx = window.pmddProductSelection.indexOf(value);
-            if (idx >= 0) window.pmddProductSelection.splice(idx, 1);
-            else window.pmddProductSelection.push(value);
-            refreshPmddUi();
-        }
-
-        function setPmddDelay(value) {
-            window.pmddDelaySelection = value;
-            refreshPmddUi();
-        }
-
-        function refreshPmddUi() {
-            renderPmddChips('pmdd-mood-chips', pmddMoodOptions, window.pmddMoodSelection, 'togglePmddMood');
-            renderPmddChips('pmdd-symptom-chips', pmddSymptomOptions, window.pmddSymptomSelection, 'togglePmddSymptom');
-            renderPmddProductChips();
-
-            const delayContainer = document.getElementById('pmdd-delay-chips');
-            if (delayContainer) {
-                delayContainer.innerHTML = pmddDelayOptions.map(opt => {
-                    const active = window.pmddDelaySelection === opt;
-                    return `
-                        <button type="button"
-                            class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
-                            onclick="setPmddDelay('${opt}')">
-                            ${opt}
-                        </button>
-                    `;
-                }).join('');
-            }
-        }
-
-        // ================================================================
-        // 24. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
+        // 23. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
         // ================================================================
         function getAllEntries() {
             const all = [];
@@ -2242,7 +2051,7 @@
         }
 
         // ================================================================
-        // 25. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
+        // 24. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
         // ================================================================
         function buildCorrelationCards() {
             const container = document.getElementById('correlation-cards');
@@ -2320,7 +2129,7 @@
         }
 
         // ================================================================
-        // 26. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
+        // 25. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
         // ================================================================
         function refreshAnalytics() {
             buildInsights();
@@ -2329,7 +2138,7 @@
         }
 
         // ================================================================
-        // 27. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
+        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -2400,7 +2209,7 @@
         }
 
         // ================================================================
-        // 28. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
+        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
         // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -2483,7 +2292,7 @@
         };
 
         // ================================================================
-        // 29. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
+        // 28. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
@@ -2501,7 +2310,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру, добавлены PMDD фичи.');
+        console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру.');
     </script>
 </body>
 </html>
