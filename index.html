@@ -1785,10 +1785,11 @@
             showModal('Экспорт CSV – будет реализован в следующей версии.');
         };
 
-        // ===== НОВАЯ ФУНКЦИЯ ДЛЯ PDF =====
+        // ===== НОВАЯ УЛУЧШЕННАЯ ФУНКЦИЯ ДЛЯ PDF =====
         window.exportToPDF = async function() {
             try {
-                // Строим отчёт в скрытом контейнере
+                console.log('PDF export start');
+
                 buildDoctorReport();
 
                 const report = document.getElementById('doctor-report');
@@ -1797,16 +1798,31 @@
                     return;
                 }
 
-                showModal('Формирую PDF...');
+                // Сохраняем исходный display
+                const savedDisplay = report.style.display;
+                // Делаем отчёт видимым, но скрытым для пользователя
+                report.style.display = 'block';
+                report.style.visibility = 'hidden';
+                report.style.left = '0';
+                report.style.top = '0';
 
-                // Даём время на рендеринг
-                await new Promise(r => setTimeout(r, 50));
+                // Даём время браузеру на рендеринг
+                await new Promise(r => setTimeout(r, 200));
 
                 const canvas = await html2canvas(report, {
                     scale: 2,
                     useCORS: true,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: -window.scrollY
                 });
+
+                // Возвращаем отчёт в исходное состояние
+                report.style.display = savedDisplay || 'block';
+                report.style.visibility = 'visible';
+                report.style.left = '-99999px';
+
+                console.log('canvas ready', canvas.width, canvas.height);
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
@@ -1836,8 +1852,8 @@
                 pdf.save(`otchet_dlya_vracha_${new Date().toISOString().slice(0,10)}.pdf`);
                 showModal('PDF-отчёт скачан');
             } catch (error) {
-                console.error(error);
-                showModal('Не удалось создать PDF-отчёт');
+                console.error('PDF export error:', error);
+                showModal('Ошибка создания PDF: ' + (error?.message || error));
             }
         };
 
@@ -2609,7 +2625,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Добавлен экспорт PDF-отчёта.');
+        console.log('✅ Приложение загружено. Добавлен улучшенный экспорт PDF-отчёта с логированием.');
     </script>
 </body>
 </html>
