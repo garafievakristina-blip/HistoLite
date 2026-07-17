@@ -874,11 +874,37 @@
         </div>
     </div>
 
+    <!-- ===== СКРЫТЫЙ КОНТЕЙНЕР ДЛЯ PDF-ОТЧЁТА ===== -->
+    <div id="doctor-report" style="position: fixed; left: -99999px; top: 0; width: 794px; background: white; color: #1f2937; padding: 32px; font-family: Inter, sans-serif;">
+        <h1 style="font-size: 28px; margin-bottom: 8px; font-family: 'Cormorant Garamond', serif;">Отчёт для врача</h1>
+        <p id="report-meta" style="font-size: 12px; color: #6b7280; margin-bottom: 20px;"></p>
+
+        <div style="margin-bottom: 16px;">
+            <h2 style="font-size: 18px; margin-bottom: 8px;">Краткое резюме</h2>
+            <div id="report-summary" style="font-size: 13px; line-height: 1.5;"></div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <h2 style="font-size: 18px; margin-bottom: 8px;">Аналитика</h2>
+            <div id="report-analytics" style="font-size: 13px; line-height: 1.5;"></div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <h2 style="font-size: 18px; margin-bottom: 8px;">Триггеры</h2>
+            <div id="report-triggers" style="font-size: 13px; line-height: 1.5;"></div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <h2 style="font-size: 18px; margin-bottom: 8px;">Рекомендации</h2>
+            <div id="report-recommendations" style="font-size: 13px; line-height: 1.5;"></div>
+        </div>
+    </div>
+
     <script>
         // ================================================================
         // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
         // ================================================================
-        let appMode = localStorage.getItem('histolite_app_mode') || ''; // НОВОЕ
+        let appMode = localStorage.getItem('histolite_app_mode') || '';
 
         let safeProducts = JSON.parse(localStorage.getItem('histolite_safe_products') || '{}');
         let safeFilter = 'all';
@@ -969,7 +995,7 @@
         // 3. ОБНОВЛЕНИЕ UI ЦИКЛА И РИСК-КАРТЫ
         // ================================================================
         function updateCycleUI() {
-            if (appMode === 'male') return; // дополнительная защита
+            if (appMode === 'male') return;
             const day = getCurrentCycleDay();
             const cycleDaySmall = document.getElementById('cycle-day-small');
             if (cycleDaySmall) {
@@ -1122,12 +1148,10 @@
         // 6. ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛКИ
         // ================================================================
         function openDayModal(dateStr) {
-            // Убираем блокировку для мужчин — пусть открывается, но скрываем информацию о цикле
             selectedCycleDayDate = dateStr;
             const dateObj = parseLocalDate(dateStr);
             const cycleDay = getCurrentCycleDayForDate(dateStr);
             document.getElementById('cycle-day-modal-date').textContent = `📅 ${dateObj.toLocaleDateString('ru-RU')}`;
-            // для мужчин показываем, что цикл не отслеживается
             if (appMode === 'male') {
                 document.getElementById('cycle-day-modal-info').textContent = 'Цикл не отслеживается';
             } else {
@@ -1184,7 +1208,6 @@
         }
 
         function openEntryForm(entryId) {
-            // Разрешаем редактирование для всех, так как записи не привязаны к циклу
             editingEntryId = entryId;
             const form = document.getElementById('entry-form');
             form.style.display = 'block';
@@ -1761,8 +1784,61 @@
         window.exportToCSV = function() {
             showModal('Экспорт CSV – будет реализован в следующей версии.');
         };
-        window.exportToPDF = function() {
-            showModal('Экспорт PDF – будет реализован в следующей версии.');
+
+        // ===== НОВАЯ ФУНКЦИЯ ДЛЯ PDF =====
+        window.exportToPDF = async function() {
+            try {
+                // Строим отчёт в скрытом контейнере
+                buildDoctorReport();
+
+                const report = document.getElementById('doctor-report');
+                if (!report) {
+                    showModal('Шаблон отчёта не найден');
+                    return;
+                }
+
+                showModal('Формирую PDF...');
+
+                // Даём время на рендеринг
+                await new Promise(r => setTimeout(r, 50));
+
+                const canvas = await html2canvas(report, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+
+                const pageWidth = 210;
+                const pageHeight = 297;
+                const margin = 10;
+                const usableWidth = pageWidth - margin * 2;
+                const imgHeight = canvas.height * usableWidth / canvas.width;
+
+                let position = margin;
+                pdf.addImage(imgData, 'PNG', margin, position, usableWidth, imgHeight);
+
+                if (imgHeight > pageHeight - margin * 2) {
+                    let heightLeft = imgHeight - (pageHeight - margin * 2);
+                    let page = 1;
+
+                    while (heightLeft > 0) {
+                        pdf.addPage();
+                        position = margin - (page * (pageHeight - margin * 2));
+                        pdf.addImage(imgData, 'PNG', margin, position, usableWidth, imgHeight);
+                        heightLeft -= (pageHeight - margin * 2);
+                        page++;
+                    }
+                }
+
+                pdf.save(`otchet_dlya_vracha_${new Date().toISOString().slice(0,10)}.pdf`);
+                showModal('PDF-отчёт скачан');
+            } catch (error) {
+                console.error(error);
+                showModal('Не удалось создать PDF-отчёт');
+            }
         };
 
         // ================================================================
@@ -1778,7 +1854,6 @@
             document.getElementById('legal-modal').style.display = 'none';
             document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
 
-            // Если режим уже выбран — сразу загружаем приложение
             const savedMode = localStorage.getItem('histolite_app_mode');
             if (savedMode) {
                 appMode = savedMode;
@@ -1791,14 +1866,13 @@
                 refreshAnalytics();
                 switchTab('diary');
             } else {
-                // Показываем выбор режима
                 const modeModal = document.getElementById('mode-modal');
                 if (modeModal) modeModal.style.display = 'flex';
             }
         };
 
         // ================================================================
-        // 20. ФУНКЦИИ УПРАВЛЕНИЯ РЕЖИМОМ (НОВЫЕ)
+        // 20. ФУНКЦИИ УПРАВЛЕНИЯ РЕЖИМОМ
         // ================================================================
         window.setAppMode = function(mode) {
             appMode = mode;
@@ -1807,12 +1881,9 @@
             const modal = document.getElementById('mode-modal');
             if (modal) modal.style.display = 'none';
 
-            // Применяем видимость
             applyAppMode();
 
-            // Если юридическое соглашение уже принято, загружаем приложение
             if (localStorage.getItem('histolite_legal_accepted') === 'true') {
-                // Перезагружаем данные, чтобы применить режим
                 loadProducts();
                 renderTodayDashboard();
                 checkNotifications();
@@ -1820,7 +1891,6 @@
                 initCycleModule();
                 refreshAnalytics();
                 switchTab('diary');
-                // Дополнительно обновляем календарь
                 renderCycleCalendar();
             }
         };
@@ -1834,10 +1904,8 @@
                 if (cycleModule) cycleModule.style.display = 'none';
                 if (cycleSettings) cycleSettings.style.display = 'none';
                 if (cycleAnalysisTitle) cycleAnalysisTitle.style.display = 'none';
-                // Скрыть элементы в риск-карте, связанные с циклом
                 const cycleDaySmall = document.getElementById('cycle-day-small');
                 if (cycleDaySmall) cycleDaySmall.style.display = 'none';
-                // Также можно скрыть "фазу цикла" в риск-карте
                 const riskReason = document.getElementById('risk-reason');
                 if (riskReason) riskReason.textContent = 'Режим: мужской, цикл не учитывается';
             } else {
@@ -1846,7 +1914,6 @@
                 if (cycleAnalysisTitle) cycleAnalysisTitle.style.display = '';
                 const cycleDaySmall = document.getElementById('cycle-day-small');
                 if (cycleDaySmall) cycleDaySmall.style.display = '';
-                // riskReason будет обновлён через renderTodayDashboard
             }
         }
 
@@ -2036,8 +2103,6 @@
         // ================================================================
         // 23. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
         // ================================================================
-        // Старая инициализация перекрывается новой логикой в acceptLegal и setAppMode.
-        // Если пользователь уже залогинен и режим выбран, запускаем приложение сразу.
         if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             const savedMode = localStorage.getItem('histolite_app_mode');
             if (savedMode) {
@@ -2058,7 +2123,6 @@
                     renderCycleCalendar();
                 }, 100);
             } else {
-                // если режим не выбран, показываем выбор
                 setTimeout(function() {
                     document.getElementById('legal-modal').style.display = 'none';
                     document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
@@ -2282,7 +2346,6 @@
         function refreshAnalytics() {
             buildInsights();
             buildCorrelationCards();
-            // Рендерим анализ цикла только если не мужской режим
             if (appMode !== 'male') {
                 renderCycleSymptomAnalysis();
             } else {
@@ -2297,7 +2360,6 @@
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
             if (!container) return;
-            // В мужском режиме просто очищаем контейнер без сообщения
             if (appMode === 'male') {
                 container.innerHTML = '';
                 return;
@@ -2451,7 +2513,85 @@
         };
 
         // ================================================================
-        // 29. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
+        // 29. ФУНКЦИИ ДЛЯ ПОСТРОЕНИЯ ОТЧЁТА ДЛЯ ВРАЧА (НОВЫЕ)
+        // ================================================================
+        function buildDoctorReport() {
+            const entries = getAllEntries();
+            const meta = document.getElementById('report-meta');
+            const summary = document.getElementById('report-summary');
+            const analytics = document.getElementById('report-analytics');
+            const triggers = document.getElementById('report-triggers');
+            const recs = document.getElementById('report-recommendations');
+
+            if (meta) {
+                meta.textContent = `Дата формирования: ${new Date().toLocaleString('ru-RU')}`;
+            }
+
+            const totalEntries = entries.length;
+            const entriesWithSymptoms = entries.filter(e => (e.symptoms || '').trim()).length;
+            const entriesWithProducts = entries.filter(e => (e.products || '').trim()).length;
+
+            if (summary) {
+                summary.innerHTML = `
+                    <p>Всего записей: <strong>${totalEntries}</strong></p>
+                    <p>Записей с симптомами: <strong>${entriesWithSymptoms}</strong></p>
+                    <p>Записей с продуктами: <strong>${entriesWithProducts}</strong></p>
+                    <p>Режим приложения: <strong>${appMode === 'male' ? 'Для мужчин' : 'Для женщин'}</strong></p>
+                `;
+            }
+
+            if (analytics) {
+                const cycleText = appMode === 'male'
+                    ? 'Цикл не учитывается.'
+                    : (savedLastPeriodStart ? 'Цикл настроен и учитывается в аналитике.' : 'Цикл пока не настроен.');
+
+                analytics.innerHTML = `
+                    <p>${cycleText}</p>
+                    <p>Отчёт построен на основе записей о продуктах, симптомах и времени реакции.</p>
+                `;
+            }
+
+            const topTriggers = buildTopTriggersForReport(entries);
+            if (triggers) {
+                if (topTriggers.length === 0) {
+                    triggers.innerHTML = '<p>Пока недостаточно данных для устойчивых триггеров.</p>';
+                } else {
+                    triggers.innerHTML = topTriggers.map(x => `
+                        <p><strong>${x.name}</strong> — ${x.count} совпадений</p>
+                    `).join('');
+                }
+            }
+
+            if (recs) {
+                recs.innerHTML = `
+                    <p>1. Отслеживать питание и симптомы минимум 2–3 недели.</p>
+                    <p>2. Фиксировать время еды и реакции после неё.</p>
+                    <p>3. Проверять только один новый продукт за раз.</p>
+                    <p>4. Показывать отчёт врачу на приёме.</p>
+                `;
+            }
+        }
+
+        function buildTopTriggersForReport(entries) {
+            const counts = {};
+            entries.forEach(entry => {
+                const products = parseTextItems(entry.products || '');
+                const symptoms = parseTextItems(entry.symptoms || '');
+                products.forEach(p => {
+                    symptoms.forEach(() => {
+                        counts[p] = (counts[p] || 0) + 1;
+                    });
+                });
+            });
+
+            return Object.entries(counts)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+        }
+
+        // ================================================================
+        // 30. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
@@ -2469,7 +2609,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Мужской режим корректно скрывает цикл и аналитику.');
+        console.log('✅ Приложение загружено. Добавлен экспорт PDF-отчёта.');
     </script>
 </body>
 </html>
