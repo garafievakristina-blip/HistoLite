@@ -773,6 +773,27 @@
             <p class="text-sm text-slate-600 mb-1" id="cycle-day-modal-date">Дата:</p>
             <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
 
+            <!-- БЛОКИ PMDD В НОВОМ ПОРЯДКЕ -->
+            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                <div class="text-xs font-bold text-slate-500 mb-2">Гистамин</div>
+                <div id="pmdd-symptom-chips" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                <div class="text-xs font-bold text-slate-500 mb-2">Отложенная реакция после еды</div>
+                <div id="pmdd-delay-chips" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                <div class="text-xs font-bold text-slate-500 mb-2">Настроение</div>
+                <div id="pmdd-mood-chips" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="mb-4 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                <div class="text-xs font-bold text-slate-500 mb-2">ПМС/ПМДР</div>
+                <div id="pmdd-cycle-chips" class="flex flex-wrap gap-2"></div>
+            </div>
+
             <div id="entries-list" class="mb-4"></div>
 
             <button onclick="openEntryForm(null)" class="w-full btn-primary py-2 px-4 text-sm mb-3">
@@ -863,6 +884,53 @@
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
         let editingEntryId = null;
+
+        // PMDD константы
+        const histamineSymptomOptions = [
+            'головная боль',
+            'вздутие',
+            'спазмы',
+            'бессонница',
+            'болезненность груди',
+            'тахикардия',
+            'зуд',
+            'высыпания',
+            'усталость'
+        ];
+
+        const pmddMoodOptions = [
+            'спокойствие',
+            'раздражительность',
+            'тревога',
+            'плаксивость',
+            'гнев',
+            'печаль',
+            'мозговой туман'
+        ];
+
+        const pmddCycleOptions = [
+            'вздутие живота',
+            'болезненность груди',
+            'перепады настроения',
+            'усталость',
+            'головная боль',
+            'спазмы',
+            'бессонница',
+            'раздражительность'
+        ];
+
+        const pmddDelayOptions = [
+            '0-30 мин',
+            '30-120 мин',
+            'до вечера',
+            'на следующий день'
+        ];
+
+        window.histamineSelection = [];
+        window.pmddMoodSelection = [];
+        window.pmddCycleSelection = [];
+        window.pmddProductSelection = [];
+        window.pmddDelaySelection = '';
 
         window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
         recipesDB = window.recipesDB;
@@ -1089,9 +1157,21 @@
             document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
             document.getElementById('entry-form').style.display = 'none';
             editingEntryId = null;
+
+            // Загружаем последнюю запись для заполнения PMDD
+            const entries = getEntriesForDate(dateStr);
+            const last = entries.length ? entries[entries.length - 1] : null;
+            window.histamineSelection = last?.histamineSymptoms || [];
+            window.pmddMoodSelection = last?.pmddMood || [];
+            window.pmddCycleSelection = last?.pmddCycle || [];
+            window.pmddProductSelection = last?.pmddProducts || [];
+            window.pmddDelaySelection = last?.pmddDelay || '';
+
             renderEntriesList(dateStr);
+            refreshPmddUi();
             document.getElementById('cycle-day-modal').style.display = 'flex';
         }
+
         function closeCycleDayModal() {
             document.getElementById('cycle-day-modal').style.display = 'none';
             selectedCycleDayDate = null;
@@ -1107,6 +1187,12 @@
                 document.getElementById('mic-products-entry').classList.remove('mic-active');
                 document.getElementById('mic-products-entry').textContent = '🎤';
             }
+            // Сброс PMDD
+            window.histamineSelection = [];
+            window.pmddMoodSelection = [];
+            window.pmddCycleSelection = [];
+            window.pmddProductSelection = [];
+            window.pmddDelaySelection = '';
         }
 
         function renderEntriesList(dateStr) {
@@ -1123,6 +1209,14 @@
                 if (entry.medications) parts.push(`💊 ${entry.medications}`);
                 if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
                 if (entry.comment) parts.push(`📝 ${entry.comment}`);
+
+                // PMDD в нужном порядке
+                if (entry.histamineSymptoms && entry.histamineSymptoms.length) parts.push(`🧪 ${entry.histamineSymptoms.join(', ')}`);
+                if (entry.pmddDelay) parts.push(`⏳ ${entry.pmddDelay}`);
+                if (entry.pmddMood && entry.pmddMood.length) parts.push(`🌸 ${entry.pmddMood.join(', ')}`);
+                if (entry.pmddCycle && entry.pmddCycle.length) parts.push(`🌙 ${entry.pmddCycle.join(', ')}`);
+                if (entry.pmddProducts && entry.pmddProducts.length) parts.push(`🍓 ${entry.pmddProducts.join(', ')}`);
+
                 const details = parts.join(' • ') || '—';
                 return `
                     <div class="entry-list-item">
@@ -1150,6 +1244,13 @@
                     document.getElementById('entry-medications').value = entry.medications || '';
                     document.getElementById('entry-symptoms').value = entry.symptoms || '';
                     document.getElementById('entry-comment').value = entry.comment || '';
+                    // загружаем PMDD
+                    window.histamineSelection = entry.histamineSymptoms || [];
+                    window.pmddMoodSelection = entry.pmddMood || [];
+                    window.pmddCycleSelection = entry.pmddCycle || [];
+                    window.pmddProductSelection = entry.pmddProducts || [];
+                    window.pmddDelaySelection = entry.pmddDelay || '';
+                    refreshPmddUi();
                 }
             } else {
                 document.getElementById('entry-form-title').textContent = 'Новая запись';
@@ -1158,6 +1259,13 @@
                 document.getElementById('entry-medications').value = '';
                 document.getElementById('entry-symptoms').value = '';
                 document.getElementById('entry-comment').value = '';
+                // сбрасываем PMDD
+                window.histamineSelection = [];
+                window.pmddMoodSelection = [];
+                window.pmddCycleSelection = [];
+                window.pmddProductSelection = [];
+                window.pmddDelaySelection = '';
+                refreshPmddUi();
             }
         }
 
@@ -1189,7 +1297,18 @@
                 showModal('Заполните хотя бы одно поле');
                 return;
             }
-            const entryData = { time, products, medications, symptoms, comment };
+            const entryData = {
+                time,
+                products,
+                medications,
+                symptoms,
+                comment,
+                histamineSymptoms: window.histamineSelection || [],
+                pmddMood: window.pmddMoodSelection || [],
+                pmddCycle: window.pmddCycleSelection || [],
+                pmddProducts: window.pmddProductSelection || [],
+                pmddDelay: window.pmddDelaySelection || ''
+            };
             if (editingEntryId !== null) {
                 updateEntry(selectedCycleDayDate, editingEntryId, entryData);
                 showModal('Запись обновлена');
@@ -1922,7 +2041,108 @@
         }
 
         // ================================================================
-        // 23. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
+        // 23. PMDD ФУНКЦИИ
+        // ================================================================
+        function escapeQuotes(text) {
+            return String(text).replace(/'/g, "\\'");
+        }
+
+        function renderPmddChips(containerId, options, selected, onToggle) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = options.map(opt => {
+                const active = selected.includes(opt);
+                return `
+                    <button type="button"
+                        class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
+                        onclick="${onToggle}('${escapeQuotes(opt)}')">
+                        ${opt}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderPmddProductChips() {
+            const container = document.getElementById('pmdd-product-chips');
+            if (!container) return;
+
+            const search = document.getElementById('pmdd-product-search')?.value.toLowerCase() || '';
+            const products = (myHistamineDB || [])
+                .map(p => p.name)
+                .filter(name => name.toLowerCase().includes(search))
+                .slice(0, 50);
+
+            container.innerHTML = products.map(name => {
+                const active = window.pmddProductSelection.includes(name);
+                return `
+                    <button type="button"
+                        class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
+                        onclick="togglePmddProduct('${escapeQuotes(name)}')">
+                        ${name}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function toggleHistamineSymptom(value) {
+            const idx = window.histamineSelection.indexOf(value);
+            if (idx >= 0) window.histamineSelection.splice(idx, 1);
+            else window.histamineSelection.push(value);
+            refreshPmddUi();
+        }
+
+        function togglePmddMood(value) {
+            const idx = window.pmddMoodSelection.indexOf(value);
+            if (idx >= 0) window.pmddMoodSelection.splice(idx, 1);
+            else window.pmddMoodSelection.push(value);
+            refreshPmddUi();
+        }
+
+        function togglePmddCycle(value) {
+            const idx = window.pmddCycleSelection.indexOf(value);
+            if (idx >= 0) window.pmddCycleSelection.splice(idx, 1);
+            else window.pmddCycleSelection.push(value);
+            refreshPmddUi();
+        }
+
+        function togglePmddProduct(value) {
+            const idx = window.pmddProductSelection.indexOf(value);
+            if (idx >= 0) window.pmddProductSelection.splice(idx, 1);
+            else window.pmddProductSelection.push(value);
+            refreshPmddUi();
+        }
+
+        function setPmddDelay(value) {
+            window.pmddDelaySelection = value;
+            refreshPmddUi();
+        }
+
+        function refreshPmddUi() {
+            // Рендерим в новом порядке: гистамин, отложенная реакция, настроение, ПМС/ПМДР
+            renderPmddChips('pmdd-symptom-chips', histamineSymptomOptions, window.histamineSelection, 'toggleHistamineSymptom');
+
+            const delayContainer = document.getElementById('pmdd-delay-chips');
+            if (delayContainer) {
+                delayContainer.innerHTML = pmddDelayOptions.map(opt => {
+                    const active = window.pmddDelaySelection === opt;
+                    return `
+                        <button type="button"
+                            class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
+                            onclick="setPmddDelay('${opt}')">
+                            ${opt}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            renderPmddChips('pmdd-mood-chips', pmddMoodOptions, window.pmddMoodSelection, 'togglePmddMood');
+            renderPmddChips('pmdd-cycle-chips', pmddCycleOptions, window.pmddCycleSelection, 'togglePmddCycle');
+            renderPmddProductChips();
+        }
+
+        // ================================================================
+        // 24. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
         // ================================================================
         function getAllEntries() {
             const all = [];
@@ -2051,7 +2271,7 @@
         }
 
         // ================================================================
-        // 24. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
+        // 25. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
         // ================================================================
         function buildCorrelationCards() {
             const container = document.getElementById('correlation-cards');
@@ -2129,7 +2349,7 @@
         }
 
         // ================================================================
-        // 25. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
+        // 26. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
         // ================================================================
         function refreshAnalytics() {
             buildInsights();
@@ -2138,7 +2358,7 @@
         }
 
         // ================================================================
-        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
+        // 27. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -2209,7 +2429,7 @@
         }
 
         // ================================================================
-        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
+        // 28. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
         // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -2292,7 +2512,7 @@
         };
 
         // ================================================================
-        // 28. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
+        // 29. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
@@ -2310,7 +2530,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру.');
+        console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру, добавлены PMDD фичи с новым порядком.');
     </script>
 </body>
 </html>
