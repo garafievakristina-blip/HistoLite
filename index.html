@@ -1,4 +1,70 @@
-
+t-[var(--muted)] text-xs">Пока мало данных для инсайтов.</p>';
+                aiBox.innerHTML = 'Добавьте несколько записей с едой и симптомами — и здесь появятся персональные выводы.';
+                return;
+            }
+            const productSymptomMap = {};
+            const phaseCount = {};
+            const delayBuckets = { '0-1ч': 0, '1-2ч': 0, '2-4ч': 0, '4-8ч': 0, '8-24ч': 0, '24ч+': 0 };
+            entries.forEach(entry => {
+                const dateStr = entry.dateStr;
+                const phase = getCyclePhaseForDate(dateStr);
+                phaseCount[phase] = (phaseCount[phase] || 0) + 1;
+                const symptoms = parseTextItems(entry.symptoms);
+                const products = parseTextItems(entry.products);
+                if (entry.time && symptoms.length && products.length) {
+                    const hours = 0;
+                    const bucket = getDelayBucket(hours);
+                    delayBuckets[bucket] = (delayBuckets[bucket] || 0) + 1;
+                }
+                products.forEach(p => {
+                    if (!productSymptomMap[p]) productSymptomMap[p] = {};
+                    symptoms.forEach(s => {
+                        productSymptomMap[p][s] = (productSymptomMap[p][s] || 0) + 1;
+                    });
+                });
+            });
+            const topPhase = Object.entries(phaseCount).sort((a, b) => b[1] - a[1])[0];
+            const topProduct = Object.entries(productSymptomMap)
+                .sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0))[0];
+            const topDelay = Object.entries(delayBuckets).sort((a, b) => b[1] - a[1])[0] || null;
+            const cards = [];
+            if (topPhase) {
+                cards.push(`
+                    <div class="insight-card">
+                        <div class="insight-title">Фаза чувствительности</div>
+                        <div class="insight-main">${topPhase[0]}</div>
+                        <div class="insight-sub">Записей в этой фазе: ${topPhase[1]}</div>
+                    </div>
+                `);
+            }
+            if (topDelay) {
+                cards.push(`
+                    <div class="insight-card">
+                        <div class="insight-title">Хистамин-окно</div>
+                        <div class="insight-main">Чаще всего: ${topDelay[0]}</div>
+                        <div class="insight-sub">Симптомы чаще появляются в этом интервале после еды.</div>
+                    </div>
+                `);
+            }
+            if (topProduct) {
+                const symptomList = Object.entries(topProduct[1])
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([s, c]) => `${s} ×${c}`)
+                    .join(', ');
+                cards.push(`
+                    <div class="insight-card">
+                        <div class="insight-title">Повторяющийся триггер</div>
+                        <div class="insight-main">${topProduct[0]}</div>
+                        <div class="insight-sub">${symptomList || 'Пока мало совпадений'}</div>
+                    </div>
+                `);
+            }
+            cards.push(`
+                <div class="insight-card">
+                    <div class="insight-title">День-эксперимент</div>
+                    <div class="insight-main">Сегодня лучше проверять только 1 новый продукт</div>
+                    <div class="insight-sub">Так легче увидеть, что именно вызвало реакцию.</div>
                 </div>
             `);
             insightCards.innerHTML = cards.join('');
@@ -268,4 +334,4 @@
         console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру.');
     </script>
 </body>
-</html> 
+</html>
