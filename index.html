@@ -800,6 +800,22 @@
                     <button id="mic-symptoms-entry" class="mic-btn-modal" title="Голосовой ввод симптомов">🎤</button>
                 </div>
 
+                <!-- ===== НОВЫЕ БЛОКИ НАСТРОЕНИЕ, ПМС/ПМДР, ОТЛОЖЕННАЯ РЕАКЦИЯ ===== -->
+                <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                    <div class="text-xs font-bold text-slate-500 mb-2">Настроение</div>
+                    <div id="pmdd-mood-chips" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                    <div class="text-xs font-bold text-slate-500 mb-2">ПМС/ПМДР симптомы</div>
+                    <div id="pmdd-cycle-chips" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                    <div class="text-xs font-bold text-slate-500 mb-2">Отложенная реакция после еды</div>
+                    <div id="pmdd-delay-chips" class="flex flex-wrap gap-2"></div>
+                </div>
+
                 <label class="block text-xs font-bold text-slate-600 mb-1">Комментарий</label>
                 <textarea id="entry-comment" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px] mb-3" placeholder="Дополнительные заметки"></textarea>
 
@@ -863,6 +879,38 @@
         let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
         let selectedCycleDayDate = null;
         let editingEntryId = null;
+
+        // ===== НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕНИЯ, ПМС/ПМДР И ОТЛОЖЕННОЙ РЕАКЦИИ =====
+        const pmddMoodOptions = [
+            'спокойствие',
+            'раздражительность',
+            'тревога',
+            'плаксивость',
+            'гнев',
+            'печаль',
+            'мозговой туман'
+        ];
+
+        const pmddCycleOptions = [
+            'раздражительность',
+            'тревога',
+            'плаксивость',
+            'гнев',
+            'печаль',
+            'чувствительность к шуму',
+            'мозговой туман'
+        ];
+
+        const pmddDelayOptions = [
+            '0-30 мин',
+            '30-120 мин',
+            'до вечера',
+            'на следующий день'
+        ];
+
+        window.pmddMoodSelection = [];
+        window.pmddCycleSelection = [];
+        window.pmddDelaySelection = '';
 
         window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
         recipesDB = window.recipesDB;
@@ -1089,9 +1137,19 @@
             document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
             document.getElementById('entry-form').style.display = 'none';
             editingEntryId = null;
+
+            // Загружаем последнюю запись для заполнения PMDD
+            const entries = getEntriesForDate(dateStr);
+            const last = entries.length ? entries[entries.length - 1] : null;
+            window.pmddMoodSelection = last?.pmddMood || [];
+            window.pmddCycleSelection = last?.pmddCycle || [];
+            window.pmddDelaySelection = last?.pmddDelay || '';
+
             renderEntriesList(dateStr);
+            refreshPmddUi();
             document.getElementById('cycle-day-modal').style.display = 'flex';
         }
+
         function closeCycleDayModal() {
             document.getElementById('cycle-day-modal').style.display = 'none';
             selectedCycleDayDate = null;
@@ -1107,6 +1165,10 @@
                 document.getElementById('mic-products-entry').classList.remove('mic-active');
                 document.getElementById('mic-products-entry').textContent = '🎤';
             }
+            // Сброс PMDD
+            window.pmddMoodSelection = [];
+            window.pmddCycleSelection = [];
+            window.pmddDelaySelection = '';
         }
 
         function renderEntriesList(dateStr) {
@@ -1123,6 +1185,10 @@
                 if (entry.medications) parts.push(`💊 ${entry.medications}`);
                 if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
                 if (entry.comment) parts.push(`📝 ${entry.comment}`);
+                // Новые поля: настроение, ПМС/ПМДР, отложенная реакция
+                if (entry.pmddMood && entry.pmddMood.length) parts.push(`🌸 ${entry.pmddMood.join(', ')}`);
+                if (entry.pmddCycle && entry.pmddCycle.length) parts.push(`🌙 ${entry.pmddCycle.join(', ')}`);
+                if (entry.pmddDelay) parts.push(`⏳ ${entry.pmddDelay}`);
                 const details = parts.join(' • ') || '—';
                 return `
                     <div class="entry-list-item">
@@ -1150,6 +1216,11 @@
                     document.getElementById('entry-medications').value = entry.medications || '';
                     document.getElementById('entry-symptoms').value = entry.symptoms || '';
                     document.getElementById('entry-comment').value = entry.comment || '';
+                    // загружаем PMDD
+                    window.pmddMoodSelection = entry.pmddMood || [];
+                    window.pmddCycleSelection = entry.pmddCycle || [];
+                    window.pmddDelaySelection = entry.pmddDelay || '';
+                    refreshPmddUi();
                 }
             } else {
                 document.getElementById('entry-form-title').textContent = 'Новая запись';
@@ -1158,6 +1229,11 @@
                 document.getElementById('entry-medications').value = '';
                 document.getElementById('entry-symptoms').value = '';
                 document.getElementById('entry-comment').value = '';
+                // сбрасываем PMDD
+                window.pmddMoodSelection = [];
+                window.pmddCycleSelection = [];
+                window.pmddDelaySelection = '';
+                refreshPmddUi();
             }
         }
 
@@ -1185,11 +1261,21 @@
             const medications = document.getElementById('entry-medications').value.trim();
             const symptoms = document.getElementById('entry-symptoms').value.trim();
             const comment = document.getElementById('entry-comment').value.trim();
-            if (!time && !products && !medications && !symptoms && !comment) {
+            if (!time && !products && !medications && !symptoms && !comment &&
+                !window.pmddMoodSelection.length && !window.pmddCycleSelection.length && !window.pmddDelaySelection) {
                 showModal('Заполните хотя бы одно поле');
                 return;
             }
-            const entryData = { time, products, medications, symptoms, comment };
+            const entryData = {
+                time,
+                products,
+                medications,
+                symptoms,
+                comment,
+                pmddMood: window.pmddMoodSelection || [],
+                pmddCycle: window.pmddCycleSelection || [],
+                pmddDelay: window.pmddDelaySelection || ''
+            };
             if (editingEntryId !== null) {
                 updateEntry(selectedCycleDayDate, editingEntryId, entryData);
                 showModal('Запись обновлена');
@@ -1922,7 +2008,68 @@
         }
 
         // ================================================================
-        // 23. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
+        // 23. НОВЫЕ ФУНКЦИИ PMDD
+        // ================================================================
+        function escapeQuotes(text) {
+            return String(text).replace(/'/g, "\\'");
+        }
+
+        function renderPmddChips(containerId, options, selected, onToggle) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = options.map(opt => {
+                const active = selected.includes(opt);
+                return `
+                    <button type="button"
+                        class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
+                        onclick="${onToggle}('${escapeQuotes(opt)}')">
+                        ${opt}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function refreshPmddUi() {
+            renderPmddChips('pmdd-mood-chips', pmddMoodOptions, window.pmddMoodSelection, 'togglePmddMood');
+            renderPmddChips('pmdd-cycle-chips', pmddCycleOptions, window.pmddCycleSelection, 'togglePmddCycle');
+
+            const delayContainer = document.getElementById('pmdd-delay-chips');
+            if (delayContainer) {
+                delayContainer.innerHTML = pmddDelayOptions.map(opt => {
+                    const active = window.pmddDelaySelection === opt;
+                    return `
+                        <button type="button"
+                            class="px-3 py-1.5 rounded-full text-xs border transition ${active ? 'bg-[var(--primary)] text-white border-[var(--primary)]' : 'bg-white text-[var(--text)] border-[var(--border)]'}"
+                            onclick="setPmddDelay('${opt}')">
+                            ${opt}
+                        </button>
+                    `;
+                }).join('');
+            }
+        }
+
+        function togglePmddMood(value) {
+            const idx = window.pmddMoodSelection.indexOf(value);
+            if (idx >= 0) window.pmddMoodSelection.splice(idx, 1);
+            else window.pmddMoodSelection.push(value);
+            refreshPmddUi();
+        }
+
+        function togglePmddCycle(value) {
+            const idx = window.pmddCycleSelection.indexOf(value);
+            if (idx >= 0) window.pmddCycleSelection.splice(idx, 1);
+            else window.pmddCycleSelection.push(value);
+            refreshPmddUi();
+        }
+
+        function setPmddDelay(value) {
+            window.pmddDelaySelection = value;
+            refreshPmddUi();
+        }
+
+        // ================================================================
+        // 24. НОВАЯ АНАЛИТИКА: ИНСАЙТЫ И ИИ-ОБЪЯСНЕНИЕ
         // ================================================================
         function getAllEntries() {
             const all = [];
@@ -2051,7 +2198,7 @@
         }
 
         // ================================================================
-        // 24. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
+        // 25. НОВАЯ ФУНКЦИЯ: СВЯЗКИ ПО СИМПТОМАМ (КОРРЕЛЯЦИИ)
         // ================================================================
         function buildCorrelationCards() {
             const container = document.getElementById('correlation-cards');
@@ -2129,7 +2276,7 @@
         }
 
         // ================================================================
-        // 25. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
+        // 26. ФУНКЦИЯ ОБНОВЛЕНИЯ ВСЕЙ АНАЛИТИКИ
         // ================================================================
         function refreshAnalytics() {
             buildInsights();
@@ -2138,7 +2285,7 @@
         }
 
         // ================================================================
-        // 26. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
+        // 27. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -2209,7 +2356,7 @@
         }
 
         // ================================================================
-        // 27. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
+        // 28. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
         // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -2292,7 +2439,7 @@
         };
 
         // ================================================================
-        // 28. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
+        // 29. АВТОЗАПУСК АНАЛИТИКИ ПРИ ПЕРЕКЛЮЧЕНИИ ВКЛАДКИ
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const btn = document.querySelector('[data-tab="analytics"]');
@@ -2310,7 +2457,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Все цвета заменены на мягкую палитру.');
+        console.log('✅ Приложение загружено. Добавлены блоки настроения, ПМС/ПМДР и отложенной реакции.');
     </script>
 </body>
-</html> внеси изменения, напиши полный код
+</html>
