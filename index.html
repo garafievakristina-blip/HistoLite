@@ -674,4 +674,615 @@
             <!-- ВКЛАДКА АНАЛИТИКА -->
             <div id="analytics-tab" class="tab-content space-y-4">
                 <div class="card-soft p-4">
-                    <h2 class="text-base font-bold mb-1
+                    <h2 class="text-base font-bold mb-1 analytics-title">✨ Инсайты дня</h2>
+                    <div id="insight-cards" class="space-y-3"></div>
+                </div>
+                <div class="card-soft p-4">
+                    <h2 class="text-base font-bold mb-1 analytics-title">🧠 ИИ-объяснение</h2>
+                    <div id="ai-insight-box" class="text-xs text-slate-600 leading-relaxed"></div>
+                </div>
+                <div class="card-soft p-4">
+                    <h2 class="text-base font-bold mb-1 analytics-title">🧩 Связки по симптомам</h2>
+                    <div id="correlation-cards" class="space-y-3"></div>
+                </div>
+                <div class="card-soft p-4">
+                    <h2 class="text-base font-bold mb-1 analytics-title">📈 Связь симптомов с фазой цикла</h2>
+                    <div id="cycle-symptom-analysis" class="text-xs space-y-2"></div>
+                </div>
+                <div class="card-soft p-4">
+                    <h2 class="text-base font-bold mb-1 analytics-title">🔍 Анализ совпадений (48ч) — продукты и лекарства</h2>
+                    <button onclick="runAdvancedAnalytics()" class="w-full btn-primary py-2.5 px-4 text-xs shadow-md">Найти скрытые триггеры</button>
+                    <div id="analytics-results" class="mt-4 space-y-2"><p class="text-xs text-slate-400 text-center py-4">Нажмите кнопку для расчёта.</p></div>
+                </div>
+                <div class="card-soft p-4">
+                    <h2 class="text-base font-bold mb-2 analytics-title">📎 Экспорт данных</h2>
+                    <button onclick="exportToCSV()" class="w-full btn-primary py-2.5 px-4 text-xs shadow-md">Скачать отчёт (CSV)</button>
+                    <button onclick="exportToPDF()" class="w-full btn-primary py-2.5 px-4 text-xs shadow-md mt-2">📄 Скачать отчёт для врача (PDF)</button>
+                    <p class="text-[10px] text-slate-400 mt-2">*PDF с таблицей, статистикой и графиком</p>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА РЕЦЕПТЫ -->
+            <div id="recipes-tab" class="tab-content space-y-4">
+                <div class="card-soft p-4">
+                    <h2 class="text-base font-bold mb-3 text-slate-800">🍳 Рецепты</h2>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button class="recipe-filter-btn active" data-category="all">Все</button>
+                        <button class="recipe-filter-btn" data-category="завтрак">Завтрак</button>
+                        <button class="recipe-filter-btn" data-category="обед">Обед</button>
+                        <button class="recipe-filter-btn" data-category="ужин">Ужин</button>
+                        <button class="recipe-filter-btn" data-category="перекус">Перекус</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button class="level-filter-btn active" data-level="all">Все уровни</button>
+                        <button class="level-filter-btn" data-level="низкий">Низкий</button>
+                        <button class="level-filter-btn" data-level="средний">Средний</button>
+                        <button class="level-filter-btn" data-level="высокий">Высокий</button>
+                    </div>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <label class="flex items-center gap-1 text-xs">
+                            <input type="checkbox" id="filter-gluten-free" onchange="renderRecipes()"> Без глютена
+                        </label>
+                        <label class="flex items-center gap-1 text-xs">
+                            <input type="checkbox" id="filter-lactose-free" onchange="renderRecipes()"> Без лактозы
+                        </label>
+                        <label class="flex items-center gap-1 text-xs">
+                            <input type="checkbox" id="filter-dairy-free" onchange="renderRecipes()"> Без молочных продуктов
+                        </label>
+                    </div>
+                    <div id="recipes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- НАВИГАЦИЯ -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-2xl flex overflow-x-auto p-2 z-40 space-x-1">
+            <button data-tab="diary" class="tab-button flex flex-col items-center p-1.5 text-emerald-600 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📝</span><span>Дневник</span></button>
+            <button data-tab="products" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🔍</span><span>Продукты</span></button>
+            <button data-tab="analytics" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">📊</span><span>Анализ</span></button>
+            <button data-tab="recipes" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🍳</span><span>Рецепты</span></button>
+        </nav>
+
+        <!-- ФУТЕР -->
+        <footer class="text-center text-[10px] text-slate-400 py-4 border-t border-slate-100 mt-4 max-w-md mx-auto">
+            <p>© 2026 ГистоЛайт — женский дневник самочувствия</p>
+            <p>Разработчик: самозанятая | ИНН: 123456789012</p>
+            <p>По вопросам: ваш.email@example.com</p>
+            <p class="mt-2">Данные хранятся локально на вашем устройстве.</p>
+        </footer>
+    </div>
+
+    <!-- МОДАЛЬНЫЕ ОКНА -->
+    <div id="event-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <h4 class="text-base font-bold text-slate-800 mb-2">Отметить событие</h4>
+            <p class="text-sm text-slate-600 mb-4" id="event-modal-date">Дата: </p>
+            <div class="space-y-2">
+                <button onclick="confirmEvent('first_day')" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-xl transition text-sm">Началась менструация</button>
+                <button onclick="confirmEvent('ovulation')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-4 rounded-xl transition text-sm">Овуляция</button>
+                <button onclick="confirmEvent('last_day')" class="w-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-xl transition text-sm">Последний день менструации</button>
+                <button onclick="confirmEvent('clear')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-xl transition text-sm">Снять отметку</button>
+                <button onclick="closeEventModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl transition text-sm">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА -->
+    <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <h4 class="text-base font-bold text-slate-800 mb-2">📅 День дневника</h4>
+            <p class="text-sm text-slate-600 mb-1" id="cycle-day-modal-date">Дата:</p>
+            <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
+
+            <div id="entries-list" class="mb-4"></div>
+
+            <button onclick="openEntryForm(null)" class="w-full btn-primary py-2 px-4 text-sm mb-3">
+                + Добавить запись
+            </button>
+
+            <div id="entry-form" style="display:none;" class="border-t border-slate-200 pt-4 mt-2">
+                <h5 class="font-bold text-slate-700 text-sm mb-3" id="entry-form-title">Новая запись</h5>
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Время</label>
+                <input type="time" id="entry-time" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Продукты (через запятую)</label>
+                <div class="flex gap-2 items-center mb-3">
+                    <input type="text" id="entry-products" placeholder="рис, курица, овощи" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                    <button id="mic-products-entry" class="mic-btn-modal" title="Голосовой ввод продуктов">🎤</button>
+                </div>
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Принятые лекарства (через запятую)</label>
+                <input type="text" id="entry-medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы (через запятую)</label>
+                <div class="flex gap-2 items-center mb-3">
+                    <textarea id="entry-symptoms" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px]" placeholder="головная боль, усталость, зуд"></textarea>
+                    <button id="mic-symptoms-entry" class="mic-btn-modal" title="Голосовой ввод симптомов">🎤</button>
+                </div>
+
+                <!-- ===== НОВЫЕ БЛОКИ НАСТРОЕНИЕ, ПМС/ПМДР, ОТЛОЖЕННАЯ РЕАКЦИЯ ===== -->
+                <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                    <div class="text-xs font-bold text-slate-500 mb-2">Настроение</div>
+                    <div id="pmdd-mood-chips" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                    <div class="text-xs font-bold text-slate-500 mb-2">ПМС/ПМДР симптомы</div>
+                    <div id="pmdd-cycle-chips" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
+                    <div class="text-xs font-bold text-slate-500 mb-2">Отложенная реакция после еды</div>
+                    <div id="pmdd-delay-chips" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <label class="block text-xs font-bold text-slate-600 mb-1">Комментарий</label>
+                <textarea id="entry-comment" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px] mb-3" placeholder="Дополнительные заметки"></textarea>
+
+                <div class="flex gap-2">
+                    <button onclick="saveEntryForm()" class="flex-1 btn-primary py-2 px-4 text-sm">Сохранить</button>
+                    <button onclick="cancelEntryForm()" class="flex-1 btn-secondary py-2 px-4 text-sm">Отмена</button>
+                </div>
+            </div>
+
+            <button onclick="closeCycleDayModal()" class="w-full mt-3 btn-secondary py-2 px-4 text-sm">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="recipe-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeRecipeModal()" class="float-right text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+            <img id="recipe-modal-image" src="" alt="" class="w-full h-48 object-cover rounded-xl mb-4">
+            <h3 id="recipe-modal-name" class="text-xl font-bold text-slate-800 mb-2"></h3>
+            <div class="flex flex-wrap gap-2 text-sm text-slate-500 mb-3">
+                <span id="recipe-modal-category" class="bg-slate-100 px-2 py-1 rounded-full"></span>
+                <span id="recipe-modal-level" class="bg-slate-100 px-2 py-1 rounded-full"></span>
+                <span id="recipe-modal-time" class="bg-slate-100 px-2 py-1 rounded-full">⏱</span>
+                <span id="recipe-modal-servings" class="bg-slate-100 px-2 py-1 rounded-full">🍽</span>
+            </div>
+            <div id="recipe-modal-diets" class="flex flex-wrap gap-1 mb-3"></div>
+            <h4 class="font-bold text-slate-700 mt-3">📝 Описание</h4>
+            <p id="recipe-modal-description" class="text-sm text-slate-600 mb-3 italic"></p>
+            <h4 class="font-bold text-slate-700 mt-3">🥘 Ингредиенты:</h4>
+            <ul id="recipe-modal-ingredients" class="list-disc list-inside text-sm text-slate-600 mb-3"></ul>
+            <h4 class="font-bold text-slate-700 mt-3">👨‍🍳 Приготовление:</h4>
+            <p id="recipe-modal-instructions" class="text-sm text-slate-600 whitespace-pre-line"></p>
+            <div id="recipe-modal-tips" class="mt-3 p-3 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200"></div>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+            <p id="custom-modal-message" class="text-center text-sm text-slate-700 mb-4">Сообщение</p>
+            <button onclick="closeModal()" class="w-full btn-primary py-2 px-4 text-sm">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        // ================================================================
+        let safeProducts = JSON.parse(localStorage.getItem('histolite_safe_products') || '{}');
+        let safeFilter = 'all';
+        let userGender = localStorage.getItem('histolite_gender') || 'female';
+        let savedLastPeriodStart = localStorage.getItem('histolite_last_period_start') || '';
+        let savedCycleLength = parseInt(localStorage.getItem('histolite_cycle_length')) || 28;
+        let savedPmsStartDays = parseInt(localStorage.getItem('histolite_pms_start_days')) || 7;
+        let savedPeriodDays = parseInt(localStorage.getItem('histolite_period_days')) || 5;
+        let myHistamineDB = [];
+        let recipesDB = [];
+        let userRecipes = JSON.parse(localStorage.getItem('histolite_user_recipes')) || [];
+        let expectedStartDate = null;
+        let cycleMarks = JSON.parse(localStorage.getItem('histolite_cycle_marks')) || {};
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
+        let selectedCycleDayDate = null;
+        let editingEntryId = null;
+
+        // ===== НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕНИЯ, ПМС/ПМДР И ОТЛОЖЕННОЙ РЕАКЦИИ =====
+        const pmddMoodOptions = [
+            'спокойствие',
+            'раздражительность',
+            'тревога',
+            'плаксивость',
+            'гнев',
+            'печаль',
+            'мозговой туман'
+        ];
+
+        const pmddCycleOptions = [
+            'раздражительность',
+            'тревога',
+            'плаксивость',
+            'гнев',
+            'печаль',
+            'чувствительность к шуму',
+            'мозговой туман'
+        ];
+
+        const pmddDelayOptions = [
+            '0-30 мин',
+            '30-120 мин',
+            'до вечера',
+            'на следующий день'
+        ];
+
+        window.pmddMoodSelection = [];
+        window.pmddCycleSelection = [];
+        window.pmddDelaySelection = '';
+
+        window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
+        recipesDB = window.recipesDB;
+
+        // ================================================================
+        // 2. ФУНКЦИИ ДАТ И ЦИКЛА
+        // ================================================================
+        function formatDate(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+        function parseLocalDate(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('-');
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+        function getCurrentCycleDay() {
+            if (!savedLastPeriodStart) return null;
+            const start = parseLocalDate(savedLastPeriodStart);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            start.setHours(0,0,0,0);
+            const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+            return diff > 0 ? diff : 1;
+        }
+        function getNextPeriodDate() {
+            if (!savedLastPeriodStart) return null;
+            const start = parseLocalDate(savedLastPeriodStart);
+            const next = new Date(start);
+            next.setDate(start.getDate() + savedCycleLength);
+            return next;
+        }
+        function getOvulationDate() {
+            if (!savedLastPeriodStart) return null;
+            const start = parseLocalDate(savedLastPeriodStart);
+            const ovulationDay = savedCycleLength - 14;
+            const ov = new Date(start);
+            ov.setDate(start.getDate() + ovulationDay - 1);
+            return ov;
+        }
+        function getFertileRange() {
+            const ovulation = getOvulationDate();
+            if (!ovulation) return null;
+            const from = new Date(ovulation);
+            from.setDate(ovulation.getDate() - 5);
+            const to = new Date(ovulation);
+            to.setDate(ovulation.getDate() + 1);
+            return { from, to, ovulation };
+        }
+        function getDelayDays() {
+            const next = getNextPeriodDate();
+            if (!next) return 0;
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            next.setHours(0,0,0,0);
+            const diff = Math.floor((today - next) / (1000 * 60 * 60 * 24));
+            return diff > 0 ? diff : 0;
+        }
+        function getCyclePhaseName(day) {
+            if (!day) return 'Не определена';
+            if (day <= savedPeriodDays) return 'Менструация';
+            const ovulationDay = savedCycleLength - 14;
+            if (day === ovulationDay) return 'Овуляция';
+            if (day >= ovulationDay - 5 && day <= ovulationDay + 1) return 'Фертильное окно';
+            if (day > ovulationDay + 1 && day < savedCycleLength) return 'Лютеиновая';
+            if (day >= savedCycleLength) return 'Задержка';
+            return 'Начало цикла';
+        }
+
+        // ================================================================
+        // 3. ОБНОВЛЕНИЕ UI ЦИКЛА И РИСК-КАРТЫ
+        // ================================================================
+        function updateCycleUI() {
+            const day = getCurrentCycleDay();
+            const cycleDaySmall = document.getElementById('cycle-day-small');
+            if (cycleDaySmall) {
+                cycleDaySmall.textContent = day ? `День цикла: ${day}` : 'День цикла: —';
+            }
+        }
+
+        function renderTodayDashboard() {
+            const cycleDay = getCurrentCycleDay();
+            let riskLevel = 'Низкий';
+            let riskClass = 'risk-low';
+            let riskReason = 'Фаза цикла: стабильная';
+            let tip = 'Сегодня хороший день, чтобы попробовать новые продукты.';
+            let delayDays = 0;
+            if (savedLastPeriodStart && cycleDay !== null) {
+                if (cycleDay > savedCycleLength) {
+                    delayDays = cycleDay - savedCycleLength;
+                }
+            }
+            if (delayDays > 0) {
+                riskLevel = 'ВЫСОКИЙ (ЗАДЕРЖКА)';
+                riskClass = 'risk-high';
+                riskReason = `⏳ Задержка ${delayDays} дн. — гормональный дисбаланс, чувствительность повышена`;
+                tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
+            } else if (userGender !== 'male' && cycleDay !== null) {
+                const phase = getCyclePhaseName(cycleDay);
+                if (phase === 'Овуляция' || phase === 'ПМС') {
+                    riskLevel = 'Высокий';
+                    riskClass = 'risk-high';
+                    riskReason = `Фаза цикла: ${phase} (чувствительность повышена)`;
+                    tip = '⚠️ Сегодня повышенная чувствительность. Выбирайте зелёные продукты, избегайте сыра и шоколада.';
+                } else if (phase === 'Начало цикла' || phase === 'Лютеиновая') {
+                    riskLevel = 'Средний';
+                    riskClass = 'risk-medium';
+                    riskReason = `Фаза цикла: ${phase} (умеренная чувствительность)`;
+                    tip = '🟡 Умеренная чувствительность. Следите за реакциями, но можно пробовать новое.';
+                } else {
+                    riskLevel = 'Низкий';
+                    riskClass = 'risk-low';
+                    riskReason = `Фаза цикла: ${phase} (стабильная)`;
+                    tip = '✅ Организм стабилен. Можно пробовать новые продукты и экспериментировать.';
+                }
+            } else if (userGender === 'male') {
+                riskLevel = 'Низкий';
+                riskClass = 'risk-low';
+                riskReason = 'Мужчина, цикл не учитывается';
+                tip = '✅ Отслеживайте питание и симптомы, чтобы находить свои триггеры.';
+            } else {
+                riskReason = 'Цикл не настроен';
+                tip = 'Отметьте первый день цикла в календаре.';
+            }
+            const riskCard = document.getElementById('risk-card');
+            riskCard.className = `risk-card ${riskClass}`;
+            document.getElementById('risk-level').textContent = riskLevel;
+            document.getElementById('risk-reason').textContent = riskReason;
+            document.getElementById('today-tip').textContent = tip;
+            updateCycleUI();
+        }
+
+        // ================================================================
+        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
+        // ================================================================
+        window.saveCycleSettings = function() {
+            const dateInput = document.getElementById('last-period-start');
+            const lengthInput = document.getElementById('cycle-length');
+            const periodDaysInput = document.getElementById('period-days');
+            if (dateInput) savedLastPeriodStart = dateInput.value;
+            if (lengthInput) savedCycleLength = parseInt(lengthInput.value) || 28;
+            if (periodDaysInput) savedPeriodDays = parseInt(periodDaysInput.value) || 5;
+            localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+            localStorage.setItem('histolite_cycle_length', savedCycleLength);
+            localStorage.setItem('histolite_period_days', savedPeriodDays);
+            renderCycleCalendar();
+            renderTodayDashboard();
+            refreshAnalytics();
+            showModal('Настройки сохранены');
+        };
+
+        // ================================================================
+        // 5. РАБОТА С ЗАПИСЯМИ
+        // ================================================================
+        function getEntriesForDate(dateStr) {
+            if (!cycleDayNotes[dateStr]) return [];
+            if (Array.isArray(cycleDayNotes[dateStr])) {
+                return cycleDayNotes[dateStr];
+            } else {
+                const old = cycleDayNotes[dateStr];
+                if (old && typeof old === 'object' && !Array.isArray(old)) {
+                    const newEntry = {
+                        id: Date.now(),
+                        time: old.time || '',
+                        products: old.products || '',
+                        medications: old.medications || '',
+                        symptoms: old.symptoms || '',
+                        comment: old.comment || ''
+                    };
+                    cycleDayNotes[dateStr] = [newEntry];
+                    localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+                    return cycleDayNotes[dateStr];
+                }
+                return [];
+            }
+        }
+        function setEntriesForDate(dateStr, entries) {
+            cycleDayNotes[dateStr] = entries;
+            localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+        }
+        function addEntry(dateStr, entry) {
+            const entries = getEntriesForDate(dateStr);
+            entries.push(entry);
+            setEntriesForDate(dateStr, entries);
+        }
+        function updateEntry(dateStr, id, updatedEntry) {
+            const entries = getEntriesForDate(dateStr);
+            const index = entries.findIndex(e => e.id === id);
+            if (index !== -1) {
+                entries[index] = { ...entries[index], ...updatedEntry };
+                setEntriesForDate(dateStr, entries);
+            }
+        }
+        function deleteEntry(dateStr, id) {
+            let entries = getEntriesForDate(dateStr);
+            entries = entries.filter(e => e.id !== id);
+            if (entries.length === 0) {
+                delete cycleDayNotes[dateStr];
+                localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+            } else {
+                setEntriesForDate(dateStr, entries);
+            }
+        }
+        function getEntryById(dateStr, id) {
+            const entries = getEntriesForDate(dateStr);
+            return entries.find(e => e.id === id) || null;
+        }
+        function getCurrentCycleDayForDate(dateStr) {
+            if (!savedLastPeriodStart) return null;
+            const start = parseLocalDate(savedLastPeriodStart);
+            const date = parseLocalDate(dateStr);
+            if (!start || !date) return null;
+            const diff = Math.floor((date - start) / (1000 * 60 * 60 * 24)) + 1;
+            return diff > 0 ? diff : null;
+        }
+
+        // ================================================================
+        // 6. ОТКРЫТИЕ / ЗАКРЫТИЕ МОДАЛКИ
+        // ================================================================
+        function openDayModal(dateStr) {
+            selectedCycleDayDate = dateStr;
+            const dateObj = parseLocalDate(dateStr);
+            const cycleDay = getCurrentCycleDayForDate(dateStr);
+            document.getElementById('cycle-day-modal-date').textContent = `📅 ${dateObj.toLocaleDateString('ru-RU')}`;
+            document.getElementById('cycle-day-modal-info').textContent = cycleDay ? `День цикла: ${cycleDay}` : 'Цикл не настроен';
+            document.getElementById('entry-form').style.display = 'none';
+            editingEntryId = null;
+
+            // Загружаем последнюю запись для заполнения PMDD
+            const entries = getEntriesForDate(dateStr);
+            const last = entries.length ? entries[entries.length - 1] : null;
+            window.pmddMoodSelection = last?.pmddMood || [];
+            window.pmddCycleSelection = last?.pmddCycle || [];
+            window.pmddDelaySelection = last?.pmddDelay || '';
+
+            renderEntriesList(dateStr);
+            refreshPmddUi();
+            document.getElementById('cycle-day-modal').style.display = 'flex';
+        }
+
+        function closeCycleDayModal() {
+            document.getElementById('cycle-day-modal').style.display = 'none';
+            selectedCycleDayDate = null;
+            if (window.symptomRecognitionEntry) {
+                window.symptomRecognitionEntry.stop();
+                window.symptomRecognitionEntry = null;
+                document.getElementById('mic-symptoms-entry').classList.remove('mic-active');
+                document.getElementById('mic-symptoms-entry').textContent = '🎤';
+            }
+            if (window.productRecognitionEntry) {
+                window.productRecognitionEntry.stop();
+                window.productRecognitionEntry = null;
+                document.getElementById('mic-products-entry').classList.remove('mic-active');
+                document.getElementById('mic-products-entry').textContent = '🎤';
+            }
+            // Сброс PMDD
+            window.pmddMoodSelection = [];
+            window.pmddCycleSelection = [];
+            window.pmddDelaySelection = '';
+        }
+
+        function renderEntriesList(dateStr) {
+            const container = document.getElementById('entries-list');
+            const entries = getEntriesForDate(dateStr);
+            if (entries.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">Нет записей за этот день</p>';
+                return;
+            }
+            const sorted = [...entries].sort((a, b) => (a.time || '00:00').localeCompare(b.time || '00:00'));
+            container.innerHTML = sorted.map(entry => {
+                const parts = [];
+                if (entry.products) parts.push(`🍽 ${entry.products}`);
+                if (entry.medications) parts.push(`💊 ${entry.medications}`);
+                if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
+                if (entry.comment) parts.push(`📝 ${entry.comment}`);
+                // Новые поля: настроение, ПМС/ПМДР, отложенная реакция
+                if (entry.pmddMood && entry.pmddMood.length) parts.push(`🌸 ${entry.pmddMood.join(', ')}`);
+                if (entry.pmddCycle && entry.pmddCycle.length) parts.push(`🌙 ${entry.pmddCycle.join(', ')}`);
+                if (entry.pmddDelay) parts.push(`⏳ ${entry.pmddDelay}`);
+                const details = parts.join(' • ') || '—';
+                return `
+                    <div class="entry-list-item">
+                        <div class="entry-time">${entry.time || '—'}</div>
+                        <div class="entry-details">${details}</div>
+                        <div class="entry-actions">
+                            <button class="edit-btn" onclick="openEntryForm(${entry.id})" title="Редактировать">✏️</button>
+                            <button class="delete-btn" onclick="deleteEntryConfirm('${dateStr}', ${entry.id})" title="Удалить">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openEntryForm(entryId) {
+            editingEntryId = entryId;
+            const form = document.getElementById('entry-form');
+            form.style.display = 'block';
+            if (entryId !== null) {
+                document.getElementById('entry-form-title').textContent = 'Редактировать запись';
+                const entry = getEntryById(selectedCycleDayDate, entryId);
+                if (entry) {
+                    document.getElementById('entry-time').value = entry.time || '';
+                    document.getElementById('entry-products').value = entry.products || '';
+                    document.getElementById('entry-medications').value = entry.medications || '';
+                    document.getElementById('entry-symptoms').value = entry.symptoms || '';
+                    document.getElementById('entry-comment').value = entry.comment || '';
+                    // загружаем PMDD
+                    window.pmddMoodSelection = entry.pmddMood || [];
+                    window.pmddCycleSelection = entry.pmddCycle || [];
+                    window.pmddDelaySelection = entry.pmddDelay || '';
+                    refreshPmddUi();
+                }
+            } else {
+                document.getElementById('entry-form-title').textContent = 'Новая запись';
+                document.getElementById('entry-time').value = '';
+                document.getElementById('entry-products').value = '';
+                document.getElementById('entry-medications').value = '';
+                document.getElementById('entry-symptoms').value = '';
+                document.getElementById('entry-comment').value = '';
+                // сбрасываем PMDD
+                window.pmddMoodSelection = [];
+                window.pmddCycleSelection = [];
+                window.pmddDelaySelection = '';
+                refreshPmddUi();
+            }
+        }
+
+        function cancelEntryForm() {
+            document.getElementById('entry-form').style.display = 'none';
+            editingEntryId = null;
+            if (window.symptomRecognitionEntry) {
+                window.symptomRecognitionEntry.stop();
+                window.symptomRecognitionEntry = null;
+                document.getElementById('mic-symptoms-entry').classList.remove('mic-active');
+                document.getElementById('mic-symptoms-entry').textContent = '🎤';
+            }
+            if (window.productRecognitionEntry) {
+                window.productRecognitionEntry.stop();
+                window.productRecognitionEntry = null;
+                document.getElementById('mic-products-entry').classList.remove('mic-active');
+                document.getElementById('mic-products-entry').textContent = '🎤';
+            }
+        }
+
+        function saveEntryForm() {
+            if (!selectedCycleDayDate) return;
+            const time = document.getElementById('entry-time').value.trim();
+            const products = document.getElementById('entry-products').value.trim();
+            const medications = document.getElementById('entry-medications').value.trim();
+            const symptoms = document.getElementById('entry-symptoms').value.trim();
+            const comment = document.getElementById('entry-comment').value.trim();
+            if (!time && !products && !medications && !symptoms && !comment &&
+                !window.pmddMoodSelection.length && !window.pmddCycleSelection.length && !window.pmddDelaySelection) {
+                showModal('Заполните хотя бы одно поле');
+                return;
+            }
+            const entryData = {
+                time,
+                products,
+                medications,
+                symptoms,
+                comment,
+                pmddMood: window.pmddMoodSelection || [],
+                pmddCycle: window.pmddCycleSelection || [],
+                pmddDelay: window.pmddDelaySelection || ''
+            };
+            if (editingEntryId !== null) {
+                updateEntry(selectedCycleDayDate, editingEntryId, entryData);
+                showModal('Запись обновлена');
+            } else {
+                const newEntry = { id: Date.now(), ...entryData };
+                addEntry(selectedCycleDayDate, newEntry);
+                showModal('Запись добавлена');
+            }
+            renderEntri
