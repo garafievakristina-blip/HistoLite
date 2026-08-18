@@ -10,13 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- ИСПРАВЛЕНИЕ 2: jsQR добавлена -->
+    <!-- ИСПРАВЛЕНИЕ 2: Добавлена библиотека jsQR для распознавания штрих-кодов с фото -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-    
-    <!-- Библиотеки -->
+
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ВНИМАНИЕ: Если у тебя нет файла recipes.js, скрипт выдаст ошибку 404, но приложение не упадет, так как у нас есть дефолтные рецепты в коде -->
     <script src="recipes.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -180,6 +178,7 @@
             font-size: 1.1rem;
         }
 
+        /* Существующие стили (не трогаем) */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         ::-webkit-scrollbar { width: 4px; }
@@ -196,6 +195,7 @@
         .product-result.high { border-color: #f87171; background-color: #fee2e2; }
         .product-result.unknown { border-color: #94a3b8; background-color: #f1f5f9; }
 
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ RISK-CARD ===== */
         .risk-card {
             border-radius: 28px;
             padding: 18px;
@@ -226,6 +226,7 @@
         }
         .stat-number { font-size: 24px; font-weight: 700; }
 
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ КНОПОК ПРОДУКТОВ ===== */
         .product-status-btn {
             width: 32px;
             height: 32px;
@@ -258,6 +259,7 @@
         }
         .product-status-btn:hover { transform: scale(1.05); }
 
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ ПРОДУКТОВ ===== */
         .safe-filter-btn {
             border-radius: 9999px;
             padding: 4px 12px;
@@ -285,6 +287,7 @@
             border-color: rgba(185, 195, 165, 0.45);
         }
 
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ ДЛЯ ФИЛЬТРОВ РЕЦЕПТОВ ===== */
         .recipe-filter-btn, .level-filter-btn {
             border-radius: 9999px;
             padding: 4px 14px;
@@ -302,6 +305,7 @@
             border-color: rgba(156, 168, 136, 0.45);
         }
 
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ ДЛЯ ТЕГОВ РЕЦЕПТОВ ===== */
         .recipe-tag {
             font-size: 11px;
             padding: 4px 10px;
@@ -311,6 +315,7 @@
             border: 1px solid rgba(185,195,165,0.28);
         }
 
+        /* ===== ОБНОВЛЁННЫЕ СТИЛИ КАЛЕНДАРЯ ===== */
         .cycle-day-cell {
             aspect-ratio: 1 / 1;
             display: flex;
@@ -331,36 +336,44 @@
             color: var(--text);
             box-shadow: 0 4px 10px rgba(47, 47, 42, 0.04);
         }
+
         .cycle-day-cell:hover {
             transform: translateY(-1px);
             box-shadow: 0 8px 18px rgba(47, 47, 42, 0.07);
         }
+
         .cycle-day-cell.today {
             background: rgba(156, 168, 136, 0.16) !important;
             border: 1px solid var(--primary);
             box-shadow: 0 0 0 2px rgba(156, 168, 136, 0.10);
         }
+
         .cycle-day-cell.period-day {
             background: rgba(217, 178, 169, 0.18) !important;
             border: 1px solid rgba(217, 178, 169, 0.8);
         }
+
         .cycle-day-cell.ovulation-day {
             background: rgba(185, 195, 165, 0.22) !important;
             border: 1px solid rgba(185, 195, 165, 0.95);
         }
+
         .cycle-day-cell.fertile-day {
             background: rgba(156, 168, 136, 0.12) !important;
             border: 1px solid rgba(156, 168, 136, 0.6);
         }
+
         .cycle-day-cell.next-period-day {
             background: rgba(122, 117, 109, 0.08) !important;
             border: 1px dashed rgba(122, 117, 109, 0.55);
         }
+
         .cycle-day-cell.delay-day {
             background: rgba(122, 117, 109, 0.05) !important;
             color: var(--muted);
             border: 1px solid rgba(122, 117, 109, 0.35);
         }
+
         .cycle-day-cell.has-note::after {
             content: '📝';
             position: absolute;
@@ -369,6 +382,7 @@
             font-size: 0.5rem;
         }
 
+        /* ===== ОБНОВЛЁННЫЙ СТИЛЬ НАВИГАЦИОННЫХ КНОПОК КАЛЕНДАРЯ ===== */
         .calendar-nav-btn {
             padding: 4px 10px;
             border-radius: 9999px;
@@ -389,6 +403,7 @@
             color: var(--text);
         }
 
+        /* ===== СТИЛИ ДЛЯ КАРТОЧЕК РЕЦЕПТОВ ===== */
         .recipe-soft-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -398,10 +413,12 @@
             cursor: pointer;
             transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
+
         .recipe-soft-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 14px 28px rgba(47, 47, 42, 0.08);
         }
+
         .recipe-image-wrap img {
             width: 100%;
             height: 136px;
@@ -409,9 +426,11 @@
             display: block;
             background: #f3ede4;
         }
+
         .recipe-content {
             padding: 14px;
         }
+
         .recipe-title {
             font-size: 17px;
             line-height: 1.1;
@@ -420,6 +439,7 @@
             margin-bottom: 8px;
             font-weight: 700;
         }
+
         .recipe-meta {
             display: flex;
             justify-content: space-between;
@@ -427,6 +447,7 @@
             color: var(--muted);
             margin-bottom: 10px;
         }
+
         .recipe-tags {
             display: flex;
             flex-wrap: wrap;
@@ -549,9 +570,12 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-2xl font-bold text-[var(--text)] leading-none display-font">ГистоЛайт</h1>
+                    
                         <p class="text-xs text-[var(--muted)] mt-1">женский дневник самочувствия</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center text-[var(--primary-dark)]">✦</div>
+                    <div class="w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center text-[var(--primary-dark)]">
+                        ✦
+                    </div>
                 </div>
             </div>
         </header>
@@ -559,6 +583,7 @@
         <main class="max-w-md mx-auto p-4 space-y-4">
             <!-- ВКЛАДКА ДНЕВНИК -->
             <div id="diary-tab" class="tab-content active space-y-4">
+                <!-- Риск-карта -->
                 <div id="today-dashboard">
                     <div id="risk-card" class="risk-card risk-low card-soft p-4">
                         <div class="text-sm font-bold text-slate-600">📊 Риск симптомов сегодня</div>
@@ -569,6 +594,7 @@
                     </div>
                 </div>
 
+                <!-- Календарь -->
                 <div class="card-soft p-4">
                     <h3 class="text-sm font-bold text-slate-700 mb-2">🌸 Календарь</h3>
                     <div class="flex items-center justify-between mb-3">
@@ -578,6 +604,7 @@
                         <button class="calendar-nav-btn" onclick="goToToday()">Сегодня</button>
                     </div>
                     <div id="cycle-load-calendar" class="cycle-calendar"></div>
+                    <!-- ОБНОВЛЁННАЯ ЛЕГЕНДА (цвета мягкие) -->
                     <div class="flex flex-wrap gap-3 mt-2 text-xs text-[var(--muted)]">
                         <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(217,178,169,0.22); border:1px solid rgba(217,178,169,0.8); border-radius:4px;"></span> Менструация</span>
                         <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block" style="background:rgba(185,195,165,0.22); border:1px solid rgba(185,195,165,0.9); border-radius:4px;"></span> Овуляция</span>
@@ -589,6 +616,7 @@
                     </div>
                 </div>
 
+                <!-- Настройки цикла -->
                 <details class="settings-details card-soft p-4">
                     <summary class="text-sm font-bold text-[var(--text)]">⚙️ Настройки цикла</summary>
                     <div class="mt-3 grid grid-cols-3 gap-2">
@@ -719,6 +747,7 @@
             <button data-tab="recipes" class="tab-button flex flex-col items-center p-1.5 text-slate-400 font-bold text-[10px] gap-0.5 flex-shrink-0 min-w-[56px]"><span class="text-lg">🍳</span><span>Рецепты</span></button>
         </nav>
 
+        <!-- ФУТЕР -->
         <footer class="text-center text-[10px] text-slate-400 py-4 border-t border-slate-100 mt-4 max-w-md mx-auto">
             <p>© 2026 ГистоЛайт — женский дневник самочувствия</p>
             <p>Разработчик: самозанятая | ИНН: 123456789012</p>
@@ -742,48 +771,65 @@
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО ДНЯ ДНЕВНИКА -->
     <div id="cycle-day-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display:none;">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <h4 class="text-base font-bold text-slate-800 mb-2">📅 День дневника</h4>
             <p class="text-sm text-slate-600 mb-1" id="cycle-day-modal-date">Дата:</p>
             <p class="text-sm text-slate-600 mb-3" id="cycle-day-modal-info">День цикла:</p>
+
             <div id="entries-list" class="mb-4"></div>
-            <button onclick="openEntryForm(null)" class="w-full btn-primary py-2 px-4 text-sm mb-3">+ Добавить запись</button>
+
+            <button onclick="openEntryForm(null)" class="w-full btn-primary py-2 px-4 text-sm mb-3">
+                + Добавить запись
+            </button>
+
             <div id="entry-form" style="display:none;" class="border-t border-slate-200 pt-4 mt-2">
                 <h5 class="font-bold text-slate-700 text-sm mb-3" id="entry-form-title">Новая запись</h5>
+
                 <label class="block text-xs font-bold text-slate-600 mb-1">Время</label>
                 <input type="time" id="entry-time" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
+
                 <label class="block text-xs font-bold text-slate-600 mb-1">Продукты (через запятую)</label>
                 <div class="flex gap-2 items-center mb-3">
                     <input type="text" id="entry-products" placeholder="рис, курица, овощи" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
                     <button id="mic-products-entry" class="mic-btn-modal" title="Голосовой ввод продуктов">🎤</button>
                 </div>
+
                 <label class="block text-xs font-bold text-slate-600 mb-1">Принятые лекарства (через запятую)</label>
                 <input type="text" id="entry-medications" placeholder="цетиризин 10мг, дао-форте" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 mb-3">
+
                 <label class="block text-xs font-bold text-slate-600 mb-1">Симптомы (через запятую)</label>
                 <div class="flex gap-2 items-center mb-3">
                     <textarea id="entry-symptoms" class="flex-1 p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px]" placeholder="головная боль, усталость, зуд"></textarea>
                     <button id="mic-symptoms-entry" class="mic-btn-modal" title="Голосовой ввод симптомов">🎤</button>
                 </div>
+
+                <!-- ===== НОВЫЕ БЛОКИ НАСТРОЕНИЕ, ПМС/ПМДР, ОТЛОЖЕННАЯ РЕАКЦИЯ ===== -->
                 <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
                     <div class="text-xs font-bold text-slate-500 mb-2">Настроение</div>
                     <div id="pmdd-mood-chips" class="flex flex-wrap gap-2"></div>
                 </div>
+
                 <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
                     <div class="text-xs font-bold text-slate-500 mb-2">ПМС/ПМДР симптомы</div>
                     <div id="pmdd-cycle-chips" class="flex flex-wrap gap-2"></div>
                 </div>
+
                 <div class="mb-3 p-3 rounded-2xl border border-slate-200 bg-slate-50">
                     <div class="text-xs font-bold text-slate-500 mb-2">Отложенная реакция после еды</div>
                     <div id="pmdd-delay-chips" class="flex flex-wrap gap-2"></div>
                 </div>
+
                 <label class="block text-xs font-bold text-slate-600 mb-1">Комментарий</label>
                 <textarea id="entry-comment" class="w-full p-2 border border-slate-200 rounded-xl text-sm bg-slate-50 min-h-[60px] mb-3" placeholder="Дополнительные заметки"></textarea>
+
                 <div class="flex gap-2">
                     <button onclick="saveEntryForm()" class="flex-1 btn-primary py-2 px-4 text-sm">Сохранить</button>
                     <button onclick="cancelEntryForm()" class="flex-1 btn-secondary py-2 px-4 text-sm">Отмена</button>
                 </div>
             </div>
+
             <button onclick="closeCycleDayModal()" class="w-full mt-3 btn-secondary py-2 px-4 text-sm">Закрыть</button>
         </div>
     </div>
@@ -817,13 +863,8 @@
         </div>
     </div>
 
+    <!-- ================= ВЕСЬ JAVASCRIPT В ОДНОМ ТЕГЕ ================= -->
     <script>
-        // ================================================================
-        // 0. ПРЕДВАРИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ ПЕРЕМЕННЫХ (Чтобы избежать краша)
-        // ================================================================
-        // Если файл recipes.js не загрузился, используем пустой массив
-        window.recipesDB = (typeof window.recipes !== 'undefined' && Array.isArray(window.recipes)) ? window.recipes : [];
-
         // ================================================================
         // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
         // ================================================================
@@ -835,7 +876,7 @@
         let savedPmsStartDays = parseInt(localStorage.getItem('histolite_pms_start_days')) || 7;
         let savedPeriodDays = parseInt(localStorage.getItem('histolite_period_days')) || 5;
         let myHistamineDB = [];
-        let recipesDB = window.recipesDB; // используем то, что загрузили выше
+        let recipesDB = [];
         let userRecipes = JSON.parse(localStorage.getItem('histolite_user_recipes')) || [];
         let expectedStartDate = null;
         let cycleMarks = JSON.parse(localStorage.getItem('histolite_cycle_marks')) || {};
@@ -846,13 +887,39 @@
         let editingEntryId = null;
 
         // ===== НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕНИЯ, ПМС/ПМДР И ОТЛОЖЕННОЙ РЕАКЦИИ =====
-        const pmddMoodOptions = ['спокойствие', 'раздражительность', 'тревога', 'плаксивость', 'гнев', 'печаль', 'мозговой туман'];
-        const pmddCycleOptions = ['раздражительность', 'тревога', 'плаксивость', 'гнев', 'печаль', 'чувствительность к шуму', 'мозговой туман'];
-        const pmddDelayOptions = ['0-30 мин', '30-120 мин', 'до вечера', 'на следующий день'];
+        const pmddMoodOptions = [
+            'спокойствие',
+            'раздражительность',
+            'тревога',
+            'плаксивость',
+            'гнев',
+            'печаль',
+            'мозговой туман'
+        ];
+
+        const pmddCycleOptions = [
+            'раздражительность',
+            'тревога',
+            'плаксивость',
+            'гнев',
+            'печаль',
+            'чувствительность к шуму',
+            'мозговой туман'
+        ];
+
+        const pmddDelayOptions = [
+            '0-30 мин',
+            '30-120 мин',
+            'до вечера',
+            'на следующий день'
+        ];
 
         window.pmddMoodSelection = [];
         window.pmddCycleSelection = [];
         window.pmddDelaySelection = '';
+
+        window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
+        recipesDB = window.recipesDB;
 
         // ================================================================
         // 2. ФУНКЦИИ ДАТ И ЦИКЛА
@@ -908,14 +975,41 @@
             return diff > 0 ? diff : 0;
         }
 
+        // ИСПРАВЛЕНИЕ 4: Обновлена функция для возвращения фазы "ПМС"
         function getCyclePhaseName(day) {
             if (!day) return 'Не определена';
-            if (day <= savedPeriodDays) return 'Менструация';
+
+            if (day <= savedPeriodDays) {
+                return 'Менструация';
+            }
+
             const ovulationDay = savedCycleLength - 14;
-            if (day === ovulationDay) return 'Овуляция';
-            if (day >= ovulationDay - 5 && day <= ovulationDay + 1) return 'Фертильное окно';
-            if (day > ovulationDay + 1 && day < savedCycleLength) return 'Лютеиновая';
-            if (day >= savedCycleLength) return 'Задержка';
+
+            if (day === ovulationDay) {
+                return 'Овуляция';
+            }
+
+            // Добавляем условие для ПМС (за несколько дней до конца цикла)
+            if (
+                day > ovulationDay + 1 &&
+                day < savedCycleLength &&
+                day >= savedCycleLength - savedPmsStartDays
+            ) {
+                return 'ПМС';
+            }
+
+            if (day >= ovulationDay - 5 && day <= ovulationDay + 1) {
+                return 'Фертильное окно';
+            }
+
+            if (day > ovulationDay + 1 && day < savedCycleLength) {
+                return 'Лютеиновая';
+            }
+
+            if (day >= savedCycleLength) {
+                return 'Задержка';
+            }
+
             return 'Начало цикла';
         }
 
@@ -949,6 +1043,7 @@
                 tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
             } else if (userGender !== 'male' && cycleDay !== null) {
                 const phase = getCyclePhaseName(cycleDay);
+                // Проверяем теперь и ПМС
                 if (phase === 'Овуляция' || phase === 'ПМС') {
                     riskLevel = 'Высокий';
                     riskClass = 'risk-high';
@@ -983,7 +1078,7 @@
         }
 
         // ================================================================
-        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
+        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА (ИСПРАВЛЕНИЕ 3)
         // ================================================================
         window.saveCycleSettings = function() {
             const dateInput = document.getElementById('last-period-start');
@@ -991,18 +1086,32 @@
             const periodDaysInput = document.getElementById('period-days');
 
             const newStartDate = dateInput ? dateInput.value : '';
-            const newCycleLength = lengthInput ? parseInt(lengthInput.value, 10) : 28;
-            const newPeriodDays = periodDaysInput ? parseInt(periodDaysInput.value, 10) : 5;
+            const newCycleLength = lengthInput
+                ? parseInt(lengthInput.value, 10)
+                : 28;
+            const newPeriodDays = periodDaysInput
+                ? parseInt(periodDaysInput.value, 10)
+                : 5;
 
             if (!newStartDate) {
                 showModal('Укажите первый день менструации');
                 return;
             }
-            if (!Number.isInteger(newCycleLength) || newCycleLength < 20 || newCycleLength > 45) {
+
+            if (
+                !Number.isInteger(newCycleLength) ||
+                newCycleLength < 20 ||
+                newCycleLength > 45
+            ) {
                 showModal('Длина цикла должна быть от 20 до 45 дней');
                 return;
             }
-            if (!Number.isInteger(newPeriodDays) || newPeriodDays < 1 || newPeriodDays > 10) {
+
+            if (
+                !Number.isInteger(newPeriodDays) ||
+                newPeriodDays < 1 ||
+                newPeriodDays > 10
+            ) {
                 showModal('Количество дней менструации должно быть от 1 до 10');
                 return;
             }
@@ -1011,17 +1120,33 @@
             savedCycleLength = newCycleLength;
             savedPeriodDays = newPeriodDays;
 
-            localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-            localStorage.setItem('histolite_cycle_length', String(savedCycleLength));
-            localStorage.setItem('histolite_period_days', String(savedPeriodDays));
+            localStorage.setItem(
+                'histolite_last_period_start',
+                savedLastPeriodStart
+            );
+            localStorage.setItem(
+                'histolite_cycle_length',
+                String(savedCycleLength)
+            );
+            localStorage.setItem(
+                'histolite_period_days',
+                String(savedPeriodDays)
+            );
 
+            // Удаляем старую отметку первого дня цикла
             Object.keys(cycleMarks).forEach(date => {
                 if (cycleMarks[date] === 'first_day') {
                     delete cycleMarks[date];
                 }
             });
+
+            // Создаём отметку first_day на новой дате
             cycleMarks[savedLastPeriodStart] = 'first_day';
-            localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+
+            localStorage.setItem(
+                'histolite_cycle_marks',
+                JSON.stringify(cycleMarks)
+            );
 
             renderCycleCalendar();
             renderTodayDashboard();
@@ -1107,6 +1232,7 @@
             document.getElementById('entry-form').style.display = 'none';
             editingEntryId = null;
 
+            // Загружаем последнюю запись для заполнения PMDD
             const entries = getEntriesForDate(dateStr);
             const last = entries.length ? entries[entries.length - 1] : null;
             window.pmddMoodSelection = last?.pmddMood || [];
@@ -1133,6 +1259,7 @@
                 document.getElementById('mic-products-entry').classList.remove('mic-active');
                 document.getElementById('mic-products-entry').textContent = '🎤';
             }
+            // Сброс PMDD
             window.pmddMoodSelection = [];
             window.pmddCycleSelection = [];
             window.pmddDelaySelection = '';
@@ -1152,6 +1279,7 @@
                 if (entry.medications) parts.push(`💊 ${entry.medications}`);
                 if (entry.symptoms) parts.push(`🤒 ${entry.symptoms}`);
                 if (entry.comment) parts.push(`📝 ${entry.comment}`);
+                // Новые поля: настроение, ПМС/ПМДР, отложенная реакция
                 if (entry.pmddMood && entry.pmddMood.length) parts.push(`🌸 ${entry.pmddMood.join(', ')}`);
                 if (entry.pmddCycle && entry.pmddCycle.length) parts.push(`🌙 ${entry.pmddCycle.join(', ')}`);
                 if (entry.pmddDelay) parts.push(`⏳ ${entry.pmddDelay}`);
@@ -1182,6 +1310,7 @@
                     document.getElementById('entry-medications').value = entry.medications || '';
                     document.getElementById('entry-symptoms').value = entry.symptoms || '';
                     document.getElementById('entry-comment').value = entry.comment || '';
+                    // загружаем PMDD
                     window.pmddMoodSelection = entry.pmddMood || [];
                     window.pmddCycleSelection = entry.pmddCycle || [];
                     window.pmddDelaySelection = entry.pmddDelay || '';
@@ -1194,6 +1323,7 @@
                 document.getElementById('entry-medications').value = '';
                 document.getElementById('entry-symptoms').value = '';
                 document.getElementById('entry-comment').value = '';
+                // сбрасываем PMDD
                 window.pmddMoodSelection = [];
                 window.pmddCycleSelection = [];
                 window.pmddDelaySelection = '';
@@ -1283,7 +1413,7 @@
         };
 
         // ================================================================
-        // 8. ОТРИСОВКА КАЛЕНДАРЯ
+        // 8. ОТРИСОВКА КАЛЕНДАРЯ (ОБНОВЛЁННАЯ)
         // ================================================================
         function renderCycleCalendar() {
             const container = document.getElementById('cycle-load-calendar');
@@ -1378,7 +1508,7 @@
         }
 
         // ================================================================
-        // 9. ФУНКЦИЯ confirmEvent
+        // 9. ФУНКЦИЯ confirmEvent (ИСПРАВЛЕНИЕ 1: удалена строка delayStartDate)
         // ================================================================
         let selectedDate = null;
         function openEventModal(year, month, day) {
@@ -1415,7 +1545,7 @@
                     if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
                 }
                 savedLastPeriodStart = selectedDate;
-                // ОШИБКА ИСПРАВЛЕНА: строка delayStartDate = null; удалена полностью
+                // ИСПРАВЛЕНИЕ 1: Строка delayStartDate = null; УДАЛЕНА
                 localStorage.removeItem('histolite_delay_start');
                 localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
                 cycleMarks[selectedDate] = 'first_day';
@@ -1619,6 +1749,7 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    // ИСПРАВЛЕНИЕ 2: Теперь библиотека jsQR подключена, и эта строка сработает
                     const code = jsQR(imageData.data, canvas.width, canvas.height);
                     if (code && code.data) {
                         const productName = code.data.trim().toLowerCase();
@@ -1775,7 +1906,7 @@
         };
 
         // ================================================================
-        // 20. РАБОТА С РЕЦЕПТАМИ
+        // 20. РАБОТА С РЕЦЕПТАМИ (ИСПРАВЛЕНИЕ 5: фильтрация рецептов)
         // ================================================================
         const defaultRecipes = [
             {
@@ -1815,18 +1946,17 @@
         function loadRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) return;
-            // Если внешний файл recipes.js не загрузился, используем дефолтные
-            if (typeof window.recipes !== 'undefined' && Array.isArray(window.recipes) && window.recipes.length > 0) {
-                recipesDB = window.recipes;
+            if (Array.isArray(window.recipesDB) && window.recipesDB.length > 0) {
+                renderRecipes();
             } else {
-                recipesDB = defaultRecipes;
+                container.innerHTML = '<p class="text-center text-red-500 col-span-full py-8">Рецепты не найдены. Проверьте recipes.js</p>';
             }
-            renderRecipes();
         }
 
         function renderRecipes() {
             const container = document.getElementById('recipes-container');
             if (!container) return;
+            if (recipesDB.length === 0) recipesDB = defaultRecipes;
             const allRecipes = [...recipesDB, ...userRecipes];
             const categoryFilter = document.querySelector('.recipe-filter-btn.active')?.dataset.category || 'all';
             const levelFilter = document.querySelector('.level-filter-btn.active')?.dataset.level || 'all';
@@ -1834,11 +1964,16 @@
             const lf = document.getElementById('filter-lactose-free')?.checked || false;
             const df = document.getElementById('filter-dairy-free')?.checked || false;
             
+            // ИСПРАВЛЕНИЕ 5: Приводим форматы к единому виду для фильтрации
             const filtered = allRecipes.filter(r => {
                 const matchCategory = categoryFilter === 'all' || r.category === categoryFilter;
+                
+                // Если фильтр "все", пропускаем проверку уровня
                 let matchLevel = true;
                 if (levelFilter !== 'all') {
+                    // Приводим уровень из рецепта к тому же формату, что и в кнопках (русский язык)
                     const recipeLevel = r.histamine_level || 'неизвестно';
+                    // Если в рецепте 'low', преобразуем в 'низкий' для сравнения
                     const levelMap = {
                         'low': 'низкий',
                         'medium': 'средний',
@@ -1847,6 +1982,7 @@
                     const normalizedLevel = levelMap[recipeLevel] || recipeLevel;
                     matchLevel = normalizedLevel === levelFilter;
                 }
+                
                 let matchDiet = true;
                 if (gf) matchDiet = matchDiet && r.gluten_free === true;
                 if (lf) matchDiet = matchDiet && r.lactose_free === true;
@@ -2265,7 +2401,7 @@
         }
 
         // ================================================================
-        // 27. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА)
+        // 27. СУЩЕСТВУЮЩАЯ АНАЛИТИКА (СВЯЗЬ СИМПТОМОВ С ФАЗОЙ ЦИКЛА) – ОБНОВЛЕНА
         // ================================================================
         function renderCycleSymptomAnalysis() {
             const container = document.getElementById('cycle-symptom-analysis');
@@ -2336,7 +2472,7 @@
         }
 
         // ================================================================
-        // 28. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ)
+        // 28. АНАЛИЗ СОВПАДЕНИЙ (48 ЧАСОВ) – ОБНОВЛЕН
         // ================================================================
         window.runAdvancedAnalytics = function() {
             const container = document.getElementById('analytics-results');
@@ -2437,7 +2573,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Все критические ошибки устранены.');
+        console.log('✅ Приложение загружено. Все исправления внесены.');
     </script>
 </body>
 </html>
