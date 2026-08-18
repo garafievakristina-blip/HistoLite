@@ -15,6 +15,7 @@
     <script src="recipes.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -1046,21 +1047,53 @@
         // ================================================================
         // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
         // ================================================================
-        window.saveCycleSettings = function() {
-            const dateInput = document.getElementById('last-period-start');
-            const lengthInput = document.getElementById('cycle-length');
-            const periodDaysInput = document.getElementById('period-days');
-            if (dateInput) savedLastPeriodStart = dateInput.value;
-            if (lengthInput) savedCycleLength = parseInt(lengthInput.value) || 28;
-            if (periodDaysInput) savedPeriodDays = parseInt(periodDaysInput.value) || 5;
-            localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-            localStorage.setItem('histolite_cycle_length', savedCycleLength);
-            localStorage.setItem('histolite_period_days', savedPeriodDays);
-            renderCycleCalendar();
-            renderTodayDashboard();
-            refreshAnalytics();
-            showModal('Настройки сохранены');
-        };
+       window.saveCycleSettings = function() {
+    const dateInput = document.getElementById('last-period-start');
+    const lengthInput = document.getElementById('cycle-length');
+    const periodDaysInput = document.getElementById('period-days');
+
+    const newStartDate = dateInput ? dateInput.value : '';
+    const newCycleLength = lengthInput ? parseInt(lengthInput.value, 10) : 28;
+    const newPeriodDays = periodDaysInput ? parseInt(periodDaysInput.value, 10) : 5;
+
+    if (!newStartDate) {
+        showModal('Укажите первый день менструации');
+        return;
+    }
+    if (!Number.isInteger(newCycleLength) || newCycleLength < 20 || newCycleLength > 45) {
+        showModal('Длина цикла должна быть от 20 до 45 дней');
+        return;
+    }
+    if (!Number.isInteger(newPeriodDays) || newPeriodDays < 1 || newPeriodDays > 10) {
+        showModal('Количество дней менструации должно быть от 1 до 10');
+        return;
+    }
+
+    savedLastPeriodStart = newStartDate;
+    savedCycleLength = newCycleLength;
+    savedPeriodDays = newPeriodDays;
+
+    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+    localStorage.setItem('histolite_cycle_length', String(savedCycleLength));
+    localStorage.setItem('histolite_period_days', String(savedPeriodDays));
+
+    // Удаляем старую отметку первого дня цикла (исправление проблемы)
+    Object.keys(cycleMarks).forEach(date => {
+        if (cycleMarks[date] === 'first_day') {
+            delete cycleMarks[date];
+        }
+    });
+
+    // Создаём новую отметку first_day на новой дате
+    cycleMarks[savedLastPeriodStart] = 'first_day';
+    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+
+    renderCycleCalendar();
+    renderTodayDashboard();
+    refreshAnalytics();
+
+    showModal('Настройки цикла сохранены');
+};
 
         // ================================================================
         // 5. РАБОТА С ЗАПИСЯМИ
@@ -1452,7 +1485,6 @@
                     if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
                 }
                 savedLastPeriodStart = selectedDate;
-                delayStartDate = null;
                 localStorage.removeItem('histolite_delay_start');
                 localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
                 cycleMarks[selectedDate] = 'first_day';
