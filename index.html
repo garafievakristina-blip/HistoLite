@@ -10,15 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- ИСПРАВЛЕНИЕ 2: Добавлена библиотека jsQR для распознавания штрих-кодов с фото -->
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="recipes.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script>
         tailwind.config = {
             theme: {
@@ -863,7 +859,6 @@
         </div>
     </div>
 
-    <!-- ================= ВЕСЬ JAVASCRIPT В ОДНОМ ТЕГЕ ================= -->
     <script>
         // ================================================================
         // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -974,42 +969,14 @@
             const diff = Math.floor((today - next) / (1000 * 60 * 60 * 24));
             return diff > 0 ? diff : 0;
         }
-
-        // ИСПРАВЛЕНИЕ 4: Обновлена функция для возвращения фазы "ПМС"
         function getCyclePhaseName(day) {
             if (!day) return 'Не определена';
-
-            if (day <= savedPeriodDays) {
-                return 'Менструация';
-            }
-
+            if (day <= savedPeriodDays) return 'Менструация';
             const ovulationDay = savedCycleLength - 14;
-
-            if (day === ovulationDay) {
-                return 'Овуляция';
-            }
-
-            // Добавляем условие для ПМС (за несколько дней до конца цикла)
-            if (
-                day > ovulationDay + 1 &&
-                day < savedCycleLength &&
-                day >= savedCycleLength - savedPmsStartDays
-            ) {
-                return 'ПМС';
-            }
-
-            if (day >= ovulationDay - 5 && day <= ovulationDay + 1) {
-                return 'Фертильное окно';
-            }
-
-            if (day > ovulationDay + 1 && day < savedCycleLength) {
-                return 'Лютеиновая';
-            }
-
-            if (day >= savedCycleLength) {
-                return 'Задержка';
-            }
-
+            if (day === ovulationDay) return 'Овуляция';
+            if (day >= ovulationDay - 5 && day <= ovulationDay + 1) return 'Фертильное окно';
+            if (day > ovulationDay + 1 && day < savedCycleLength) return 'Лютеиновая';
+            if (day >= savedCycleLength) return 'Задержка';
             return 'Начало цикла';
         }
 
@@ -1043,7 +1010,6 @@
                 tip = '⚠️ ВНИМАНИЕ! При задержке менструации риск гистаминовых реакций сильно повышен. Исключите все продукты с высоким содержанием гистамина: сыры, копчёности, ферментированные продукты, шоколад, томаты. Отдавайте предпочтение свежим овощам, рису, гречке, индейке.';
             } else if (userGender !== 'male' && cycleDay !== null) {
                 const phase = getCyclePhaseName(cycleDay);
-                // Проверяем теперь и ПМС
                 if (phase === 'Овуляция' || phase === 'ПМС') {
                     riskLevel = 'Высокий';
                     riskClass = 'risk-high';
@@ -1078,81 +1044,22 @@
         }
 
         // ================================================================
-        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА (ИСПРАВЛЕНИЕ 3)
+        // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
         // ================================================================
         window.saveCycleSettings = function() {
             const dateInput = document.getElementById('last-period-start');
             const lengthInput = document.getElementById('cycle-length');
             const periodDaysInput = document.getElementById('period-days');
-
-            const newStartDate = dateInput ? dateInput.value : '';
-            const newCycleLength = lengthInput
-                ? parseInt(lengthInput.value, 10)
-                : 28;
-            const newPeriodDays = periodDaysInput
-                ? parseInt(periodDaysInput.value, 10)
-                : 5;
-
-            if (!newStartDate) {
-                showModal('Укажите первый день менструации');
-                return;
-            }
-
-            if (
-                !Number.isInteger(newCycleLength) ||
-                newCycleLength < 20 ||
-                newCycleLength > 45
-            ) {
-                showModal('Длина цикла должна быть от 20 до 45 дней');
-                return;
-            }
-
-            if (
-                !Number.isInteger(newPeriodDays) ||
-                newPeriodDays < 1 ||
-                newPeriodDays > 10
-            ) {
-                showModal('Количество дней менструации должно быть от 1 до 10');
-                return;
-            }
-
-            savedLastPeriodStart = newStartDate;
-            savedCycleLength = newCycleLength;
-            savedPeriodDays = newPeriodDays;
-
-            localStorage.setItem(
-                'histolite_last_period_start',
-                savedLastPeriodStart
-            );
-            localStorage.setItem(
-                'histolite_cycle_length',
-                String(savedCycleLength)
-            );
-            localStorage.setItem(
-                'histolite_period_days',
-                String(savedPeriodDays)
-            );
-
-            // Удаляем старую отметку первого дня цикла
-            Object.keys(cycleMarks).forEach(date => {
-                if (cycleMarks[date] === 'first_day') {
-                    delete cycleMarks[date];
-                }
-            });
-
-            // Создаём отметку first_day на новой дате
-            cycleMarks[savedLastPeriodStart] = 'first_day';
-
-            localStorage.setItem(
-                'histolite_cycle_marks',
-                JSON.stringify(cycleMarks)
-            );
-
+            if (dateInput) savedLastPeriodStart = dateInput.value;
+            if (lengthInput) savedCycleLength = parseInt(lengthInput.value) || 28;
+            if (periodDaysInput) savedPeriodDays = parseInt(periodDaysInput.value) || 5;
+            localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+            localStorage.setItem('histolite_cycle_length', savedCycleLength);
+            localStorage.setItem('histolite_period_days', savedPeriodDays);
             renderCycleCalendar();
             renderTodayDashboard();
             refreshAnalytics();
-
-            showModal('Настройки цикла сохранены');
+            showModal('Настройки сохранены');
         };
 
         // ================================================================
@@ -1508,7 +1415,7 @@
         }
 
         // ================================================================
-        // 9. ФУНКЦИЯ confirmEvent (ИСПРАВЛЕНИЕ 1: удалена строка delayStartDate)
+        // 9. ФУНКЦИЯ confirmEvent
         // ================================================================
         let selectedDate = null;
         function openEventModal(year, month, day) {
@@ -1545,7 +1452,7 @@
                     if (cycleMarks[key] === 'first_day') delete cycleMarks[key];
                 }
                 savedLastPeriodStart = selectedDate;
-                // ИСПРАВЛЕНИЕ 1: Строка delayStartDate = null; УДАЛЕНА
+                delayStartDate = null;
                 localStorage.removeItem('histolite_delay_start');
                 localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
                 cycleMarks[selectedDate] = 'first_day';
@@ -1749,7 +1656,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    // ИСПРАВЛЕНИЕ 2: Теперь библиотека jsQR подключена, и эта строка сработает
                     const code = jsQR(imageData.data, canvas.width, canvas.height);
                     if (code && code.data) {
                         const productName = code.data.trim().toLowerCase();
@@ -1906,7 +1812,7 @@
         };
 
         // ================================================================
-        // 20. РАБОТА С РЕЦЕПТАМИ (ИСПРАВЛЕНИЕ 5: фильтрация рецептов)
+        // 20. РАБОТА С РЕЦЕПТАМИ
         // ================================================================
         const defaultRecipes = [
             {
@@ -1963,33 +1869,15 @@
             const gf = document.getElementById('filter-gluten-free')?.checked || false;
             const lf = document.getElementById('filter-lactose-free')?.checked || false;
             const df = document.getElementById('filter-dairy-free')?.checked || false;
-            
-            // ИСПРАВЛЕНИЕ 5: Приводим форматы к единому виду для фильтрации
             const filtered = allRecipes.filter(r => {
                 const matchCategory = categoryFilter === 'all' || r.category === categoryFilter;
-                
-                // Если фильтр "все", пропускаем проверку уровня
-                let matchLevel = true;
-                if (levelFilter !== 'all') {
-                    // Приводим уровень из рецепта к тому же формату, что и в кнопках (русский язык)
-                    const recipeLevel = r.histamine_level || 'неизвестно';
-                    // Если в рецепте 'low', преобразуем в 'низкий' для сравнения
-                    const levelMap = {
-                        'low': 'низкий',
-                        'medium': 'средний',
-                        'high': 'высокий'
-                    };
-                    const normalizedLevel = levelMap[recipeLevel] || recipeLevel;
-                    matchLevel = normalizedLevel === levelFilter;
-                }
-                
+                const matchLevel = levelFilter === 'all' || r.histamine_level === levelFilter;
                 let matchDiet = true;
                 if (gf) matchDiet = matchDiet && r.gluten_free === true;
                 if (lf) matchDiet = matchDiet && r.lactose_free === true;
                 if (df) matchDiet = matchDiet && r.dairy_free === true;
                 return matchCategory && matchLevel && matchDiet;
             });
-            
             if (filtered.length === 0) {
                 container.innerHTML = '<p class="text-center text-slate-400 col-span-full py-8">По вашему запросу ничего не найдено.</p>';
                 return;
@@ -2008,7 +1896,7 @@
                         </div>
                         <div class="recipe-tags">
                             <span class="recipe-tag recipe-level">
-                                ${r.histamine_level === 'низкий' ? 'Низкий' : r.histamine_level === 'средний' ? 'Средний' : r.histamine_level === 'high' ? 'Высокий' : r.histamine_level === 'medium' ? 'Средний' : r.histamine_level === 'low' ? 'Низкий' : 'Неизвестно'}
+                                ${r.histamine_level === 'низкий' ? 'Низкий' : r.histamine_level === 'средний' ? 'Средний' : 'Высокий'}
                             </span>
                             ${r.gluten_free ? '<span class="recipe-tag">Без глютена</span>' : ''}
                             ${r.lactose_free ? '<span class="recipe-tag">Без лактозы</span>' : ''}
@@ -2028,10 +1916,7 @@
             document.getElementById('recipe-modal-category').textContent = recipe.category || '';
             document.getElementById('recipe-modal-level').textContent =
                 recipe.histamine_level === 'низкий' ? 'Низкий' :
-                recipe.histamine_level === 'средний' ? 'Средний' :
-                recipe.histamine_level === 'high' ? 'Высокий' :
-                recipe.histamine_level === 'medium' ? 'Средний' :
-                recipe.histamine_level === 'low' ? 'Низкий' : 'Неизвестно';
+                recipe.histamine_level === 'средний' ? 'Средний' : 'Высокий';
             document.getElementById('recipe-modal-time').textContent = `⏱ ${recipe.prep_time || 0} мин`;
             document.getElementById('recipe-modal-servings').textContent = `🍽 ${recipe.servings || 1} порц.`;
             document.getElementById('recipe-modal-description').textContent = recipe.description || '';
@@ -2573,7 +2458,7 @@
             }
         });
 
-        console.log('✅ Приложение загружено. Все исправления внесены.');
+        console.log('✅ Приложение загружено. Добавлены блоки настроения, ПМС/ПМДР и отложенной реакции.');
     </script>
 </body>
 </html>
