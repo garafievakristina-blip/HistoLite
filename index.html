@@ -861,26 +861,34 @@
     </div>
 
     <script>
-        // ================================================================
+                // ================================================================
         // 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
         // ================================================================
-        let safeProducts = JSON.parse(localStorage.getItem('histolite_safe_products') || '{}');
+        // Получаем уникальный ID пользователя (для синхронизации между устройствами)
+        let userId = localStorage.getItem('histolite_user_id');
+        if (!userId) {
+            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('histolite_user_id', userId);
+        }
+
+        let safeProducts = {};
         let safeFilter = 'all';
         let userGender = localStorage.getItem('histolite_gender') || 'female';
-        let savedLastPeriodStart = localStorage.getItem('histolite_last_period_start') || '';
-        let savedCycleLength = parseInt(localStorage.getItem('histolite_cycle_length')) || 28;
-        let savedPmsStartDays = parseInt(localStorage.getItem('histolite_pms_start_days')) || 7;
-        let savedPeriodDays = parseInt(localStorage.getItem('histolite_period_days')) || 5;
+        let savedLastPeriodStart = '';
+        let savedCycleLength = 28;
+        let savedPmsStartDays = 7;
+        let savedPeriodDays = 5;
         let myHistamineDB = [];
         let recipesDB = [];
         let userRecipes = JSON.parse(localStorage.getItem('histolite_user_recipes')) || [];
         let expectedStartDate = null;
-        let cycleMarks = JSON.parse(localStorage.getItem('histolite_cycle_marks')) || {};
+        let cycleMarks = {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
-        let cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
+        let cycleDayNotes = {};
         let selectedCycleDayDate = null;
         let editingEntryId = null;
+        let dataLoaded = false; // Флаг, что данные загружены с сервера
 
         // ===== НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕНИЯ, ПМС/ПМДР И ОТЛОЖЕННОЙ РЕАКЦИИ =====
         const pmddMoodOptions = [
@@ -914,8 +922,88 @@
         window.pmddCycleSelection = [];
         window.pmddDelaySelection = '';
 
-        window.recipesDB = Array.isArray(window.recipes) ? window.recipes : [];
+        window.recipesDB = (typeof window.recipes !== 'undefined' && Array.isArray(window.recipes)) ? window.recipes : [];
         recipesDB = window.recipesDB;
+                // ================================================================
+        // ФУНКЦИИ ДЛЯ СИНХРОНИЗАЦИИ С СЕРВЕРОМ
+        // ================================================================
+        const API_URL = 'http://51.250.100.218:3000/api';
+
+        async function loadDataFromServer() {
+            try {
+                const response = await fetch(`${API_URL}/load/${userId}`);
+                if (!response.ok) throw new Error('Ошибка загрузки');
+                const result = await response.json();
+                
+                if (result.data) {
+                    safeProducts = result.data.safeProducts || {};
+                    savedLastPeriodStart = result.data.savedLastPeriodStart || '';
+                    savedCycleLength = result.data.savedCycleLength || 28;
+                    savedPeriodDays = result.data.savedPeriodDays || 5;
+                    cycleMarks = result.data.cycleMarks || {};
+                    cycleDayNotes = result.data.cycleDayNotes || {};
+                    console.log('✅ Данные загружены с сервера');
+                } else {
+                    console.log('ℹ️ Новый пользователь, данных на сервере нет');
+                }
+                dataLoaded = true;
+                
+                // После загрузки перерисовываем интерфейс
+                initCycleModule();
+                renderTodayDashboard();
+                refreshAnalytics();
+                renderSafeProducts();
+                renderCycleCalendar();
+            } catch (error) {
+                console.error('❌ Ошибка загрузки с сервера:', error);
+                // Запасной вариант: загружаем из localStorage
+                safeProducts = JSON.parse(localStorage.getItem('histolite_safe_products') || '{}');
+                savedLastPeriodStart = localStorage.getItem('histolite_last_period_start') || '';
+                savedCycleLength = parseInt(localStorage.getItem('histolite_cycle_length')) || 28;
+                savedPeriodDays = parseInt(localStorage.getItem('histolite_period_days')) || 5;
+                cycleMarks = JSON.parse(localStorage.getItem('histolite_cycle_marks')) || {};
+                cycleDayNotes = JSON.parse(localStorage.getItem('histolite_cycle_day_notes')) || {};
+                dataLoaded = true;
+                initCycleModule();
+                renderTodayDashboard();
+                refreshAnalytics();
+                renderSafeProducts();
+                renderCycleCalendar();
+            }
+        }
+
+        async function saveDataToServer() {
+            if (!dataLoaded) return;
+            
+            const data = {
+                safeProducts: safeProducts,
+                savedLastPeriodStart: savedLastPeriodStart,
+                savedCycleLength: savedCycleLength,
+                savedPeriodDays: savedPeriodDays,
+                cycleMarks: cycleMarks,
+                cycleDayNotes: cycleDayNotes
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, data: data })
+                });
+                if (!response.ok) throw new Error('Ошибка сохранения');
+                console.log('✅ Данные сохранены на сервере');
+            } catch (error) {
+                console.error('❌ Ошибка сохранения на сервер:', error);
+                // Сохраняем локально
+                localStorage.setItem('histolite_safe_products', JSON.stringify(safeProducts));
+                localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+                localStorage.setItem('histolite_cycle_length', String(savedCycleLength));
+                localStorage.setItem('histolite_period_days', String(savedPeriodDays));
+                localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+                localStorage.setItem('histolite_cycle_day_notes', JSON.stringify(cycleDayNotes));
+                console.log('💾 Данные сохранены локально (запасной вариант)');
+            }
+        }
 
         // ================================================================
         // 2. ФУНКЦИИ ДАТ И ЦИКЛА
@@ -1052,53 +1140,55 @@
         // ================================================================
         // 4. СОХРАНЕНИЕ НАСТРОЕК ЦИКЛА
         // ================================================================
-       window.saveCycleSettings = function() {
-    const dateInput = document.getElementById('last-period-start');
-    const lengthInput = document.getElementById('cycle-length');
-    const periodDaysInput = document.getElementById('period-days');
+               window.saveCycleSettings = function() {
+            const dateInput = document.getElementById('last-period-start');
+            const lengthInput = document.getElementById('cycle-length');
+            const periodDaysInput = document.getElementById('period-days');
 
-    const newStartDate = dateInput ? dateInput.value : '';
-    const newCycleLength = lengthInput ? parseInt(lengthInput.value, 10) : 28;
-    const newPeriodDays = periodDaysInput ? parseInt(periodDaysInput.value, 10) : 5;
+            const newStartDate = dateInput ? dateInput.value : '';
+            const newCycleLength = lengthInput ? parseInt(lengthInput.value, 10) : 28;
+            const newPeriodDays = periodDaysInput ? parseInt(periodDaysInput.value, 10) : 5;
 
-    if (!newStartDate) {
-        showModal('Укажите первый день менструации');
-        return;
-    }
-    if (!Number.isInteger(newCycleLength) || newCycleLength < 20 || newCycleLength > 45) {
-        showModal('Длина цикла должна быть от 20 до 45 дней');
-        return;
-    }
-    if (!Number.isInteger(newPeriodDays) || newPeriodDays < 1 || newPeriodDays > 10) {
-        showModal('Количество дней менструации должно быть от 1 до 10');
-        return;
-    }
+            if (!newStartDate) {
+                showModal('Укажите первый день менструации');
+                return;
+            }
+            if (!Number.isInteger(newCycleLength) || newCycleLength < 20 || newCycleLength > 45) {
+                showModal('Длина цикла должна быть от 20 до 45 дней');
+                return;
+            }
+            if (!Number.isInteger(newPeriodDays) || newPeriodDays < 1 || newPeriodDays > 10) {
+                showModal('Количество дней менструации должно быть от 1 до 10');
+                return;
+            }
 
-    savedLastPeriodStart = newStartDate;
-    savedCycleLength = newCycleLength;
-    savedPeriodDays = newPeriodDays;
+            savedLastPeriodStart = newStartDate;
+            savedCycleLength = newCycleLength;
+            savedPeriodDays = newPeriodDays;
 
-    localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
-    localStorage.setItem('histolite_cycle_length', String(savedCycleLength));
-    localStorage.setItem('histolite_period_days', String(savedPeriodDays));
+            localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
+            localStorage.setItem('histolite_cycle_length', String(savedCycleLength));
+            localStorage.setItem('histolite_period_days', String(savedPeriodDays));
 
-    // Удаляем старую отметку первого дня цикла (исправление проблемы)
-    Object.keys(cycleMarks).forEach(date => {
-        if (cycleMarks[date] === 'first_day') {
-            delete cycleMarks[date];
-        }
-    });
+            // Удаляем старую отметку первого дня цикла
+            Object.keys(cycleMarks).forEach(date => {
+                if (cycleMarks[date] === 'first_day') {
+                    delete cycleMarks[date];
+                }
+            });
 
-    // Создаём новую отметку first_day на новой дате
-    cycleMarks[savedLastPeriodStart] = 'first_day';
-    localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+            // Создаём новую отметку first_day на новой дате
+            cycleMarks[savedLastPeriodStart] = 'first_day';
+            localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
 
-    renderCycleCalendar();
-    renderTodayDashboard();
-    refreshAnalytics();
+            renderCycleCalendar();
+            renderTodayDashboard();
+            refreshAnalytics();
 
-    showModal('Настройки цикла сохранены');
-};
+            saveDataToServer(); // <--- ЭТА СТРОКА ДОБАВЛЕНА
+
+            showModal('Настройки цикла сохранены');
+        };
 
         // ================================================================
         // 5. РАБОТА С ЗАПИСЯМИ
@@ -1293,7 +1383,7 @@
             }
         }
 
-        function saveEntryForm() {
+                function saveEntryForm() {
             if (!selectedCycleDayDate) return;
             const time = document.getElementById('entry-time').value.trim();
             const products = document.getElementById('entry-products').value.trim();
@@ -1328,6 +1418,8 @@
             renderCycleCalendar();
             renderTodayDashboard();
             refreshAnalytics();
+
+            saveDataToServer(); // <--- ЭТА СТРОКА ДОБАВЛЕНА
         }
 
         function deleteEntryConfirm(dateStr, id) {
@@ -1466,7 +1558,7 @@
             document.getElementById('event-modal').style.display = 'none';
             selectedDate = null;
         }
-        window.confirmEvent = function(type) {
+                window.confirmEvent = function(type) {
             if (!selectedDate) {
                 showModal('Ошибка: дата не выбрана');
                 return;
@@ -1494,6 +1586,9 @@
                 localStorage.setItem('histolite_last_period_start', savedLastPeriodStart);
                 cycleMarks[selectedDate] = 'first_day';
                 localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+
+                saveDataToServer(); // <--- ЭТА СТРОКА ДОБАВЛЕНА
+
                 closeEventModal();
                 renderCycleCalendar();
                 renderTodayDashboard();
@@ -1508,6 +1603,9 @@
                 cycleMarks[selectedDate] = type;
             }
             localStorage.setItem('histolite_cycle_marks', JSON.stringify(cycleMarks));
+
+            saveDataToServer(); // <--- ЭТА СТРОКА ДОБАВЛЕНА
+
             closeEventModal();
             renderCycleCalendar();
             renderTodayDashboard();
@@ -1592,11 +1690,14 @@
         function normalizeProductName(name) {
             return String(name).trim().toLowerCase().replace(/\s+/g, ' ');
         }
-        window.setProductStatus = function(name, status) {
+                window.setProductStatus = function(name, status) {
             const key = normalizeProductName(name);
             if (status === 'none') delete safeProducts[key];
             else safeProducts[key] = status;
             localStorage.setItem('histolite_safe_products', JSON.stringify(safeProducts));
+
+            saveDataToServer(); // <--- ЭТА СТРОКА ДОБАВЛЕНА
+
             renderSafeProducts();
         };
         window.setSafeFilter = function(filter) {
@@ -1831,20 +1932,17 @@
         // ================================================================
         function toggleLegalButton() {}
 
-        window.acceptLegal = function() {
+                window.acceptLegal = function() {
             const genderRadio = document.querySelector('input[name="gender"]:checked');
             userGender = genderRadio ? genderRadio.value : 'female';
             localStorage.setItem('histolite_gender', userGender);
             localStorage.setItem('histolite_legal_accepted', 'true');
             document.getElementById('legal-modal').style.display = 'none';
             document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-
-            loadProducts();
-            renderTodayDashboard();
-            checkNotifications();
+            
+            // Загружаем данные с сервера
+            loadDataFromServer();
             loadRecipes();
-            initCycleModule();
-            refreshAnalytics();
             switchTab('diary');
         };
 
@@ -2028,19 +2126,13 @@
 
         // ================================================================
         // 22. ДОПОЛНИТЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ
-        // ================================================================
-        if (localStorage.getItem('histolite_legal_accepted') === 'true') {
+               if (localStorage.getItem('histolite_legal_accepted') === 'true') {
             setTimeout(function() {
-                const gender = localStorage.getItem('histolite_gender') || 'female';
-                userGender = gender;
+                userGender = localStorage.getItem('histolite_gender') || 'female';
                 document.getElementById('legal-modal').style.display = 'none';
                 document.getElementById('app-body').classList.remove('opacity-30', 'pointer-events-none');
-                loadProducts();
-                renderTodayDashboard();
-                checkNotifications();
+                loadDataFromServer();
                 loadRecipes();
-                initCycleModule();
-                refreshAnalytics();
                 switchTab('diary');
             }, 100);
         }
